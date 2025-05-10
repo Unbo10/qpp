@@ -5,10 +5,12 @@
 #include "../utils/List.cpp"
 #include "Number.cpp"
 
+using namespace std;
+
 class Integer: public Number
 {
     private:
-        static const int DEFAULT_BASE = 100000;
+        static const int DEFAULT_BASE = 10;
         static const int digitsByBlock = 5;
 
         List<int> digitsInteger;
@@ -35,7 +37,9 @@ class Integer: public Number
                 int res = newDigit%BASE;
                 newDigit /= BASE;
                 digitsInteger.add(res);
+                // std::cout << "Res: " << res << " new digit: " << newDigit << " base: " << BASE << "\n";
             }
+            // std::cout << "List of digits: " << digitsInteger << "\n";
         }
 
         // O(log_10 (n))
@@ -63,7 +67,7 @@ class Integer: public Number
             num.digitsInteger = clean;
         }
 
-        Integer partHigh(int index) const
+        Integer highPart(int index) const
         {
             Integer toR;
             for(int i = digitsInteger.size() - index -1; i < digitsInteger.size(); i++)
@@ -86,17 +90,24 @@ class Integer: public Number
         {
             if(num1.numberSize() <= 15 || num2.numberSize() <= 15)
                 return conventionalForm(num1, num2);
+
+            //*Fill with zeros 
+
             int upperSize = Integer::max(num1.numberSize(), num2.numberSize())/2;
 
-            Integer uper1 = num1.partHigh(upperSize);
+            // std::cout << num1.digitsInteger << "\n";
+
+            Integer upper1 = num1.highPart(upperSize);
             Integer lower1 = num1.lowPart(upperSize);
-            Integer upper2 = num2.partHigh(upperSize);
+            Integer upper2 = num2.highPart(upperSize);
             Integer lower2 = num2.lowPart(upperSize);
 
-            Integer U = karatsuba(uper1, upper2);
+            // std::cout << "A\n";
+            Integer U = karatsuba(upper1, upper2);
+            // std::cout << "A\n";
             Integer V = karatsuba(lower1, lower2);
-            Integer W = karatsuba(uper1 + lower1, upper2 + lower2) -U -V;
-            return multiplyByBase(V, 2*upperSize) + multiplyByBase(W, upperSize) + U;
+            Integer W = karatsuba(upper1 + lower1, upper2 + lower2) -U -V;
+            return multiplyByBase(U, 2*upperSize) + multiplyByBase(W, upperSize) + V;
         }
 
         static Integer conventionalForm(const Integer& num1, const Integer& num2)
@@ -120,7 +131,7 @@ class Integer: public Number
                 }
                 product.digitsInteger.replace(carry, num1.numberSize()+j);
             }
-
+            std::cout << "Multiplication " << num1 << " * " << num2 << " result: " << product << "\n";
             Integer::cleanDigits(product);
             return product;
         }
@@ -156,7 +167,7 @@ class Integer: public Number
 
         void addDigit(long long newDigit)
         {
-            if(newDigit <= 0) return;
+            if(newDigit <= 0) return; //!Correcting this may help
             forceAdd(newDigit);
         }
 
@@ -296,11 +307,14 @@ class Integer: public Number
             //*This block works correctly
             int m = dividend.numberSize() - divisor.numberSize();
             Integer U; //*u'
-            U.digitsInteger = List<int>(divisor.numberSize()); //*Changed the size
-            for(int i = m; i < dividend.numberSize(); i++)
+            U.digitsInteger = List<int>(divisor.numberSize() + 1); //*Changed the size
+            cout << "m: " << m << " dividend size: " << dividend.numberSize() << " divisor size: " << divisor.numberSize() << "\n";
+            for(int i = dividend.numberSize(); i >= m; i--)
             {
                 U.digitsInteger.add(dividend.digitAt(i));
             }
+
+            cout << "Initial û: " << U << "\n";
 
             Integer quant;
             quant.BASE = num1.BASE;
@@ -325,15 +339,21 @@ class Integer: public Number
 
                 Integer multiplyTest = q*divisor;
                 std::cout << "w: " << multiplyTest << "\n";
+                std::cout << "û: " << U << "\n";
                 while(U < multiplyTest)
                 {
                     q--;
                     multiplyTest = multiplyTest - divisor;
                 }
-                Integer remainer = U - multiplyTest;
-                if(0 < j)
-                    U = Integer::multiplyByBase(remainer, 1) + dividend.digitAt(j - 1);
-                    std::cout << "û: " << U << "\n";
+                Integer remainder = U - multiplyTest;
+                if (0 < j){
+                    Integer dj = dividend.digitAt(j - 1);
+                    U = Integer::multiplyByBase(remainder, 1) + dividend.digitAt(j - 1);
+                    cout << "--- HERE IS THE PROBLEM --- \n" << "Remainder * b: " << Integer::multiplyByBase(remainder, 1) << "\n" << "Dividend_{j - 1}: " << dividend.digitAt(j - 1) << "\n" << "U: " << U << "\n";
+                    cout << "First addend size: " << Integer::multiplyByBase(remainder, 1).numberSize() << "\n";
+                    cout << "Second addend size: " << dj << "\n";
+                    cout << "------\n";
+                }
                 
                 quant.digitsInteger.replace(q, j);
             }
@@ -432,14 +452,25 @@ class Integer: public Number
             if(number.digitsInteger.size() == 0) return os << '0';
 
             if(!number.sign) os << "-";
+
+            // cout << "Digits integer: " << number.digitsInteger << "\n";
             
-            os << number.digitAt(number.digitsInteger.size() - 1);
-            for(int i = number.digitsInteger.size() - 2; i >= 0; i--)
-            {
-                for(int j = 0; j < Integer::digitsByBlock- digits(number.digitAt(i)); j++)
-                    os << '0';
-                os << number.digitAt(i);
-            }  
+            //*For now, this will be documented, and the representation of numbers will be the list of their digits inverted
+            // for(int i = number.digitsInteger.size() - 1; i >= 0; i--)
+            // {
+            //     os << number.digitAt(i);
+            //     //!It shouldn't convert to base 10 when printing unless it is indicated to do so.
+            //     //!The code below will only work for base 100,000.
+            //     // for(int j = 0; j < Integer::digitsByBlock- digits(number.digitAt(i)); j++)
+            //     //     os << '0';
+            // }  
+
+            os << "[";
+            for(int i = number.digitsInteger.size() - 1; i > 0; i--) {
+                os << number.digitsInteger[i] << ", ";
+            }
+            os << number.digitsInteger[0] << "]";
+
             return os /*<< " (based-)" << number.BASE*/;
         }
 
