@@ -1,0 +1,21 @@
+#*Ignore VSC configuration
+.vscode/
+
+#*Ignore local tests
+tests.cpp
+
+#*Ignore output files
+output
+
+#*Ignore Java files
+*.java/
+
+#*Igonore executables
+*.exe/
+
+#*Ignore Markdown describing the development of the project (may be included
+#*later
+Development.md
+
+#*Ignore build directory
+/build/
