@@ -4,28 +4,67 @@
 #include <iostream>
 #include "../utils/List.cpp"
 #include "Number.cpp"
-#include "../utils/Comparable.cpp"
 
-class Integer: public Number, public Comparable<Integer>
+//*Changes:
+//*Replaced the private max and min methods for max_int and min_int, respectively, for better clarity
+//*The overloads for the operations with mixed types has to be done in Rationals to avoid circular imports.
+
+//TODO: Initialize base in Number class
+//TODO: Check in binaryEuclidean the replacement of the max and min functions
+
+//? Consider implementing a toString method to improve the erorr messages
+class Integer: public Number<Integer> //?Does it also need to inherit from comparable?
 {
     private:
-        static const int DEFAULT_BASE = 100000;
         static const int digitsByBlock = 5;
 
         List<int> digitsInteger;
-        int BASE;
-        bool sign;
 
-        static int max(int x, int y)
+        // static void changeBase(int newBase, Integer& number);
+
+        void setSize(int newSize)
         {
-            if(x < y) return y;
-            return x;
+            List<int> newList(newSize);
+            for(int i = 0; i < newSize; i++)
+                newList.add(digitAt(i));
+
+            digitsInteger = newList;
         }
 
-        static long long min(long long x, long long y)
+        void addDigit(long long newDigit)
         {
-            if(x < y) return x;
-            return y;
+            if(newDigit <= 0) return;
+            forceAdd(newDigit);
+        }
+
+        void addDigit(const Integer& newDigit)
+        {
+            if(BASE != newDigit.BASE)
+                throw std::invalid_argument("Not implemented digits in diferents bases");
+            
+            for(int x: newDigit.digitsInteger)
+                digitsInteger.add(x);
+            
+        }
+
+        int digitAt(int index) const
+        {
+            try{
+                return digitsInteger[index];
+            }catch(const std::invalid_argument& e)
+            {
+                return 0;
+            }
+        }
+
+        int numberSize() const
+        {
+            return digitsInteger.size();
+        }
+
+        int getBase() const
+        {
+            return BASE;
         }
 
         void forceAdd(long long newDigit)
@@ -37,6 +76,18 @@ class Integer: public Number, public Comparable<Integer>
                 newDigit /= BASE;
                 digitsInteger.add(res);
             }
+        }
+
+        static int max_int(int x, int y)
+        {
+            if(x < y) return y;
+            return x;
+        }
+
+        static int min_int(int y, int x)
+        {
+            if(x < y) return x;
+            return y;
         }
 
         // O(log_10 (n))
@@ -83,23 +134,6 @@ class Integer: public Number, public Comparable<Integer>
             return toR;
         }
 
-        static Integer karatsuba(const Integer& num1, const Integer& num2)
-        {
-            if(num1.numberSize() <= 15 || num2.numberSize() <= 15)
-                return conventionalForm(num1, num2);
-            int upperSize = Integer::max(num1.numberSize(), num2.numberSize())/2;
-
-            Integer uper1 = num1.partHigh(upperSize);
-            Integer lower1 = num1.lowPart(upperSize);
-            Integer upper2 = num2.partHigh(upperSize);
-            Integer lower2 = num2.lowPart(upperSize);
-
-            Integer U = karatsuba(uper1, upper2);
-            Integer V = karatsuba(lower1, lower2);
-            Integer W = karatsuba(uper1 + lower1, upper2 + lower2) -U -V;
-            return multiplyByBase(V, 2*upperSize) + multiplyByBase(W, upperSize) + U;
-        }
-
         static Integer conventionalForm(const Integer& num1, const Integer& num2)
         {
             Integer product;
@@ -136,213 +170,153 @@ class Integer: public Number, public Comparable<Integer>
         }
 
     public:
-        Integer() :BASE(DEFAULT_BASE), sign(true) {}
-        Integer(long long x): BASE(DEFAULT_BASE), sign(true)
+        Integer(): Number<Integer>() {}
+        Integer(long long x): Number<Integer>()
         {
             sign = x >= 0;
             addDigit(sign? x: -x);
             Integer::cleanDigits(*this);
         }
-        Integer(const Integer& toC) : digitsInteger(toC.digitsInteger), sign(toC.sign), BASE(toC.BASE) {}
+        Integer(const Integer& toC) : Number<Integer>(toC.sign, toC.BASE), digitsInteger(toC.digitsInteger) {}
         //~Integer() {}
+        
+        //***OPERATIONS***
 
-        static void changeBase(int newBase, Integer& number)
+        Integer add(const Integer& other) const override
         {
-            if(newBase < 2) throw std::invalid_argument("Base must be grader than 2");
-            Integer divisor;
-            divisor.BASE = number.BASE;
-            divisor.addDigit(newBase);
-            Integer zero = 0;
-            
-            List<int> digit;
-            while(number != zero)
-            {
-                Integer quotient = number/divisor;
-                //añadir el residuo de la división
-                digit.add((number - quotient*divisor).digitAt(0));
-                number = quotient;
-            }
-
-            number.BASE = newBase;
-            number.digitsInteger = digit;
-            Integer::cleanDigits(number);
-        }
-
-        void setSize(int newSize)
-        {
-            List<int> newList(newSize);
-            for(int i = 0; i < newSize; i++)
-                newList.add(digitAt(i));
-
-            digitsInteger = newList;
-        }
-
-        void addDigit(long long newDigit)
-        {
-            if(newDigit <= 0) return;
-            forceAdd(newDigit);
-        }
-
-        void addDigit(const Integer& newDigit)
-        {
-            if(BASE != newDigit.BASE)
-                throw std::invalid_argument("Not implemented digits in diferents bases");
-            
-            for(int x: newDigit.digitsInteger)
-                digitsInteger.add(x);
-            
-        }
-
-        int digitAt(int index) const
-        {
-            try{
-                return digitsInteger[index];
-            }catch(const std::invalid_argument& e)
-            {
-                return 0;
-            }
-        }
-
-        int numberSize() const
-        {
-            return digitsInteger.size();
-        }
-
-        int getBase()
-        {
-            return BASE;
-        }
-
-        // operaciones entre numeros
-        friend Integer operator-(const Integer& num)
-        {
-            Integer toR(num);
-            toR.sign = !toR.sign;
-            return toR;
-        }
-
-        friend Integer operator+(Integer first, Integer second)
-        {
-            if (first.BASE != second.BASE) 
+            if (BASE != other.BASE) 
                 throw std::invalid_argument("Not defined sum of integers in different Bases yet");
             
-            if (first.sign ^ second.sign) 
+            if (sign ^ other.sign) 
             {
-                if(first.sign == true)
-                    return first - (-second);
-                return second - (-first);
+                if(sign == true)
+                    return *this - (-other);
+                return other - (-(*this)); //!This may not work.
             }
 
             Integer sumOfIntegers;
-            sumOfIntegers.BASE = first.BASE;
-            int length = max(first.numberSize(), second.numberSize());
+            sumOfIntegers.BASE = BASE;
+            int length = Integer::max_int(numberSize(), other.numberSize());
             int c = 0;
             long long res = 0;
 
             while (c < length || res != 0)
             {
-                res += first.digitAt(c) + second.digitAt(c);
-                sumOfIntegers.forceAdd(res % first.BASE);
-                res /= first.BASE;
+                res += digitAt(c) + other.digitAt(c);
+                sumOfIntegers.forceAdd(res % BASE);
+                res /= BASE;
                 c++;
             }
-            sumOfIntegers.sign = first.sign;
+            sumOfIntegers.sign = sign;
             Integer::cleanDigits(sumOfIntegers);
             return sumOfIntegers;
         }
 
-        friend Integer operator-(const Integer& num1, const Integer& num2)
+        Integer subtract(const Integer& other) const override
         {
-            if (num1.BASE != num2.BASE) 
-                throw std::invalid_argument("Not defined difference of integers in different Bases yet");
-
-            if(num1 < num2)
-                return -(num2 - num1);
-            if(!num2.sign)
-                return num1 + (-num2);
+            if((*this) < other)
+                return -(other - (*this));
+            if(!other.sign)
+                return *this + (-other);
 
             bool carry = 0;
-            int maxSize = Integer::max(num1.numberSize(), num2.numberSize());
-            Integer tR;
-            tR.BASE = num1.BASE;
+            int maxSize = Integer::max_int(numberSize(), other.numberSize());
+            Integer result;
+            result.BASE = BASE;
 
             for(int i = 0; i < maxSize; i++)
             {
-                int kResult = num1.digitAt(i) - num2.digitAt(i) - carry;
+                int kResult = digitAt(i) - other.digitAt(i) - carry;
                 if(kResult < 0)
                 {
                     carry = 1;
-                    kResult += num1.BASE;
+                    kResult += BASE;
                 }
                 else carry = 0;
-                tR.forceAdd(kResult);
+                result.forceAdd(kResult);
             }
 
-            Integer::cleanDigits(tR);
-            return tR;
+            Integer::cleanDigits(result);
+            return result;
         }
 
-        friend Integer operator*(const Integer& num1, const Integer& num2)
+        Integer subtract(long long int x) const
         {
-            if(num1.BASE != num2.BASE) throw std::invalid_argument("Error");
-            if(num1 == 0 || num2 == 0) return Integer();
-            Integer mult = Integer::karatsuba(num1, num2);
-            mult.sign = !(num1.sign ^ num2.sign);
-            mult.BASE= num1.BASE;
+            return subtract(Integer(x));
+        }
+
+        Integer negate() const override
+        {
+            Integer toR(*(this));
+            toR.sign = !toR.sign;
+            return toR;
+        }
+
+        static Integer karatsuba(const Integer& num1, const Integer& num2)
+        {
+            if(num1.numberSize() <= 15 || num2.numberSize() <= 15)
+                return conventionalForm(num1, num2);
+            int upperSize = Integer::max_int(num1.numberSize(), num2.numberSize())/2;
+
+            Integer uper1 = num1.partHigh(upperSize);
+            Integer lower1 = num1.lowPart(upperSize);
+            Integer upper2 = num2.partHigh(upperSize);
+            Integer lower2 = num2.lowPart(upperSize);
+
+            Integer U = karatsuba(uper1, upper2);
+            Integer V = karatsuba(lower1, lower2);
+            Integer W = karatsuba(uper1 + lower1, upper2 + lower2) -U -V;
+            return multiplyByBase(V, 2*upperSize) + multiplyByBase(W, upperSize) + U;
+        }
+
+        Integer multiply(const Integer& other) const override
+        {
+            if(BASE != other.BASE) throw std::invalid_argument("Error");
+            if(*this == 0 || other == 0) return Integer();
+            Integer mult = Integer::karatsuba(*this, other);
+            mult.sign = !(sign ^ other.sign);
+            mult.BASE= BASE;
             Integer::cleanDigits(mult);
             return mult;
         }
 
-        /*friend Integer operator*(long long num1, const Integer& num2)
+        Integer divide(const Integer& other) const override
         {
-            Integer help;
-            help.BASE = num2.BASE;
-            help.forceAdd(num1);
-            std::cout << help.getBase() << "  " << help << std::endl;
-            return help*num2;
-        }*/
-
-        friend Integer operator/(const Integer& num1, const Integer& num2)
-        {
-            if (num2 == Integer(0))
+            if (other == Integer(0))
                 throw std::invalid_argument("Math error: Division by zero");
-            if (num1.BASE != num2.BASE)
+            if (BASE != other.BASE)
                 throw std::invalid_argument("Different bases not supported");
-            if (num1.numberSize() < num2.numberSize())
+            if (numberSize() < other.numberSize())
                 return Integer(0);
-            if(num2 == 1) return num1;
+            if(other == 1) return *this;
 
-            if(num1 < 0 && num2 < 0)
-                return 1+(-num1/(-num2));
+            if(*this < 0 && other < 0)
+                return 1+(-(*this)/(-other));
+            if(!other.sign)
+                return -((*this)/(-other));
+            if(!sign)
+                return -((-(*this))/other + 1);
 
-            if(!num2.sign)
-                return -(num1/(-num2));
-            if(!num1.sign)
-                return -((-num1)/num2 + 1);
-
-            int top = num2.digitAt(num2.numberSize() - 1);
+            int top = other.digitAt(other.numberSize() - 1);
             Integer scaleFactor;
-            scaleFactor.BASE = num1.BASE;
-            scaleFactor  = (top >= num2.BASE/2) 
+            scaleFactor.BASE = BASE;
+            scaleFactor  = (top >= other.BASE/2) 
                         ? 1 
-                        : num2.BASE/(top + 1);
-            Integer dividend = (scaleFactor == 1 ? num1 : scaleFactor * num1);
-            Integer divisor = (scaleFactor == 1 ? num2 : scaleFactor * num2);
+                        : other.BASE/(top + 1);
+            Integer dividend = (scaleFactor == 1 ? *this : scaleFactor * (*this));
+            Integer divisor = (scaleFactor == 1 ? other : scaleFactor * other);
 
-            // toda esta parte de U está resvisada y funciona correctamente
             int m = dividend.numberSize() - divisor.numberSize();
             Integer U;
-            U.BASE = num1.BASE;
+            U.BASE = BASE;
             U.digitsInteger = List<int>(m+1);
             for(int i = m; i < dividend.numberSize(); i++)
             {
                 U.digitsInteger.add(dividend.digitAt(i));
             }
             
-
-            //corregido un for que no se usa
             Integer quant;
-            quant.BASE = num1.BASE;
+            quant.BASE = BASE;
             quant.setSize(m+1);
 
             for(int j = m; 0 <= j; --j)
@@ -350,9 +324,9 @@ class Integer: public Number, public Comparable<Integer>
                 int help = U.numberSize() - 1;
                 long long high = U.digitAt(help);
                 long long low = U.digitAt(help - 1);
-                long long q = (1LL * high * num2.BASE + low) / divisor.digitAt(divisor.numberSize() - 1);
+                long long q = (1LL * high * other.BASE + low) / divisor.digitAt(divisor.numberSize() - 1);
                 
-                if(q >= num1.BASE) q = num1.BASE - 1;
+                if(q >= BASE) q = BASE - 1;
                 
                 Integer multiplyTest = q*divisor;
                 while(U < multiplyTest)
@@ -374,17 +348,20 @@ class Integer: public Number, public Comparable<Integer>
             Integer::cleanDigits(quant);
             return quant;
         }
-
-        friend Integer operator%(const Integer& num1, const Integer& num2)
+        
+        Integer modulo(const Integer& other) const override
         {
-            return num1 - (num1/num2)*num2;
+            //? Could also be this->add((this->divide(other)).multiply(other).negate());
+            return *this - (*this/other)*other;
         }
-
-        friend Integer operator^(Integer base, Integer exp)
+        
+        Integer power(const Integer& other) const override
         {
-            if (exp < Integer(0))
+            if (other < Integer(0))
                 throw std::invalid_argument("Exponent must be non-negative");
 
+            Integer exp(other);
+            Integer base(*this);
             Integer result = 1;
             while (exp > 0)
             {
@@ -398,16 +375,48 @@ class Integer: public Number, public Comparable<Integer>
             return result;
         }
 
-        static Integer max(const Integer& n1, const Integer& n2)
+        //***COMPARISONS***
+
+        void assign(const Integer& other) override
         {
-            if(n1 < n2) return n2;
-            return n1;
+            this->sign = other.sign;
+            this->BASE = other.BASE;
+            this->digitsInteger = other.digitsInteger;
         }
 
-        static Integer min(const Integer& n1, const Integer& n2)
+        bool eq(const Integer& other) const override
         {
-            if(n1 < n2) return n1;
-            return n2;
+            return other.sign == sign &&
+                    other.BASE == BASE &&
+                    other.digitsInteger == digitsInteger;
+        }
+
+        bool lt(const Integer& other) const override
+        {
+            if(sign == 0 && other.sign == 1) return true;
+            else if(sign == 1 && other.sign == 0) return false;
+            else if(sign == 1 && other.sign == 1)
+            {
+                //*This case does take into account when both numbers are equal
+                int length = Integer::max_int(this->numberSize(), other.numberSize());
+                for(int i = length - 1; 0 <= i; i--)
+                {
+                    if(other.digitAt(i) < this->digitAt(i))
+                        return false;
+                    else if(this->digitAt(i) < other.digitAt(i))
+                        return true;
+                }
+
+                return false;
+            }
+            else
+                //*Both are negative
+                return (-other).lt(-(*this)); //!May be wrong
+        }  
+
+        bool leq(const Integer& other) const override
+        {
+            return this->lt(other) || this->eq(other);
         }
 
         static Integer abs(const Integer& r)
@@ -440,7 +449,7 @@ class Integer: public Number, public Comparable<Integer>
             if(!n2.sign)
                 n2.sign = true;
             if(n1 == 0 || n2 == 0)
-                return max(n1, n2);
+                return n1 < n2 ? n2 : n1; //*max
 
             Integer gcd = 1;
             while(n1.digitAt(0)%2 == 0 && n2.digitAt(0)%2 == 0)
@@ -455,12 +464,33 @@ class Integer: public Number, public Comparable<Integer>
                 while(n1.digitAt(0)%2 == 0) n1 = n1/2;
                 while(n2.digitAt(0)%2 == 0) n2 = n2/2;
                 Integer t = Integer::abs(n1 - n2);
-                n2 = Integer::min(n1, n2);
+                n2 = n1 < n2 ? n1 : n2; //*min
                 n1 = t;
             }
             return gcd*n2;
         }
 
+        void changeBase(int newBase, Integer& number)
+        {
+            if(newBase < 2) throw std::invalid_argument("Base must be grader than 2");
+            Integer divisor;
+            divisor.BASE = number.BASE;
+            divisor.addDigit(newBase);
+            Integer zero = 0;
+            
+            List<int> digit;
+            while(number != zero)
+            {
+                Integer quotient = number/divisor;
+                //añadir el residuo de la división
+                digit.add((number - quotient*divisor).digitAt(0));
+                number = quotient;
+            }
+
+            number.BASE = newBase;
+            number.digitsInteger = digit;
+            Integer::cleanDigits(number);
+        }
 
         friend std::ostream& operator<<(std::ostream& os, const Integer& number)
         {
@@ -489,88 +519,6 @@ class Integer: public Number, public Comparable<Integer>
             is >> read;
             num = read;
             return is;
-        }
-
-        // operadora de asignacion
-        void operator+=(const Integer& other)
-        {
-            *this = *this + other;
-        }
-
-        Integer& operator=(const Integer& numb)
-        {
-            if (this == &numb)
-            {
-                return *this;
-            }
-            digitsInteger = numb.digitsInteger;
-            sign = numb.sign;
-            BASE = numb.BASE;
-            return *this;
-        }
-
-        // operadores de comparacion
-        friend bool operator<(int num1, const Integer& num2)
-        {
-            return Integer(num1) < num2;
-        }
-
-        bool operator<(const Integer& num1) const override
-        {
-            if(sign == 0 && num1.sign == 1) return true;
-            else if(sign == 1 && num1.sign == 0) return false;
-            else if(sign == 1 && num1.sign == 1)
-            {
-                int length = Integer::max(this->numberSize(), num1.numberSize());
-                for(int i = length - 1; 0 <= i; i--)
-                {
-                    if(num1.digitAt(i) < this->digitAt(i))
-                        return false;
-                    else if(this->digitAt(i) < num1.digitAt(i))
-                        return true;
-                }
-
-                return false;
-            }
-
-            return -(*this) < -num1;
-        }  
-
-        friend bool operator>(const Integer& num1, const Integer& num2)
-        {
-            return num2 < num1;
-        }
-
-        bool operator==(const Integer& num1) const override
-        {
-            return num1.sign == sign &&
-                    num1.BASE == BASE &&
-                   num1.digitsInteger == digitsInteger;
-        }
-
-        friend bool operator!=(const Integer& num1, const Integer& num2)
-        {
-            return !(num1 == num2);
-        }
-
-        friend bool operator<=(Integer& num1, Integer& num2)
-        {
-            return num1 < num2 || num1 == num2;
-        }
-
-        friend bool operator>(Integer& num1, Integer& num2)
-        {
-            return  num2 < num1;
-        }
-
-        friend bool operator>=(Integer& num1, Integer& num2)
-        {
-            return num1 > num2 || num1 == num2;
-        }
-
-        List<int> getList()
-        {
-            return List<int>(digitsInteger);
         }
 };
 

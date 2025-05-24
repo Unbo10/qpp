@@ -1,16 +1,16 @@
-#ifndef ORDENER_LIST
-#define ORDENER_LIST
+#ifndef ORDERED_LIST
+#define ORDERED_LIST
 #include "../utils/List.cpp"
 #include "../utils/Comparable.cpp"
 
 template <typename T>
-class OrdenerList: public List<T>
+class OrderedList: public List<T>
 {
     public: 
         static_assert(std::is_base_of_v<Comparable<T>, T>, "T must be comparable");
-        OrdenerList(int INITIAL_SIZE) : List<T>(INITIAL_SIZE) {}
-        OrdenerList() {}
-        OrdenerList(const OrdenerList<T>& list)
+        OrderedList(int INITIAL_SIZE) : List<T>(INITIAL_SIZE) {}
+        OrderedList() {}
+        OrderedList(const OrderedList<T>& list)
         {
             this->length = list.length;
             this->capacity = list.length;
@@ -100,7 +100,7 @@ class OrdenerList: public List<T>
                 List<T>::replace(item, index);
         }
 
-        static void cleanBlanckSpaces(OrdenerList<T>& list)
+        static void cleanBlanckSpaces(OrderedList<T>& list)
         {
             if(list.capacity == list.length)
                 return;

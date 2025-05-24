@@ -4,7 +4,7 @@
 #include "Number.cpp"
 #include "Integer.cpp"
 
-class Rational: public Number
+class Rational//: public Number<Rational>
 {
     private:
         Integer numerator, denominator;
