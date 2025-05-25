@@ -2,19 +2,11 @@
 #include <sstream>
 #include "../Numbers/Integer.cpp"
 #include "../Numbers/Number.cpp"
-#include "../Numbers/Rational.h"
+// #include "../Numbers/Rational.h"
 // #include "../Numbers/Rational.cpp"
 #include "../utils/OrderedList.cpp"
 
 int main() {
-    Integer num1 = 17, num2 = 9;
-    Rational num(num1, num2);
-
-    std::cout << num << std::endl;
-
-    Rational num3(6, 3);
-
-    std::cout << num3;
     //*Operations
     Integer a(2), b(10);
     a = b;
@@ -33,7 +25,12 @@ int main() {
     //!Exponentiation and division (and therefore modulo) are taking too long. The rest of the operations seem fine
 
     //***RATIONALS***
-    // Rational rational;
-    // std::cin >> rational;
-    // std::cout << rational;
+    // Integer num1 = 17, num2 = 9;
+    // Rational num(num1, num2);
+
+    // std::cout << num << std::endl;
+
+    // Rational num3(6, 3);
+
+    // std::cout << num3;
 }
