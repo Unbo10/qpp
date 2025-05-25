@@ -62,11 +62,6 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
             return digitsInteger.size();
         }
 
-        int getBase() const
-        {
-            return BASE;
-        }
-
         void forceAdd(long long newDigit)
         {
             if(newDigit == 0) digitsInteger.add(0);
@@ -93,7 +88,8 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
         // O(log_10 (n))
         static int digits(long long x)
         {
-            int c = 1;
+            if(x == 0) return 1;
+            int c = 0;
             while(x != 0)
             {
                 x /= 10;
@@ -160,15 +156,6 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
             return product;
         }
 
-        static Integer multiplyByBase(const Integer& num, int times)
-        {
-            Integer result;
-            for(int i = 0; i < times; i++)
-                result.digitsInteger.add(0);
-            result.addDigit(num);
-            return result;
-        }
-
     public:
         Integer(): Number<Integer>() {}
         Integer(long long x): Number<Integer>()
@@ -180,6 +167,10 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
         Integer(const Integer& toC) : Number<Integer>(toC.sign, toC.BASE), digitsInteger(toC.digitsInteger) {}
         //~Integer() {}
         
+        int getBase() const
+        {
+            return BASE;
+        }
         //***OPERATIONS***
 
         Integer add(const Integer& other) const override
@@ -189,7 +180,7 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
             
             if (sign ^ other.sign) 
             {
-                if(sign == true)
+                if(sign)
                     return *this - (-other);
                 return other - (-(*this)); //!This may not work.
             }
@@ -282,85 +273,58 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
 
         Integer divide(const Integer& other) const override
         {
-            if (other == Integer(0))
-                throw std::invalid_argument("Math error: Division by zero");
-            if (BASE != other.BASE)
-                throw std::invalid_argument("Different bases not supported");
-            if (numberSize() < other.numberSize())
-                return Integer(0);
-            if(other == 1) return *this;
-
-            if(*this < 0 && other < 0)
-                return 1+(-(*this)/(-other));
-            if(!other.sign)
-                return -((*this)/(-other));
-            if(!sign)
-                return -((-(*this))/other + 1);
-
-            int top = other.digitAt(other.numberSize() - 1);
-            Integer scaleFactor;
-            scaleFactor.BASE = BASE;
-            scaleFactor  = (top >= other.BASE/2) 
-                        ? 1 
-                        : other.BASE/(top + 1);
-            Integer dividend = (scaleFactor == 1 ? *this : scaleFactor * (*this));
-            Integer divisor = (scaleFactor == 1 ? other : scaleFactor * other);
-
-            int m = dividend.numberSize() - divisor.numberSize();
-            Integer U;
-            U.BASE = BASE;
-            U.digitsInteger = List<int>(m+1);
-            for(int i = m; i < dividend.numberSize(); i++)
-            {
-                U.digitsInteger.add(dividend.digitAt(i));
-            }
+            if (other == 0) throw std::invalid_argument("Division by zero");
+            if (BASE != other.BASE) throw std::invalid_argument("Different bases");
             
-            Integer quant;
-            quant.BASE = BASE;
-            quant.setSize(m+1);
+            // Manejo rápido de casos especiales
+            if (numberSize() < other.numberSize()) return 0;
+            if (other == 1) return *this;
 
-            for(int j = m; 0 <= j; --j)
-            {
-                int help = U.numberSize() - 1;
-                long long high = U.digitAt(help);
-                long long low = U.digitAt(help - 1);
-                long long q = (1LL * high * other.BASE + low) / divisor.digitAt(divisor.numberSize() - 1);
+            if(other == 2)
+                return this->divideBy2();
+
+            Integer a = (this->sign) ? *this: -*this;
+            const Integer b = (other.sign)? other: -other;
+
+            const int m = a.numberSize() - b.numberSize();
+            Integer quant;
+            quant.setSize(m + 1);
+
+            Integer currentRemainder;
+            for (int j = m; j >= 0; --j) {
+                currentRemainder = currentRemainder * BASE + a.digitAt(j);
                 
-                if(q >= BASE) q = BASE - 1;
-                
-                Integer multiplyTest = q*divisor;
-                while(U < multiplyTest)
-                {
-                    q--;
-                    multiplyTest = multiplyTest - divisor;
+                int q = Integer::estimateQuotient(currentRemainder, b);
+                Integer help = b*q;
+                while (help > currentRemainder) {
+                    q--; help -= b;
                 }
-                Integer remainer = U - multiplyTest;
-                if(0 < j)
-                {
-                    int newDig = dividend.digitAt(j - 1);
-                    if(newDig == 0)
-                        U = Integer::multiplyByBase(remainer, 2);
-                    else U = Integer::multiplyByBase(remainer, 1) + newDig;
-                } 
                 
-                quant.digitsInteger.replace(q, j);
+                currentRemainder = currentRemainder - help;
+                quant.digitsInteger.replace(q, j); 
             }
+
             Integer::cleanDigits(quant);
             return quant;
         }
         
-        Integer modulo(const Integer& other) const override
+        static int estimateQuotient(const Integer& rem, const Integer& divisor) {
+            const int n = divisor.numberSize();
+            const long long top = rem.digitAt(n) * rem.BASE + rem.digitAt(n-1);
+            return Integer::min_int(top / divisor.digitAt(n-1), rem.BASE-1);
+        }
+
+        Integer modulo(const Integer& other) 
         {
             //? Could also be this->add((this->divide(other)).multiply(other).negate());
             return *this - (*this/other)*other;
         }
         
-        Integer power(const Integer& other) const override
+        Integer power(Integer exp) const override
         {
-            if (other < Integer(0))
+            if (exp < Integer(0))
                 throw std::invalid_argument("Exponent must be non-negative");
 
-            Integer exp(other);
             Integer base(*this);
             Integer result = 1;
             while (exp > 0)
@@ -369,7 +333,7 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
                     result = result * base;
 
                 base = base * base;
-                exp = exp / 2;
+                exp = exp.divideBy2();
             }
 
             return result;
@@ -379,9 +343,13 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
 
         void assign(const Integer& other) override
         {
-            this->sign = other.sign;
-            this->BASE = other.BASE;
-            this->digitsInteger = other.digitsInteger;
+            if (this == &other)
+            {
+                return;
+            }
+            digitsInteger = other.digitsInteger;
+            sign = other.sign;
+            BASE = other.BASE;
         }
 
         bool eq(const Integer& other) const override
@@ -414,11 +382,6 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
                 return (-other).lt(-(*this)); //!May be wrong
         }  
 
-        bool leq(const Integer& other) const override
-        {
-            return this->lt(other) || this->eq(other);
-        }
-
         static Integer abs(const Integer& r)
         {
             if(r.sign) return r;
@@ -437,7 +400,6 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
                 List<Integer> r = {u[0] - (q*v[0]), u[1] - (q*v[1]), u[2] - (q*v[2])};
                 u = v;
                 v = r;
-                std::cout << q << "   " << r << std::endl;
             }
             return u;
         }
@@ -449,22 +411,23 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
             if(!n2.sign)
                 n2.sign = true;
             if(n1 == 0 || n2 == 0)
-                return n1 < n2 ? n2 : n1; //*max
+                return ((n1 < n2) ? n2 : n1); //*max
 
             Integer gcd = 1;
             while(n1.digitAt(0)%2 == 0 && n2.digitAt(0)%2 == 0)
             {
-                n1 = n1/2;
-                n2 = n2/2;
+                n1 = n1.divideBy2();
+                n2 = n2.divideBy2();
                 gcd = 2*gcd;
             }
 
             while(0 < n1 && n2 != 1)
             {
-                while(n1.digitAt(0)%2 == 0) n1 = n1/2;
-                while(n2.digitAt(0)%2 == 0) n2 = n2/2;
-                Integer t = Integer::abs(n1 - n2);
-                n2 = n1 < n2 ? n1 : n2; //*min
+                while(n1.digitAt(0)%2 == 0) n1 = n1.divideBy2();
+                while(n2.digitAt(0)%2 == 0) n2 = n2.divideBy2();
+                Integer t = n1 - n2;
+                t.sign = true;
+                if(n1 < n2) n2 = n1; 
                 n1 = t;
             }
             return gcd*n2;
@@ -519,6 +482,38 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
             is >> read;
             num = read;
             return is;
+        }
+
+        Integer divideBy2() const {
+            Integer result;
+            result.sign = this->sign;
+            result.setSize(digitsInteger.size());
+
+            int carry = 0;
+            for (int i = (int)digitsInteger.size() - 1; i >= 0; --i) {
+                long long current = carry * 100000LL + digitsInteger[i];  // base = 10^5
+                result.digitsInteger.replace(current / 2, i);
+                carry = current % 2;
+            }
+
+            Integer::cleanDigits(result);
+            return result;
+        }
+
+        
+
+        List<int> getList()
+        {
+            return List(digitsInteger);
+        }
+
+        static Integer multiplyByBase(const Integer& num, int times)
+        {
+            Integer result;
+            for(int i = 0; i < times; i++)
+                result.digitsInteger.add(0);
+            result.addDigit(num);
+            return result;
         }
 };
 

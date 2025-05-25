@@ -17,6 +17,7 @@ class Number: public Comparable<T>
     public:
         Number() : sign(true), BASE(DEFAULT_BASE) {}
         Number(bool sgn, int base) : sign(sgn), BASE(base) {}
+        Number(bool sgn) : sign(sgn), BASE(DEFAULT_BASE) {}
         ~Number() {}
 
         virtual T add(const T& other) const = 0;
@@ -24,12 +25,10 @@ class Number: public Comparable<T>
         virtual T negate() const = 0;
         virtual T multiply(const T& other) const = 0;
         virtual T divide(const T& other) const = 0;
-        virtual T modulo(const T& other) const = 0;
-        virtual T power(const T& other) const = 0;
+        //virtual T modulo(const T& other) const = 0;
+        virtual T power(T other) const = 0;
         virtual void assign(const T& other) = 0;
         virtual bool eq(const T& other) const = 0;
-        virtual bool lt(const T& other) const = 0;
-        virtual bool leq(const T& other) const = 0;
         
         friend T operator+(const T& first, const T& second) {
             return first.add(second);
@@ -51,9 +50,9 @@ class Number: public Comparable<T>
             return first.divide(second);
         }
         
-        friend T operator%(const T& first, const T& second) {
+        /*friend T operator%(const T& first, const T& second) {
             return first.modulo(second);
-        }
+        }*/
         
         friend T operator^(const T& first, const T& second) {
             return first.power(second);
@@ -70,9 +69,7 @@ class Number: public Comparable<T>
         }
 
         void operator-=(const T& other) {
-            T result = this->subtract(other);
-            *this = *result;
-            delete result;
+            *this = this->subtract(other);
         }
 
         void operator*=(const T& other) {
@@ -86,16 +83,24 @@ class Number: public Comparable<T>
             *this = result;
         }
 
-        void operator%=(const T& other) {
+        /*void operator%=(const T& other) {
             T result = this->modulo(other);
             *this = result;
-        }
+        }*/
 
         void operator^=(const T& other) {
             T result = this->power(other);
             *this = result;
         }
 
+
+        bool getSign() const {return sign;}
+
+        void changeSign(bool newSing)
+        {
+            if(sign == newSing) return;
+            sign = newSing;
+        }
 };
 
 #endif

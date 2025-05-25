@@ -7,7 +7,10 @@ class Comparable
     public:
         virtual bool eq(const T& other) const = 0;
         virtual bool lt(const T& other) const = 0;
-        virtual bool leq(const T& other) const = 0;
+        bool leq(const T& other) 
+        {
+            return lt(other) || eq(other);
+        }
         
         bool gt(const T& other) const
         {
