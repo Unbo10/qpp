@@ -28,7 +28,7 @@ Rational Rational::integerPow(Integer exp)
     if (exp < 0)
     {
         flag = true;
-        exp.changeSign(true);
+        exp.setSign(true);
     }
 
     Rational base = *this;
@@ -76,12 +76,12 @@ Rational::Rational(double x)
     denominador = denominador/gcd;
 }
 
-bool Rational::eq(const Rational& other) const 
+bool Rational::operator==(const Rational& other) const 
 {
     return numerador == other.numerador && denominador == other.denominador;
 }
 
-bool Rational::lt(const Rational& other) const 
+bool Rational::operator<(const Rational& other) const 
 {
     if (!sign && other.sign) return true;
     if (sign && !other.sign) return false;
@@ -91,29 +91,30 @@ bool Rational::lt(const Rational& other) const
     return numerador*other.denominador > other.numerador*denominador;
 }
 
-Rational Rational::multiply(const Rational& other)  const 
+Rational Rational::operator*(const Rational& other)  const 
 {
     return Rational(numerador*other.numerador, denominador*other.denominador);
 }
 
-Rational Rational::divide(const Rational& other)  const
+Rational Rational::operator/(const Rational& other)  const
 {
     return Rational(numerador*other.denominador, denominador*other.numerador);
 }
 
-Rational Rational::power(Rational other) const
+Rational Rational::operator^(const Rational& other) const
 {
     return (this->root(other.denominador)).integerPow(other.numerador);
 }
 
-void Rational::assign(const Rational& other)
+Rational Rational::operator=(const Rational& other)
 {
     this->sign = other.getSign();
     numerador = other.numerador;
     denominador = other.denominador;
+    return *this;
 }
 
-Rational Rational::add(const Rational& other) const
+Rational Rational::operator+(const Rational& other) const
 {
     Integer gcd = Integer::binaryEcludian(denominador, other.denominador);
     Integer num1 = (numerador*other.denominador)/gcd;
@@ -122,14 +123,14 @@ Rational Rational::add(const Rational& other) const
     return Rational(num1+num2, (denominador *other.denominador)/gcd);
 }
 
-Rational Rational::subtract(const Rational& other) const
+Rational Rational::operator-(const Rational& other) const
 {
     Rational inv = other;
     inv.sign = !inv.sign;
     return *this + inv;
 }
 
-Rational Rational::negate() const
+Rational Rational::operator-() const
 {
     Rational inv(numerador, denominador);
     inv.sign = !inv.sign;

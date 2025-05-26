@@ -20,8 +20,6 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
 
         List<int> digitsInteger;
 
-        // static void changeBase(int newBase, Integer& number);
-
         void setSize(int newSize)
         {
             List<int> newList(newSize);
@@ -55,6 +53,14 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
             {
                 return 0;
             }
+        }
+
+        //*Only to access the index (for now)
+        int operator[](int index) const {
+            if (index >= 0 && index < digitsInteger.size()) {
+                return digitsInteger[index];
+            }
+            return 0;
         }
 
         int numberSize() const
@@ -169,6 +175,42 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
         }
         Integer(const Integer& toC) : Number<Integer>(toC.sign, toC.BASE), digitsInteger(toC.digitsInteger) {}
         //~Integer() {}
+
+        //***COMPARISONS***
+        bool operator<(const Integer& other) const override
+        {
+            if(sign == 0 && other.sign == 1) return true;
+            else if(sign == 1 && other.sign == 0) return false;
+            else if(sign == 1 && other.sign == 1)
+            {
+                //*This case does take into account when both numbers are equal
+                int length = Integer::max_int(this->numberSize(), other.numberSize());
+                for(int i = length - 1; 0 <= i; i--)
+                {
+                    if(other.digitAt(i) < this->digitAt(i))
+                        return false;
+                    else if(this->digitAt(i) < other.digitAt(i))
+                        return true;
+                }
+
+                return false;
+            }
+            else
+                //*Both are negative
+                return -other < -(*this); //!May be wrong
+        }
+
+        bool operator<(const int int_num)
+        {
+            Integer num = int_num;
+            return (*this) < num;
+        }
+
+        friend bool operator<(int int_num1, const Integer& num2)
+        {
+            Integer num1(int_num1);
+            return num2 < num1;
+        }
         
         int getBase() const
         {
@@ -176,7 +218,7 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
         }
         //***OPERATIONS***
 
-        Integer add(const Integer& other) const override
+        Integer operator+(const Integer& other) const override
         {
             if (BASE != other.BASE) 
                 throw std::invalid_argument("Not defined sum of integers in different Bases yet");
@@ -206,7 +248,19 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
             return sumOfIntegers;
         }
 
-        Integer subtract(const Integer& other) const override
+        friend Integer operator+(int num1, const Integer& num2)
+        {
+            Integer new_int = num1;
+            return new_int + num2;
+        }
+
+        friend Integer operator+(const Integer& num1, int num2)
+        {
+            Integer new_int = num2;
+            return num1 + new_int;
+        }
+
+        Integer operator-(const Integer& other) const override
         {
             if((*this) < other)
                 return -(other - (*this));
@@ -234,12 +288,19 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
             return result;
         }
 
-        Integer subtract(long long int x) const
+        friend Integer operator-(int num1, Integer& num2)
         {
-            return subtract(Integer(x));
+            Integer new_int = num1;
+            return new_int - num2;
         }
 
-        Integer negate() const override
+        friend Integer operator-(Integer& num1, int num2)
+        {
+            Integer new_int = num2;
+            return num1 - new_int;
+        }
+
+        Integer operator-() const override
         {
             Integer toR(*(this));
             toR.sign = !toR.sign;
@@ -263,7 +324,7 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
             return multiplyByBase(V, 2*upperSize) + multiplyByBase(W, upperSize) + U;
         }
 
-        Integer multiply(const Integer& other) const override
+        Integer operator*(const Integer& other) const override
         {
             if(BASE != other.BASE) throw std::invalid_argument("Error");
             if(*this == 0 || other == 0) return Integer();
@@ -274,7 +335,19 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
             return mult;
         }
 
-        Integer divide(const Integer& other) const override
+        friend Integer operator*(int num1, const Integer& num2)
+        {
+            Integer new_int = num1;
+            return new_int * num2;
+        }
+
+        friend Integer operator*(const Integer& num1, int num2)
+        {
+            Integer new_int = num2;
+            return num1 * new_int;
+        }
+
+        Integer operator/(const Integer& other) const override
         {
             if (other == 0) throw std::invalid_argument("Division by zero");
             if (BASE != other.BASE) throw std::invalid_argument("Different bases");
@@ -329,26 +402,51 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
             return Integer::min_int(top / divisor.digitAt(n-1), rem.BASE-1);
         }
 
-        Integer modulo(const Integer& other) 
+        friend Integer operator/(int num1, const Integer& num2)
+        {
+            Integer new_int = num1;
+            return new_int / num2;
+        }
+
+        friend Integer operator/(const Integer& num1, int num2)
+        {
+            Integer new_int = num2;
+            return num1 / new_int;
+        }
+
+        Integer operator%(const Integer& other) const 
         {
             //? Could also be this->add((this->divide(other)).multiply(other).negate());
             return *this - (*this/other)*other;
         }
-        
-        Integer power(Integer exp) const override
-        {
-            if (exp < Integer(0))
-                throw std::invalid_argument("Exponent must be non-negative");
 
+        friend Integer operator%(int num1, const Integer& num2)
+        {
+            Integer new_int = num1;
+            return new_int % num2;
+        }
+
+        friend Integer operator%(const Integer& num1, int num2)
+        {
+            Integer new_int = num2;
+            return num1 % new_int;
+        }
+    
+        Integer operator^(const Integer& other) const override
+        {
+            if (other < Integer(0))
+                return 1/((*this)^other);
+
+            Integer exp(other);
             Integer base(*this);
-            Integer result = 1;
+            Integer result(1);
             while (exp > 0)
             {
                 if (!exp.isEven())
                     result = result * base;
 
-                base = base * base;
-                exp = exp.divideBy2();
+                base *= base;
+                exp /= 2;
             }
 
             return result;
@@ -356,46 +454,82 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
 
         //***COMPARISONS***
 
-        void assign(const Integer& other) override
+        Integer operator=(const Integer& other) override
         {
-            if (this == &other)
-            {
-                return;
-            }
-            digitsInteger = other.digitsInteger;
-            sign = other.sign;
-            BASE = other.BASE;
+            this->sign = other.sign;
+            this->BASE = other.BASE;
+            this->digitsInteger = other.digitsInteger;
+            return *this;
         }
 
-        bool eq(const Integer& other) const override
+        Integer operator=(const long long num_int)
+        {
+            Integer num(num_int);
+            return *this = num;
+        }
+
+        bool operator==(const Integer& other) const override
         {
             return other.sign == sign &&
                     other.BASE == BASE &&
                     other.digitsInteger == digitsInteger;
+        }  
+
+        friend bool operator==(const int int_num, const Integer& num)
+        {
+            Integer num1(int_num);
+            return num1 == num;
         }
 
-        bool lt(const Integer& other) const override
+        friend bool operator==(const Integer& num, const int int_num)
         {
-            if(sign == 0 && other.sign == 1) return true;
-            else if(sign == 1 && other.sign == 0) return false;
-            else if(sign == 1 && other.sign == 1)
-            {
-                //*This case does take into account when both numbers are equal
-                int length = Integer::max_int(this->numberSize(), other.numberSize());
-                for(int i = length - 1; 0 <= i; i--)
-                {
-                    if(other.digitAt(i) < this->digitAt(i))
-                        return false;
-                    else if(this->digitAt(i) < other.digitAt(i))
-                        return true;
-                }
+            Integer num2(int_num);
+            return num == num2;
+        }
 
-                return false;
-            }
-            else
-                //*Both are negative
-                return (-other).lt(-(*this)); //!May be wrong
-        }  
+        friend bool operator<=(const int int_num, const Integer& num)
+        {
+            Integer num1(int_num);
+            return num1 <= num;
+        }
+
+        friend bool operator<=(const Integer& num, const int int_num)
+        {
+            Integer num2(int_num);
+            return num <= num2;
+        }
+
+        friend bool operator!=(const Integer& num1, const int num2)
+        {
+            Integer num2_integer = num2;
+            return !(num1 == num2_integer);
+        }
+
+        friend bool operator!=(const int num1, const Integer& num2)
+        {
+            Integer num1_integer(num1);
+            return !(num1_integer == num2);
+        }
+
+        friend bool operator>(const int int_num1, const Integer& num2)
+        {
+            return !(int_num1 <= num2);
+        }
+
+        friend bool operator>(const Integer& num1, const int int_num2)
+        {
+            return !(num1 <= int_num2);
+        }
+
+        friend bool operator>=(const int int_num1, const Integer& num2)
+        {
+            return int_num1 > num2 || int_num1 == num2;
+        }
+
+        friend bool operator>=(const Integer& num1, const int int_num2)
+        {
+            return num1 > int_num2 || num1 == int_num2;
+        }
 
         static Integer abs(const Integer& r)
         {

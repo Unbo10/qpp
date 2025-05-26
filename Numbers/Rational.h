@@ -28,8 +28,8 @@ class Rational: public Number<Rational>
             // Magnitudes absolutas
             Integer absNum = num;
             Integer absDen = den;
-            if (!absNum.getSign()) absNum.changeSign(true);
-            if (!absDen.getSign()) absDen.changeSign(true);
+            if (!absNum.getSign()) absNum.setSign(true);
+            if (!absDen.getSign()) absDen.setSign(true);
 
             // Reducción a mínima expresión
             Integer g = Integer::binaryEcludian(absNum, absDen);
@@ -40,17 +40,17 @@ class Rational: public Number<Rational>
         Rational(double x);
 
         // implementación de los métodos de comparación
-        bool eq(const Rational& other) const;
-        bool lt(const Rational& other) const;
+        bool operator==(const Rational& other) const;
+        bool operator<(const Rational& other) const;
 
         // implementación de los métodos de operaciones
-        Rational add(const Rational& other) const;
-        Rational subtract(const Rational& other) const;
-        Rational negate() const;
-        Rational multiply(const Rational& other) const;
-        Rational divide(const Rational& other) const;
-        Rational power(Rational other) const;
-        void assign(const Rational& other);
+        Rational operator+(const Rational& other) const override;
+        Rational operator-(const Rational& other) const;
+        Rational operator-() const;
+        Rational operator*(const Rational& other) const;
+        Rational operator/(const Rational& other) const;
+        Rational operator^(const Rational& other) const;
+        Rational operator=(const Rational& other);
 
         static Rational abs(const Rational& p)
         {
