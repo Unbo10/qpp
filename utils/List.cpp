@@ -166,7 +166,7 @@ class List : public Iterable<U>
         U& operator[](int index) const
         {
             if (index < 0 || index >= length) {
-                throw std::invalid_argument("Index out of the range");
+                throw std::invalid_argument("Index out of the range, entro");
             }
 
             return this->array[index];

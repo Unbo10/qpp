@@ -115,7 +115,7 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
         {
             Integer toR;
             for(int i = digitsInteger.size() - index -1; i < digitsInteger.size(); i++)
-                toR.addDigit(digitsInteger[i]);
+                toR.addDigit(this->digitAt(i));
 
             Integer::cleanDigits(toR);
             return toR;
@@ -125,7 +125,7 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
         {
             Integer toR;
             for(int i = 0; i < index; i++)
-                toR.digitsInteger.add(digitsInteger[i]);
+                toR.digitsInteger.add(this->digitAt(i));
             Integer::cleanDigits(toR);
             return toR;
         }
@@ -155,6 +155,9 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
             Integer::cleanDigits(product);
             return product;
         }
+
+
+        
 
     public:
         Integer(): Number<Integer>() {}
@@ -284,33 +287,45 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
                 return this->divideBy2();
 
             Integer a = (this->sign) ? *this: -*this;
-            const Integer b = (other.sign)? other: -other;
+            Integer b = (other.sign)? other: -other;
+            if(b.digitAt(b.numberSize() -1) < BASE/2)
+            {
+                long long x = BASE/(b.digitAt(b.numberSize() -1) + 1);
+                a = a.multiplyByDigit(x);
+                b = b.multiplyByDigit(x);
+            }
 
             const int m = a.numberSize() - b.numberSize();
             Integer quant;
             quant.setSize(m + 1);
 
             Integer currentRemainder;
+            for(int i = m; i < a.numberSize(); i++)
+                currentRemainder.digitsInteger.add(a.digitAt(i));
+
             for (int j = m; j >= 0; --j) {
-                currentRemainder = currentRemainder * BASE + a.digitAt(j);
                 
-                int q = Integer::estimateQuotient(currentRemainder, b);
-                Integer help = b*q;
+                int q;
+                if(currentRemainder < b) q = 0;
+                else q = Integer::estimateQuotient(currentRemainder, b);
+                Integer help = b.multiplyByDigit(q);
                 while (help > currentRemainder) {
                     q--; help -= b;
+                    std::cout << q << std::endl;
                 }
                 
                 currentRemainder = currentRemainder - help;
                 quant.digitsInteger.replace(q, j); 
+                currentRemainder.digitsInteger.add(a.digitAt(j), 0);
             }
 
             Integer::cleanDigits(quant);
             return quant;
         }
-        
+
         static int estimateQuotient(const Integer& rem, const Integer& divisor) {
-            const int n = divisor.numberSize();
-            const long long top = rem.digitAt(n) * rem.BASE + rem.digitAt(n-1);
+            const int n = divisor.numberSize(), m = rem.numberSize();
+            const long long top = 1LL * rem.digitAt(m-1) * rem.BASE + rem.digitAt(m-2);
             return Integer::min_int(top / divisor.digitAt(n-1), rem.BASE-1);
         }
 
@@ -329,7 +344,7 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
             Integer result = 1;
             while (exp > 0)
             {
-                if (exp.digitsInteger[0]%2  == 1)
+                if (!exp.isEven())
                     result = result * base;
 
                 base = base * base;
@@ -491,16 +506,45 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
 
             int carry = 0;
             for (int i = (int)digitsInteger.size() - 1; i >= 0; --i) {
-                long long current = carry * 100000LL + digitsInteger[i];  // base = 10^5
+                long long current = carry * 100000LL + this->digitAt(i);  // base = 10^5
                 result.digitsInteger.replace(current / 2, i);
                 carry = current % 2;
             }
 
             Integer::cleanDigits(result);
             return result;
-        }
-
+        }  
         
+        Integer multiplyByDigit(int x) const
+        {
+            if(x == 0) return Integer(0);
+            if(x == 1) return *this;
+            if(x == -1) return -*this;
+            bool flag = false;
+            if(x < 0)
+            {
+                flag = true;
+                x = -x;
+            }
+
+            Integer result; //result.setSize(this->numberSize() + 1);
+            long long carry = 0;
+            for(long long num: digitsInteger)
+            {
+                long long sum = x*num + carry;
+                result.digitsInteger.add(sum%BASE);
+                carry = sum/BASE;
+            }
+            if(carry > 0) result.addDigit(carry);
+            result.sign = (!flag == this->sign);
+            Integer::cleanDigits(result);
+            return result;
+        }
+        
+        bool isEven() const
+        {
+            return digitAt(0)%2 == 0;
+        }
 
         List<int> getList()
         {
@@ -514,6 +558,30 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
                 result.digitsInteger.add(0);
             result.addDigit(num);
             return result;
+        }
+
+        static Integer recursiveDivision(const Integer& num1, const Integer& num2)
+        {
+            if(num1.numberSize() < 15 || num2.numberSize() < 15)
+                return num1/num2;
+
+            int upperSize = Integer::max_int(num1.numberSize(), num2.numberSize())/2;
+
+            Integer upper1 = num1.partHigh(upperSize);
+            Integer lower1 = num1.lowPart(upperSize);
+            Integer upper2 = num2.partHigh(upperSize);
+            //Integer lower2 = num2.lowPart(upperSize);
+
+            Integer q1 = Integer::recursiveDivision(upper1, upper2);
+            Integer r1 = upper1 - q1 * upper2;
+
+            Integer comb;
+            comb.digitsInteger = List<int>::concatenate(r1.digitsInteger, lower1.digitsInteger);
+
+            Integer q2 = Integer::recursiveDivision(comb, upper1);
+
+            q1.digitsInteger = List<int>::concatenate(q1.digitsInteger, q2.digitsInteger);
+            return q1;
         }
 };
 

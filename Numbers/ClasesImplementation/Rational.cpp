@@ -1,5 +1,81 @@
 #include "../Rational.h"
 
+Rational Rational::root(const Integer& po) const
+{
+    Rational constantC = *this / po;
+    Rational constantQ(po - 1, po);
+    Rational x = (constantC < 1) ? Rational(1) : constantC;
+
+    Rational prev;
+    const Rational tolerance(1, 1000000);  // Precisión de 1e-6
+
+    do {
+        prev = x;
+        Rational pow = x.integerPow(po - 1);
+        x = constantQ * x + constantC / pow;
+        std::cout << x.numerador << "  " << x.denominador << std::endl;
+    } while (Rational::abs(x - prev) > tolerance);
+
+    return x;
+}
+
+
+Rational Rational::integerPow(Integer exp)
+{
+    if(numerador == 0) return 0;
+    if(numerador == denominador) return 1;
+    bool flag = false;
+    if (exp < 0)
+    {
+        flag = true;
+        exp.changeSign(true);
+    }
+
+    Rational base = *this;
+    Rational result = 1;
+    while (exp > 0)
+    {
+        if (!exp.isEven())
+            result = result * base;
+
+        base = base * base;
+        exp = exp.divideBy2();
+    }
+
+    if(flag) return Rational(result.denominador, result.numerador);
+    return result;
+}
+
+
+Rational::Rational(double x)
+{
+    if(x < 0) 
+    {
+        this->sign = 0;
+        x = -x;
+    }
+
+    long long digits = x;
+    int base = 0;
+
+    while(x != digits)
+    {
+        x *= 10;
+        digits = x;
+        base++;
+    }
+
+    denominador = 1;
+    for(int i = 0; i < base%5; i++)
+        denominador = denominador * 10;
+    denominador = Integer::multiplyByBase(denominador, base/5);
+    numerador = x;
+
+    Integer gcd = Integer::binaryEcludian(numerador, denominador);
+    numerador = numerador/gcd;
+    denominador = denominador/gcd;
+}
+
 bool Rational::eq(const Rational& other) const 
 {
     return numerador == other.numerador && denominador == other.denominador;
@@ -27,7 +103,7 @@ Rational Rational::divide(const Rational& other)  const
 
 Rational Rational::power(Rational other) const
 {
-    return Rational(1);
+    return (this->root(other.denominador)).integerPow(other.numerador);
 }
 
 void Rational::assign(const Rational& other)

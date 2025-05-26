@@ -8,8 +8,14 @@ class Rational: public Number<Rational>
 {
     private:
         Integer numerador, denominador;
+
+        // aqui se calcula a^{1/p}, con p entero
+        Rational root(const Integer& po) const;
+        // aqui se calcula a^p, con p entero
+        Rational integerPow(Integer po);
     public:
         //Rational(long long x): Rational(Integer(x), 1) {}
+        Rational(): Rational(0, 1) {}
         Rational(const Integer& numerador): Rational(numerador, 1) {}
         Rational(const Integer& num, const Integer& den)
         {
@@ -31,6 +37,8 @@ class Rational: public Number<Rational>
             denominador = absDen / g;
         }
 
+        Rational(double x);
+
         // implementación de los métodos de comparación
         bool eq(const Rational& other) const;
         bool lt(const Rational& other) const;
@@ -44,6 +52,12 @@ class Rational: public Number<Rational>
         Rational power(Rational other) const;
         void assign(const Rational& other);
 
+        static Rational abs(const Rational& p)
+        {
+            if(p < 0) return -p;
+            return p;
+        }
+
         friend std::ostream& operator<<(std::ostream& os, const Rational& num)
         {
             Integer nume = num.numerador, den = num.denominador;
@@ -53,8 +67,8 @@ class Rational: public Number<Rational>
             for(int i = 0; i < 5; i++)
             {
                 Integer q = nume/den;
+                if(i == 1) os << ".";
                 os << q;
-                if(i == 0) os << ".";
                 nume = nume - q*den;
                 nume = Integer::multiplyByBase(nume, 1);
             }
