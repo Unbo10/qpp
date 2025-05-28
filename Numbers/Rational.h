@@ -1,13 +1,12 @@
-#ifndef RATIONAL_H
-#define RATIONAL_H
+#pragma once
 
-#include "Number.cpp"
-#include "Integer.cpp"
+#include "Number.h"
+#include "Integer.h"
 
 class Rational: public Number<Rational>
 {
     private:
-        Integer numerador, denominador;
+        Integer numerator, denominator;
 
         // aqui se calcula a^{1/p}, con p entero
         Rational root(const Integer& po) const;
@@ -16,7 +15,7 @@ class Rational: public Number<Rational>
     public:
         //Rational(long long x): Rational(Integer(x), 1) {}
         Rational(): Rational(0, 1) {}
-        Rational(const Integer& numerador): Rational(numerador, 1) {}
+        Rational(const Integer& numerator): Rational(numerator, 1) {}
         Rational(const Integer& num, const Integer& den)
         {
             if (den == 0)
@@ -33,8 +32,8 @@ class Rational: public Number<Rational>
 
             // Reducción a mínima expresión
             Integer g = Integer::binaryEcludian(absNum, absDen);
-            numerador   = absNum / g;
-            denominador = absDen / g;
+            numerator   = absNum / g;
+            denominator = absDen / g;
         }
 
         Rational(double x);
@@ -60,7 +59,7 @@ class Rational: public Number<Rational>
 
         friend std::ostream& operator<<(std::ostream& os, const Rational& num)
         {
-            Integer nume = num.numerador, den = num.denominador;
+            Integer nume = num.numerator, den = num.denominator;
             
             if(!num.sign)  os << "-";
             
@@ -76,5 +75,3 @@ class Rational: public Number<Rational>
             return os;
         }
 };
-
-#endif

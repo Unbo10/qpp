@@ -1,16 +1,11 @@
-#ifndef LIST_H
-#define LIST_H
+#pragma once
+
 #include <iostream>
 #include <initializer_list>
-#include "Iterator.cpp"
-#include "Iterable.cpp"
-/*
-    La idea es crear una clase que implemente
-    listas dinamicas y asi lograr una implementacion 
-    bastante bien estructurada. 
 
-    Se hace la implementacion con arreglos.
-*/
+#include "Iterator.h"
+#include "Iterable.h"
+
 template <typename U>
 class List : public Iterable<U>
 {
@@ -35,6 +30,8 @@ class List : public Iterable<U>
             delete[] help;
             capacity = NEW_CAPACITY;
         }
+
+        
     public:
         List(int INITIAL_SIZE)
         {
@@ -201,5 +198,3 @@ class List : public Iterable<U>
         Iterator<U> begin() const { return Iterator<U>(array); }
         Iterator<U> end() const { return Iterator<U>(array + length); }
 };
-
-#endif

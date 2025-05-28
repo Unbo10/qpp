@@ -1,7 +1,6 @@
-#ifndef ORDERED_LIST
-#define ORDERED_LIST
-#include "../utils/List.cpp"
-#include "../utils/Comparable.cpp"
+#pragma once
+#include "../utils/List.h"
+#include "../utils/Comparable.h"
 
 template <typename T>
 class OrderedList: public List<T>
@@ -114,6 +113,3 @@ class OrderedList: public List<T>
             list.capacity = list.length;
         }
 };
-
-
-#endif 

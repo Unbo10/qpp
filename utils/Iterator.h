@@ -1,5 +1,4 @@
-#ifndef ITERATOR_H
-#define ITERATOR_H
+#pragma once
 
 template <typename U>
 class Iterator
@@ -22,5 +21,3 @@ class Iterator
             return ptr != other.ptr;
         }
 };
-
-#endif
