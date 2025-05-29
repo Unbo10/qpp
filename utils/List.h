@@ -1,5 +1,3 @@
-#pragma once
-
 #include <iostream>
 #include <initializer_list>
 
@@ -10,21 +8,32 @@ template <typename U>
 class List : public Iterable<U>
 {
     protected:
-        static const int DEFAULT_INITIAL_SIZE = 10;
+        static const int DEFAULT_INITIAL_CAPACITY = 10;
         static constexpr double DEFAULT_RESIZE = 1.4;
 
         U* array;
+        /**
+         * @brief Maximum capacity of the array.
+         */
         int capacity;
-        int length;
+        /**
+         * @brief Number of elements in the array (A.K.A. length).
+         */
+        int size;
 
 
+        /**
+         * @brief Resizes the internal array to increase its capacity.
+         * 
+         * @note Does so by a factor of 1.4
+         */
         void resize()
         {
             int NEW_CAPACITY = capacity*DEFAULT_RESIZE;
             U* help = array;
             array = new U[NEW_CAPACITY];
 
-            for(int i = 0; i < length; i++)
+            for(int i = 0; i < size; i++)
                 array[i] = help[i];
 
             delete[] help;
@@ -33,123 +42,262 @@ class List : public Iterable<U>
 
         
     public:
-        List(int INITIAL_SIZE)
+        /**
+         * @brief Constructs a new List with the specified initial capacity.
+         * 
+         * @param INITIAL_CAPACITY The initial capacity of the list.
+         * 
+         * @details This constructor creates a new list with a pre-allocated
+         * array* of size INITIAL_CAPACITY. The size of the list is initially
+         * set to 0.
+         */
+        List(int INITIAL_CAPACITY)
         {
-            array = new U[INITIAL_SIZE];
-            capacity = INITIAL_SIZE;
-            length = 0;
+            array = new U[INITIAL_CAPACITY];
+            capacity = INITIAL_CAPACITY;
+            size = 0;
         }
 
-        List() : List(DEFAULT_INITIAL_SIZE) {}
+        /**
+         * @brief Default constructor
+         * 
+         * Constructs a List with a capacity of 10 elements.
+         */
+        List() : List(DEFAULT_INITIAL_CAPACITY) {}
 
+        /**
+         * @brief Copy constructor for creating a new list from another list.
+         * 
+         * Constructs a new list by copying all elements from another list
+         * of potentially different type U where U is implicitly convertible to
+         * T.
+         * 
+         * @tparam U Type of elements in the source list (must be convertible to T)
+         * @param another The source list to copy from.
+         * 
+         * @note This constructor first allocates memory for the new list using the size of the source list,
+         *       then copies each element individually.
+         */
         List(const List<U>& another) : List(another.size())
         {
-            for(int i = 0; i < another.length; i++)
+            for(int i = 0; i < another.size; i++)
                 add(another[i]);
         }
 
+        /**
+         * @brief Initializer list constructor. Constructs a List from a list
+         * of values.
+         * 
+         * @param values The initializer array-like containing elements of type
+         * U to initialize the List with.
+         * 
+         * Creates a List with size equal to the number of elements in the
+         * initializer list. If the initializer list is empty, the capacity is
+         * set to 10. Otherwise, the capacity is set equal to the size of
+         * `values`.
+         */
         List(std::initializer_list<U> values)
         {
-            length = values.size();
-            capacity = length > 0 ? length : DEFAULT_INITIAL_SIZE;
+            size = values.size();
+            capacity = size > 0 ? size : DEFAULT_INITIAL_CAPACITY;
             array = new U[capacity];
             int i = 0;
             for (const U& val : values)
                 array[i++] = val;
         }
 
-
         ~List() 
         {
             delete[] array;
         }
 
+        /**
+         * @brief Inserts an item at a specified index in the list.
+         *
+         * The function inserts the given item at the specified index and
+         * shifts all elements at positions greater than or equal to index
+         * one position to the right. If `size == capacity`, it will be 
+         * resized before inserting the new item.
+         *
+         * @param item The item to be inserted.
+         * @param index The position at which to insert the item. Must be
+         * between 0 and size (inclusive).
+         * 
+         * @note If the index is out of bounds, it exits the method and returns
+         * nothing.
+         */
         void add(const U& item, int index)
         {
-            if(length < index || index < 0)
+            if(size < index || index < 0)
                 return;
             
-            if(length == capacity) 
+            if(size == capacity) 
                 resize();
 
-            for(int i = length-1; index <= i; i--)
+            for(int i = size-1; index <= i; i--)
                 array[i+1] = array[i];
             
             array[index] = item;
-            length++;
+            size++;
         }
 
+        /**
+         * @brief Adds an item to the end of the list.
+         * 
+         * This is a convinience method that calls `add(const U&, int index)`
+         * and is equivalent to `add(item, size)`.
+         * 
+         * @param item The item to be added.
+         */
+        void add(const U& item)
+        {
+            add(item, size);
+        }
+
+        /**
+         * @brief Replaces an item at a specified index in the list.
+         * 
+         * @tparam U The type of the item to be replaced.
+         * @param item The new item to replace with.
+         * @param index The position where the replacement should occur.
+         * @throws `std::invalid_argument` If the index is out of bounds
+         * (negative or >= size).
+         */
         void replace(const U& item, int index)
         {
-            if(length <= index || index < 0)
+            if(size <= index || index < 0)
                 throw std::invalid_argument("Index out bound");
 
             array[index] = item;
         }
 
-        // add last*
-        void add(const U& item)
-        {
-            add(item, length);
-        }
-
+        /**
+         * @brief Removes and returns the element at the specified index from
+         * the list.
+         * 
+         * This method removes an element at the given index from the list,
+         * shifts all subsequent elements one position to the left to fill
+         * the gap, and returns the removed element.
+         * 
+         * @param index The index of the element to be removed.
+         * @return U The element that was removed from the list.
+         * @throws `std::out_of_range` If the index is negative, greater than
+         * or equal to the size, or if the list is empty.
+         */
         U pop(int index)
         {
-            if(length <= index || index < 0 || length == 0)
+            if(size <= index || index < 0 || size == 0)
                 throw std::out_of_range("Index out of bounds");
 
             U item = array[index];
-            for(int i = index; i < length - 1; i++)
+            for(int i = index; i < size - 1; i++)
                 array[i] = array[i+1];
 
-            length--;
+            size--;
             return item;
         }
 
+        /**
+         * @brief Remove and return the first element from the list.
+         * 
+         * Convinience method that calls `pop(int index)` and is equivalent to
+         * `pop(size)`.
+         *
+         * @return U The first element of the list that was removed.
+         * @throws `std::out_of_range` If the list is empty.
+         */
         U pop()
         {
             return pop(0);
         }
 
+        /**
+         * @return bool True if the list has no elements stored. False
+         * otherwise.
+         */
         bool isEmpty()
         {
-            return length == 0;
+            return size == 0;
         }
 
+        /**
+         * @return int Size of the list (number of elements).
+         */
         int size() const
         {
-            return length;
+            return size;
         }
 
+        /**
+         * @return int Capacity of the list (maximum number of elements without
+         * resizing).
+         */
         int getCapacity() const 
         {
             return capacity;
         }
 
+        /**
+         * @return U The array-like object with which the list was ipmlemented.
+         */
         U* getArray() const
         {
             return array;
         }
 
+        /**
+         * @brief Clears the list and resets it to its default state (no
+         * elements stored and default capacity).
+         * 
+         * This method deallocates the current array, sets the size to zero,
+         * allocates a new array with the default initial size, and updates the
+         * capacity to the default initial size.
+         */
         void clear()
         {
             delete[] array;
-            length = 0;
-            array = new U[DEFAULT_INITIAL_SIZE];
-            capacity = DEFAULT_INITIAL_SIZE;
+            size = 0;
+            array = new U[DEFAULT_INITIAL_CAPACITY];
+            capacity = DEFAULT_INITIAL_CAPACITY;
         }
 
+        /**
+         * @brief Concatenates two lists into a new list.
+         * 
+         * This static method creates a new list by combining elements from two
+         * input lists. Elements are added in order, first from `l1` and then
+         * from `l2`.
+         * 
+         * @tparam M Type of elements stored in the lists.
+         * @param l1 First list to concatenate.
+         * @param l2 Second list to concatenate.
+         * @return List<M> A new list containing all elements from `l1`
+         * followed by all elements from `l2`.
+         */
         template <typename M>
         static List<M> concatenate(const List<M> l1, const List<M> l2)
         {
-            List<M> toR;
+            List<M> concatenatedL;
             for(M item: l1)
-                toR.add(item);
+                concatenatedL.add(item);
             for(M item: l2)
-                toR.add(item);
-            return toR;
+                concatenatedL.add(item);
+            return concatenatedL;
         }
 
+        /**
+         * @brief Equality operator for List objects
+         * 
+         * Compares two lists element by element. Two lists are considered
+         * equal if they have the same size and all corresponding elements are
+         * equal.
+         * 
+         * @tparam U The type of elements in the lists.
+         * @param l1 First list to compare.
+         * @param l2 Second list to compare.
+         * @return true If both lists have the same size and all elements are
+         * equal. False otherwise.
+         */
         friend bool operator==(const List<U> l1, const List<U> l2)
         {
             if(l1.size() != l2.size()) return false;
@@ -160,35 +308,66 @@ class List : public Iterable<U>
             return true;
         }
 
+        /**
+         * @brief Accesses an element at the specified index in the list.
+         * 
+         * This operator provides read and write access to an element in the
+         * list. It performs bound checking to ensure the index is valid.
+         * 
+         * @param index The index of the element to access, must be between 0
+         * and size-1.
+         * @return U& A reference to the element at the specified index.
+         * @throws std::invalid_argument If the index is out of bounds
+         * (negative or >= size).
+         */
         U& operator[](int index) const
         {
-            if (index < 0 || index >= length) {
+            if (index < 0 || index >= size) {
                 throw std::invalid_argument("Index out of the range, entro");
             }
 
             return this->array[index];
         }
 
+        /**
+         * @brief Copy assignment operator for the List class
+         * 
+         * Deallocates the current array, copies all elements from another
+         * List, and adjusts the capacity and size accordingly.
+         * 
+         * @tparam U The type of elements in the List
+         * @param another The List to copy from
+         * @return List<U>& Reference to the current List after assignment
+         */
         List<U>& operator=(const List<U>& another)
         {
             delete[] array;
             capacity = another.capacity;
-            length = another.length;
+            size = another.size;
             array = new U[capacity];
-            for (int i = 0; i < length; i++)
+            for (int i = 0; i < size; i++)
                 array[i] = another.array[i];
 
             return *this;
         }
 
 
+        /**
+         * @brief Overloads the output stream operator for List objects.
+         * 
+         * Prints the List contents in the format `[elem1, elem2, ..., elemN]`.
+         * 
+         * @param os The output stream to write to
+         * @param list The List object to be printed
+         * @return std::ostream& Reference to the output stream after writing
+         */
         friend std::ostream& operator<<(std::ostream& os, const List& list)
         {
             os << "[";
-            for(int i = 0; i < list.length; i++)
+            for(int i = 0; i < list.size; i++)
             {
                 os << list.array[i];
-                if(i != list.length - 1)
+                if(i != list.size - 1)
                     os << ", ";
             }
             os << "]";
@@ -196,5 +375,5 @@ class List : public Iterable<U>
         }
         
         Iterator<U> begin() const { return Iterator<U>(array); }
-        Iterator<U> end() const { return Iterator<U>(array + length); }
+        Iterator<U> end() const { return Iterator<U>(array + size); }
 };
