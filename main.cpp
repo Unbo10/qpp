@@ -1,9 +1,9 @@
 #include <iostream>
 #include <sstream>
-#include "../Numbers/Integer.h"
-#include "../Numbers/Number.h"
-#include "../Numbers/Rational.h"
-#include "../utils/OrderedList.h"
+#include "Numbers/Integer.h"
+#include "Numbers/Number.h"
+#include "Numbers/Rational.h"
+#include "utils/OrderedList.h"
 
 int main() {
     Integer n1 = 1, n2 = 1;

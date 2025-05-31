@@ -56,7 +56,7 @@ int Integer::digitAt(int index) const
 
 //*Only to access the index (for now)
 int Integer::operator[](int index) const {
-    if (index >= 0 && index < digitsInteger.size()) {
+    if (index >= 0 && index < digitsInteger.getSize()) {
         return digitsInteger[index];
     }
     return 0;
@@ -107,7 +107,7 @@ int Integer::getNumOfDigits(long long x)
 Integer Integer::getHighPart(int index) const
 {
     Integer toR;
-    for(int i = digitsInteger.size() - index -1; i < digitsInteger.size(); i++)
+    for(int i = digitsInteger.getSize() - index -1; i < digitsInteger.getSize(); i++)
         toR.addDigit(this->digitAt(i));
 
     Integer::cleanDigits(toR);
@@ -531,10 +531,10 @@ Integer Integer::divideBy2() const
 {
     Integer result;
     result.sign = this->sign;
-    result.setSize(digitsInteger.size());
+    result.setSize(digitsInteger.getSize());
 
     int carry = 0;
-    for (int i = (int)digitsInteger.size() - 1; i >= 0; --i) {
+    for (int i = (int)digitsInteger.getSize() - 1; i >= 0; --i) {
         long long current = carry * 100000LL + this->digitAt(i);  // base = 10^5
         result.digitsInteger.replace(current / 2, i);
         carry = current % 2;
@@ -683,17 +683,17 @@ void Integer::changeBase(int newBase, Integer& number)
 
 std::ostream& operator<<(std::ostream& os, const Integer& number)
 {
-    if(number.digitsInteger.size() == 0) return os << '0';
+    if(number.digitsInteger.getSize() == 0) return os << '0';
 
     if(!number.sign) os << "-";
     
-    os << number.digitAt(number.digitsInteger.size() - 1);
+    os << number.digitAt(number.digitsInteger.getSize() - 1);
     if(number.BASE != Integer::DEFAULT_BASE)
     {
-        for(int i = number.digitsInteger.size() - 2; i >= 0; i--)
+        for(int i = number.digitsInteger.getSize() - 2; i >= 0; i--)
             os << number.digitAt(i);
     }
-    else for(int i = number.digitsInteger.size() - 2; i >= 0; i--)
+    else for(int i = number.digitsInteger.getSize() - 2; i >= 0; i--)
     {
         for(int j = 0; j < Integer::digitsByBlock - Integer::getNumOfDigits(number.digitAt(i)); j++)
             os << '0';
@@ -720,7 +720,7 @@ int Integer::getBase() const
 
 int Integer::getNumberSize() const
 {
-    return digitsInteger.size();
+    return digitsInteger.getSize();
 }
 
 List<int> Integer::getList()
