@@ -200,16 +200,10 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
                 return -other < -(*this); //!May be wrong
         }
 
-        bool operator<(const int int_num)
-        {
-            Integer num = int_num;
-            return (*this) < num;
-        }
-
         friend bool operator<(int int_num1, const Integer& num2)
         {
             Integer num1(int_num1);
-            return num2 < num1;
+            return num1 < num2;
         }
         
         int getBase() const
@@ -569,7 +563,6 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
                 n2 = n2.divideBy2();
                 gcd = 2*gcd;
             }
-
             while(0 < n1 && n2 != 1)
             {
                 while(n1.digitAt(0)%2 == 0) n1 = n1.divideBy2();
