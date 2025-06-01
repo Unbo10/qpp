@@ -431,7 +431,7 @@ class Integer: public Number<Integer> {
         static Integer abs(const Integer& r);
         static Integer divideRecursively(const Integer& num1, const Integer& num2);
         static Integer multiplyByBase(const Integer& num, int times);
-        static Integer binaryEcludian(Integer n1, Integer n2);
+        static Integer binaryEuclidean(Integer n1, Integer n2);
         static List<Integer> extendEuclidean(const Integer& num1, const Integer& num2);
         
         //***BASE CONVERSION***
@@ -700,7 +700,7 @@ bool Integer::operator<(const int int_num)
 bool operator<(int int_num1, const Integer& num2)
 {
     Integer num1(int_num1);
-    return num2 < num1;
+    return num1 < num2;
 }
 
 
@@ -854,12 +854,13 @@ Integer operator*(const Integer& num1, int num2)
 
 Integer Integer::operator/(const Integer& other) const
 {
-    if (other == 0) throw std::invalid_argument("Division by zero");
-    if (BASE != other.BASE) throw std::invalid_argument("Different bases");
+    if(other == 0) throw std::invalid_argument("Division by zero");
+    if(BASE != other.BASE) throw std::invalid_argument("Different bases");
     
     // Manejo rápido de casos especiales
-    if (getNumberSize() < other.getNumberSize()) return 0;
-    if (other == 1) return *this;
+    if(getNumberSize() < other.getNumberSize()) return 0;
+    if(*this == other) return 1;
+    if(other == 1) return *this;
 
     if(other == 2)
         return this->divideBy2();
@@ -1069,7 +1070,7 @@ List<Integer> Integer::extendEuclidean(const Integer& num1, const Integer& num2)
     return u;
 }
 
-Integer Integer::binaryEcludian(Integer n1, Integer n2)
+Integer Integer::binaryEuclidean(Integer n1, Integer n2)
 {
     if(!n1.sign)
         n1.sign = true;
@@ -1196,17 +1197,14 @@ class Rational: public Number<Rational> {
             // Signo: true = positivo, false = negativo
             sign = (num.getSign() == den.getSign());
 
-            // Magnitudes absolutas
-            Integer absNum = Integer::abs(num);
-            Integer absDen = Integer::abs(den);
             // // Reducción a mínima expresión
-            // Integer g = Integer::binaryEcludian(absNum, absDen);
+            Integer g = Integer::binaryEuclidean(Integer::abs(num), Integer::abs(den));
             // numerator   = absNum / g;
             // denominator = absDen / g;
 
-            numerator = absNum;
-            denominator = absDen;
-            std::cout << "In constructor: " << numerator.getSign() << "/" << denominator.getSign() << "\n";
+            numerator = num / g;
+            denominator = den / g;
+            // std::cout << "In constructor: " << numerator.getSign() << "/" << denominator.getSign() << "\n";
         }
         Rational(int num, int den): Rational(Integer(num), Integer(den)) {}
         Rational(double x);
@@ -1220,6 +1218,7 @@ class Rational: public Number<Rational> {
         Rational operator-(const Rational& other) const;
         Rational operator-() const;
         Rational operator*(const Rational& other) const;
+        friend Rational operator*(const Rational& num1, const Integer& num2);
         Rational operator/(const Rational& other) const;
         Rational operator^(const Rational& other) const;
         Rational operator=(const Rational& other);
@@ -1245,9 +1244,19 @@ class Rational: public Number<Rational> {
             //     nume = Integer::multiplyByBase(nume, 1);
             // }
 
-            os << num << "/" << den;
+            os << Integer::abs(num) << "/" << Integer::abs(den);
 
             return os;
+        }
+
+        Integer getNumerator()
+        {
+            return numerator;
+        }
+
+        Integer getDenominator()
+        {
+            return denominator;
         }
 };
 
@@ -1269,7 +1278,6 @@ Rational Rational::root(const Integer& po) const
 
     return x;
 }
-
 
 Rational Rational::integerPow(Integer exp)
 {
@@ -1297,7 +1305,6 @@ Rational Rational::integerPow(Integer exp)
     return result;
 }
 
-
 Rational::Rational(double x)
 {
     if(x < 0) 
@@ -1322,7 +1329,7 @@ Rational::Rational(double x)
     denominator = Integer::multiplyByBase(denominator, base/5);
     numerator = x;
 
-    Integer gcd = Integer::binaryEcludian(numerator, denominator);
+    Integer gcd = Integer::binaryEuclidean(numerator, denominator);
     numerator = numerator/gcd;
     denominator = denominator/gcd;
 }
@@ -1347,6 +1354,10 @@ Rational Rational::operator*(const Rational& other)  const
     return Rational(numerator*other.numerator, denominator*other.denominator);
 }
 
+Rational operator*(const Rational& num1, const Integer& num2) {
+    return Rational(num1.numerator * num2, num1.denominator);
+}
+
 Rational Rational::operator/(const Rational& other)  const
 {
     return Rational(numerator*other.denominator, denominator*other.numerator);
@@ -1367,7 +1378,7 @@ Rational Rational::operator=(const Rational& other)
 
 Rational Rational::operator+(const Rational& other) const
 {
-    Integer gcd = Integer::binaryEcludian(denominator, other.denominator);
+    Integer gcd = Integer::binaryEuclidean(denominator, other.denominator);
     Integer num1 = (numerator*other.denominator)/gcd;
     Integer num2 = (denominator*other.numerator)/gcd;
 
@@ -1391,7 +1402,36 @@ Rational Rational::operator-() const
 class PolyTerm {
     public:
         Rational coeff;
+        //!ISSUE WHEN ORDERING INTEGERS
         int exp;
+
+        PolyTerm() : coeff(0), exp(0) {}
+        ~PolyTerm() {}
+
+        //***ARITHMETIC OPERATIONS***
+
+        friend PolyTerm operator+(const PolyTerm& term1, const PolyTerm& term2) {
+            if(term1.exp != term2.exp) throw std::invalid_argument("The terms must have the same exponent for them to be added");
+            
+            PolyTerm result;
+            result.coeff = term1.coeff + term2.coeff;
+            result.exp = term1.exp;
+            return result;
+        }
+
+        friend PolyTerm operator*(const PolyTerm& term1, const PolyTerm& term2) {
+            PolyTerm prod;
+            prod.coeff = term1.coeff * term2.coeff;
+            prod.exp = term1.exp + term2.exp;
+            return prod;
+        }
+        
+        //***ISTREAM AND OSTREAM***
+
+        friend std::ostream& operator<<(std::ostream& os, const PolyTerm& term) {
+            os << term.coeff << "x^" << term.exp;
+            return os;
+        }
 };
 
 class Polynomial {
@@ -1399,8 +1439,9 @@ private:
     std::vector<Rational> dense;  // Dense representation: coefficients indexed by power
     std::vector<PolyTerm> sparse;  // Sparse representation: [coefficient, power] pairs
     bool is_dense_valid = false;
-    bool is_sparse_valid = false;
     bool is_ordered = false;
+    bool is_rational = false;
+    bool is_sparse_valid = false;
     int degree = 0;
 
 public:
@@ -1498,21 +1539,21 @@ public:
     //     is_dense_valid = true;
     // }
     
-    // Generate sparse representation from dense (dense is in descending order)
-    void generateSparse() {
-        if (!is_dense_valid) return;
+    // // Generate sparse representation from dense (dense is in descending order)
+    // void generateSparse() {
+    //     if (!is_dense_valid) return;
         
-        sparse.clear();
-        for (int i = 0; i < static_cast<int>(dense.size()); ++i) {
-            if (dense[i] != 0) {
-                // Convert from descending order index to actual power
-                int power = degree - i;
-                sparse.push_back({dense[i], power});
-            }
-        }
+    //     sparse.clear();
+    //     for (int i = 0; i < static_cast<int>(dense.size()); ++i) {
+    //         if (dense[i] != 0) {
+    //             // Convert from descending order index to actual power
+    //             int power = degree - i;
+    //             sparse.push_back({dense[i], power});
+    //         }
+    //     }
         
-        is_sparse_valid = true;
-    }
+    //     is_sparse_valid = true;
+    // }
     
     // Get maximum degree of the polynomial
     int getDegree() {
@@ -1526,10 +1567,10 @@ public:
     // }
     
     // Get sparse representation
-    std::vector<PolyTerm> getSparse() {
-        if (!is_sparse_valid) generateSparse();
-        return sparse;
-    }
+    // std::vector<PolyTerm> getSparse() {
+    //     if (!is_sparse_valid) generateSparse();
+    //     return sparse;
+    // }
     
     // // Print dense representation
     // void printDense() {
@@ -1613,14 +1654,15 @@ public:
     }
 
     //***UTILS***
+
+    //*Sorts them in descending order (greatest to smallest exponent)
     void order_poly() {
         if(is_ordered) return;
-        PolyTerm temp;
 
         std::sort(sparse.begin(), sparse.end(), 
-                [](const PolyTerm& a, const PolyTerm& b) {
-                    return a.exp > b.exp;
-                });
+            [](const PolyTerm& a, const PolyTerm& b) {
+                return a.exp > b.exp;
+            });
 
         is_ordered = true;
     }
@@ -1628,8 +1670,6 @@ public:
     //***OSTREAM AND ISTREAM***
 
     Polynomial operator=(std::string str) {
-        std::cout << "In function---\n";
-        bool is_rational = false;
         if(str.find('/') != std::string::npos) is_rational = true;
 
         std::vector<std::string> tokens;
@@ -1644,20 +1684,21 @@ public:
         std::string::size_type num_index;
         int num, den;
         int n = tokens.size();
-        for (const std::string& token : tokens) {
-            std::cout << "Token: " << token << "\n";
-        }
+        // for (const std::string& token : tokens) {
+        //     std::cout << "Token: " << token << "\n";
+        // }
         if(n % 2 == 1) throw std::invalid_argument("There must be one coefficient per each exponent");
 
         for(int i = 0; i < n; i += 2) {
             num_index = tokens[i].find('/');
             
+            //*This part could be handled by the operator= of a PolyTerm
             if(is_rational) {
                 //*Rational number
                 if(num_index != std::string::npos) {
                     num = std::stoi(tokens[i].substr(0, num_index));
                     den = std::stoi(tokens[i].substr(num_index + 1));
-                    std::cout << "Coefficient: " << tokens[i] << "\n";
+                    // std::cout << "Coefficient: " << tokens[i] << "\n";
                 }
                 else {
                     num = std::stoi(tokens[i].substr(0));
@@ -1677,11 +1718,7 @@ public:
             sparse.push_back(term);
         }
 
-        std::cout << "Checkpoint\n";
-
         order_poly();
-
-        std::cout << "---exiting function\n";
 
         return *this;
     }
@@ -1699,7 +1736,7 @@ public:
         int n = poly.sparse.size();
 
         for(int i = 0; i < n; i++) {
-            os << poly.sparse[i].coeff << "x^" << poly.sparse[i].exp;
+            os << poly.sparse[i];
             if(i < n - 1) os << " + ";
         }
 
@@ -1714,40 +1751,155 @@ public:
 
     //***ARITHMETIC OPERATIONS***
 
-    Polynomial multiply_by_single_term_poly(Polynomial& longPoly, const PolyTerm& singleTerm) {
-        longPoly.order_poly();
-        if((singleTerm.coeff == 1) && (singleTerm.exp == 0)) return longPoly;
+    Polynomial multiply_by_single_term_poly(const PolyTerm& singleTerm) {
+        this->order_poly();
+        if((singleTerm.coeff == 1) && (singleTerm.exp == 0)) return *this;
 
-        int n = longPoly.sparse.size();
+        int n = this->sparse.size();
         Polynomial prod;
         PolyTerm prodTerm;
 
         for(int i = 0; i < n; i++) {
-            prodTerm.coeff = longPoly.sparse[i].coeff * singleTerm.coeff;
-            prodTerm.exp = longPoly.sparse[i].exp + singleTerm.exp;
+            prodTerm = this->sparse[i] * singleTerm;
             prod.sparse.push_back(prodTerm);
         }
         prod.is_ordered = true;
         return prod;
     }
 
-    // Polynomial add(Polynomial poly1, Polynomial poly2) {
+    Polynomial multiply_by_single_term_poly(const Polynomial& singleTerm) {
+        if(singleTerm.sparse.size() != 1) throw std::invalid_argument("Polynomial is not a single-term polynomial; has " + std::to_string(singleTerm.sparse.size()) + " non-zero terms");
 
-    // }
+        return this->multiply_by_single_term_poly(singleTerm.sparse[0]);
+    }
+
+    Polynomial operator+(const Polynomial& other) const {
+        int j = 0, i = 0, this_size = sparse.size(), other_size = other.sparse.size();
+        Polynomial result;
+        PolyTerm newTerm;
+
+        while((i < this_size) && (j < other_size))
+        {
+            // std::cout << sparse[i].exp << " " << other.sparse[j].exp << "\n";
+            if(sparse[i].exp > other.sparse[j].exp) {
+                result.sparse.push_back(sparse[i]);
+                i++;
+            }
+            else if (sparse[i].exp == other.sparse[j].exp) {
+                newTerm.coeff = sparse[i].coeff + other.sparse[j].coeff;
+                newTerm.exp = sparse[i].exp;
+                result.sparse.push_back(newTerm);
+                i++;
+                j++;
+            }
+            else if (sparse[i].exp < other.sparse[j].exp){
+                result.sparse.push_back(other.sparse[j]);
+                j++;
+            }
+            // std::cout << result << "\n";
+        }
+
+        //*Include the trailing polynomial terms that were not included because
+        //*one of the two polynomials has been completely traversed over.
+        if(i < this_size) {
+            while (i < this_size) {
+                result.sparse.push_back(sparse[i]);
+                i++;
+            }
+        }
+        else if(j < other_size) {
+            while (j < other_size) {
+                result.sparse.push_back(other.sparse[j]);
+                j++;
+            }
+        }
+
+        return result;
+    }
+
+    Polynomial to_integer_poly() {
+        //!NOT WORKING
+        if(!is_rational) return *this;
+        
+        // Find the LCM of all denominators
+        Integer lcm_den = 1;
+        int n = sparse.size();
+        
+        for(int i = 0; i < n; i++) {
+            Integer current_den = sparse[i].coeff.getDenominator();
+            Integer gcd = Integer::binaryEuclidean(lcm_den, current_den);
+            lcm_den = (lcm_den * current_den) / gcd;
+        }
+        
+        Polynomial result;
+        for(int i = 0; i < n; i++) {
+            PolyTerm term = sparse[i];
+            Integer factor = lcm_den / term.coeff.getDenominator();
+            // std::cout << "FActor: " << factor << ", " << lcm_den << ", " << term.coeff.getDenominator() << "\n";
+            term.coeff = Rational(term.coeff.getNumerator() * factor, 1);
+            result.sparse.push_back(term);
+        }
+        
+        result.is_ordered = is_ordered;
+        result.is_rational = true;  // It's still rational, just with common denominator
+        
+        return result;
+    }
+
+    //*For integer polynomials
+    Integer find_gcd_of_poly_terms() {
+        if (sparse.size() < 2) return sparse[0].coeff.getNumerator();
+        
+        Integer gcd;
+        gcd = Integer::binaryEuclidean(sparse[0].coeff.getNumerator(), sparse[1].coeff.getNumerator());
+        // std::cout << "GCD of " << sparse[0].coeff.getNumerator() << ", " << sparse[1].coeff.getNumerator() << " is " << gcd << ", " << sparse.size() << "\n";
+        for(int i = 2; i < (int)sparse.size(); i++) {
+            // std::cout << "GCD: " << gcd << "\n";
+            gcd = Integer::binaryEuclidean(gcd, sparse[i].coeff.getNumerator());
+        }
+
+        return gcd;
+    }
 
     // Polynomial divide_poly(Polynomial num, Polynomial den) {
+    //     if(num.is_rational) {
+    //         PolyTerm term;
+    //         term.coeff = num.
+    //         divide_poly(num)
+    //     }
 
     // }
 };
 
 int main() {
-    // Rational rational(1, 2);
-    // std::cout << rational << "\n";
+    Rational rational(1, 2);
+    // std::cout << rational + (rational / 6) << "\n";
     
-    Polynomial poly;
+    Polynomial poly, singleTerm;
 
     std::cin >> poly;
+    std::cin >> singleTerm;
     std::cout << poly << "\n";
+    std::cout << singleTerm << "\n";
+    std::cout << poly.multiply_by_single_term_poly(singleTerm) << "\n";
+
+    // PolyTerm term1, term2;
+    // term1.coeff = Rational(-1, 2);
+    // term2.coeff = Rational(1, 3);
+    // term1.exp = Integer(2);
+    // term2.exp = Integer(2);
+    // std::cout << term1 << "\n";
+    // std::cout << term2 << "\n";
+    // std::cout << "Sum of terms: " << (term1 + term2) << "\n";
+
+    Polynomial poly1, poly2;
+    std::cin >> poly1;
+    std::cout << poly1 << "\n";
+    std::cin >> poly2;
+    std::cout << poly2 << "\n";
+    std::cout << poly1 + poly2 << "\n";
+    std::cout << poly2.find_gcd_of_poly_terms() << "\n";
+    std::cout << poly1.to_integer_poly() << "\n";
     
 //     // Test examples
 //     std::vector<std::string> test_cases = {
