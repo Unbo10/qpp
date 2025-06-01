@@ -7,10 +7,11 @@
 #include "../utils/OrderedList.cpp"
 
 int main() {
-    Integer n1 = 1, n2 = 2;
+    Integer n1 = 6, n2 = 3;
     //std::cout << (0 < n1) << "\n";
     std::cout << Integer::binaryEcludian(n1, n2) << "\n";
-    Rational num(1, 2);
+    //std::cout << n1/n2 << "\n";
+    Rational num(-6, 3);
     std::cout << num;
     return 0;
 }

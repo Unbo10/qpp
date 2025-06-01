@@ -76,7 +76,7 @@ class Number: public Comparable<T>
 
         bool getSign() const {return sign;}
 
-        void setSign(bool sign) {sign = sign;}
+        void setSign(bool sign) {this->sign = sign;}
 };
 
 #endif

@@ -2,7 +2,7 @@
 
 Rational Rational::root(const Integer& po) const
 {
-    Rational constantC = *this / po;
+    /*Rational constantC = *this / po;
     Rational constantQ(po - 1, po);
     Rational x = (constantC < 1) ? Rational(1) : constantC;
 
@@ -16,7 +16,8 @@ Rational Rational::root(const Integer& po) const
         std::cout << x.numerador << "  " << x.denominador << std::endl;
     } while (Rational::abs(x - prev) > tolerance);
 
-    return x;
+    return x;*/
+    return 1;
 }
 
 

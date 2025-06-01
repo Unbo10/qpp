@@ -28,13 +28,21 @@ class Rational: public Number<Rational>
             // Magnitudes absolutas
             Integer absNum = num;
             Integer absDen = den;
-            if (!absNum.getSign()) absNum.setSign(true);
-            if (!absDen.getSign()) absDen.setSign(true);
+            absNum.setSign(true);
+            absDen.setSign(true);
 
             // Reducción a mínima expresión
             Integer g = Integer::binaryEcludian(absNum, absDen);
-            numerador   = absNum / g;
-            denominador = absDen / g;
+            if(g > 1)
+            {
+                numerador   = absNum / g;
+                denominador = absDen / g;
+            }
+            else
+            {
+                numerador = absNum;
+                denominador = absDen;
+            }
         }
 
         Rational(double x);
@@ -60,6 +68,11 @@ class Rational: public Number<Rational>
 
         friend std::ostream& operator<<(std::ostream& os, const Rational& num)
         {
+            if(num.denominador == 1)
+            {
+                os << num.numerador;
+                return os;
+            }
             Integer nume = num.numerador, den = num.denominador;
             
             if(!num.sign)  os << "-";

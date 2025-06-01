@@ -345,6 +345,7 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
         {
             if (other == 0) throw std::invalid_argument("Division by zero");
             if (BASE != other.BASE) throw std::invalid_argument("Different bases");
+            if(digitsInteger == other.digitsInteger) return 1;
             
             // Manejo rápido de casos especiales
             if (numberSize() < other.numberSize()) return 0;
@@ -371,7 +372,6 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
                 currentRemainder.digitsInteger.add(a.digitAt(i));
 
             for (int j = m; j >= 0; --j) {
-                
                 int q;
                 if(currentRemainder < b) q = 0;
                 else q = Integer::estimateQuotient(currentRemainder, b);
@@ -383,7 +383,7 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
                 
                 currentRemainder = currentRemainder - help;
                 quant.digitsInteger.replace(q, j); 
-                currentRemainder.digitsInteger.add(a.digitAt(j), 0);
+                if(j > 0) currentRemainder.digitsInteger.add(a.digitAt(j-1), 0);
             }
 
             Integer::cleanDigits(quant);
@@ -673,7 +673,7 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
             return digitAt(0)%2 == 0;
         }
 
-        List<int> getList()
+        List<int> getList() const
         {
             return List(digitsInteger);
         }
