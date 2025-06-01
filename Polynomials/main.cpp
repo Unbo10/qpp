@@ -8,7 +8,7 @@ int main(){
     poly.parseFromString("302340238947902374x^10 - 2x + 5");
     poly.printPolynomial();
     poly.printDense();
-    cout << "Max Degree: " << poly.getMaxDegree() << endl;
+    cout << "Max Degree: " << poly.getDegree() << endl;
     poly.printSparse();
     
     return 0;

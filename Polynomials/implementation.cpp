@@ -1,0 +1,1803 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
+#include <regex>
+#include <algorithm>
+#include <sstream>
+#include <cmath>
+
+template <typename T>
+class Comparable
+{
+public:
+    virtual bool operator==(const T& other) const = 0;
+    virtual bool operator<(const T& other) const = 0;
+
+    friend bool operator!=(const T& comp1, const T& comp2) {
+        return !(comp1 == comp2);
+    }
+
+    friend bool operator>(const T& comp1, const T& comp2) {
+        return comp1 < comp2;
+    }
+
+    friend bool operator<=(const T& comp1, const T& comp2) {
+        return !(comp2 < comp1);
+    }
+
+    friend bool operator>=(const T& comp1, const T& comp2) {
+        return !(comp1 < comp2);
+    }
+
+    virtual ~Comparable() = default;
+};
+
+template <typename T>
+class Number: public Comparable<T>
+{
+    protected:
+        static const int DEFAULT_BASE = 100000;
+        // bool base_initialized;
+        bool sign;
+        int BASE;
+    public:
+        Number() : sign(true), BASE(DEFAULT_BASE) {}
+        Number(bool sgn, int base) : sign(sgn), BASE(base) {}
+        Number(bool sgn) : sign(sgn), BASE(DEFAULT_BASE) {}
+        ~Number() {}
+
+        virtual bool operator<(const T& other) const = 0;
+        virtual bool operator==(const T& other) const = 0;
+        virtual T operator=(const T& other) = 0;
+        
+        virtual T operator+(const T& other) const = 0;
+        virtual T operator-() const = 0;
+        virtual T operator-(const T& other) const = 0;
+        virtual T operator*(const T& other) const = 0;
+        virtual T operator/(const T& other) const = 0;
+        //virtual T operator%(const T& other) const = 0;
+        virtual T operator^(const T& other) const = 0;
+        
+        friend T& operator+=(T& lhs, const T& rhs)
+        {
+            T result = lhs + rhs;
+            lhs = result;
+            return lhs;
+        }
+
+        friend T& operator-=(T& lhs, const T& rhs)
+        {
+            T result = lhs - rhs;
+            lhs = result;
+            return lhs;
+        }
+
+        friend T& operator*=(T& lhs, const T& rhs)
+        {
+            T result = lhs * rhs;
+            lhs = result;
+            return lhs;
+        }
+
+        friend T& operator/=(T& lhs, const T& rhs)
+        {
+            T result = lhs / rhs;
+            lhs = result;
+            return lhs;
+        }
+
+        /*friend T& operator%=(T& lhs, const T& rhs)
+        {
+            T result = lhs % rhs;
+            lhs = result;
+            return lhs;
+        }*/
+
+        friend T& operator^=(T& lhs, const T& rhs)
+        {
+            T result = lhs ^ rhs;
+            lhs = result;
+            return lhs;
+        }
+
+        bool getSign() const {return sign;}
+
+        void setSign(bool sign) {sign = sign;}
+};
+
+
+
+template <typename U>
+class Iterator
+{
+    private:
+        U* ptr;
+    public:
+        Iterator(U* p) : ptr(p) {}
+
+        U& operator*() const { return *ptr; }
+
+        Iterator& operator++() 
+        {
+            ptr++;
+            return *this;
+        }
+
+        bool operator!=(const Iterator& other) const
+        {
+            return ptr != other.ptr;
+        }
+};
+
+
+
+template <typename U>
+class Iterable
+{
+    public:
+        virtual Iterator<U> begin() const = 0;
+        virtual Iterator<U> end() const = 0;
+};
+
+
+
+template <typename U>
+class List: public Iterable<U> {
+    protected:
+        static const int DEFAULT_INITIAL_SIZE = 10;
+        static constexpr double DEFAULT_RESIZE = 1.4;
+
+        U* array;
+        int capacity;
+        int length;
+
+
+        void resize()
+        {
+            int NEW_CAPACITY = capacity*DEFAULT_RESIZE;
+            U* help = array;
+            array = new U[NEW_CAPACITY];
+
+            for(int i = 0; i < length; i++)
+                array[i] = help[i];
+
+            delete[] help;
+            capacity = NEW_CAPACITY;
+        }
+
+        
+    public:
+        List(int INITIAL_SIZE)
+        {
+            array = new U[INITIAL_SIZE];
+            capacity = INITIAL_SIZE;
+            length = 0;
+        }
+
+        List() : List(DEFAULT_INITIAL_SIZE) {}
+
+        List(const List<U>& another) : List(another.size())
+        {
+            for(int i = 0; i < another.length; i++)
+                add(another[i]);
+        }
+
+        List(std::initializer_list<U> values)
+        {
+            length = values.size();
+            capacity = length > 0 ? length : DEFAULT_INITIAL_SIZE;
+            array = new U[capacity];
+            int i = 0;
+            for (const U& val : values)
+                array[i++] = val;
+        }
+
+
+        ~List() 
+        {
+            delete[] array;
+        }
+
+        void add(const U& item, int index)
+        {
+            if(length < index || index < 0)
+                return;
+            
+            if(length == capacity) 
+                resize();
+
+            for(int i = length-1; index <= i; i--)
+                array[i+1] = array[i];
+            
+            array[index] = item;
+            length++;
+        }
+
+        void replace(const U& item, int index)
+        {
+            if(length <= index || index < 0)
+                throw std::invalid_argument("Index out bound");
+
+            array[index] = item;
+        }
+
+        // add last*
+        void add(const U& item)
+        {
+            add(item, length);
+        }
+
+        U pop(int index)
+        {
+            if(length <= index || index < 0 || length == 0)
+                throw std::out_of_range("Index out of bounds");
+
+            U item = array[index];
+            for(int i = index; i < length - 1; i++)
+                array[i] = array[i+1];
+
+            length--;
+            return item;
+        }
+
+        U pop()
+        {
+            return pop(0);
+        }
+
+        bool isEmpty()
+        {
+            return length == 0;
+        }
+
+        int size() const
+        {
+            return length;
+        }
+
+        int getCapacity() const 
+        {
+            return capacity;
+        }
+
+        U* getArray() const
+        {
+            return array;
+        }
+
+        void clear()
+        {
+            delete[] array;
+            length = 0;
+            array = new U[DEFAULT_INITIAL_SIZE];
+            capacity = DEFAULT_INITIAL_SIZE;
+        }
+
+        template <typename M>
+        static List<M> concatenate(const List<M> l1, const List<M> l2)
+        {
+            List<M> toR;
+            for(M item: l1)
+                toR.add(item);
+            for(M item: l2)
+                toR.add(item);
+            return toR;
+        }
+
+        friend bool operator==(const List<U> l1, const List<U> l2)
+        {
+            if(l1.size() != l2.size()) return false;
+
+            for(int i = 0; i < l1.size(); i++)
+                if(l1[i] != l2[i]) return false;
+
+            return true;
+        }
+
+        U& operator[](int index) const
+        {
+            if (index < 0 || index >= length) {
+                throw std::invalid_argument("Index out of the range, entro");
+            }
+
+            return this->array[index];
+        }
+
+        List<U>& operator=(const List<U>& another)
+        {
+            delete[] array;
+            capacity = another.capacity;
+            length = another.length;
+            array = new U[capacity];
+            for (int i = 0; i < length; i++)
+                array[i] = another.array[i];
+
+            return *this;
+        }
+
+
+        friend std::ostream& operator<<(std::ostream& os, const List& list)
+        {
+            os << "[";
+            for(int i = 0; i < list.length; i++)
+            {
+                os << list.array[i];
+                if(i != list.length - 1)
+                    os << ", ";
+            }
+            os << "]";
+            return os;
+        }
+        
+        Iterator<U> begin() const { return Iterator<U>(array); }
+        Iterator<U> end() const { return Iterator<U>(array + length); }
+};
+
+
+
+class Integer: public Number<Integer> {
+    private:
+        static const int digitsByBlock = 5;
+        List<int> digitsInteger;
+
+        //***NON-STATIC HELPER METHODS***
+        void addDigit(long long newDigit);
+        void addDigit(const Integer& newDigit);
+        void forceAdd(long long newDigit);
+        void setSize(int newSize);
+        int digitAt(int index) const;
+        int operator[](int index) const;
+
+        //***STATIC HELPER METHODS***
+        static void cleanDigits(Integer& num);
+        static int digits(long long x);
+        static int max_int(int x, int y);
+        static int min_int(int x, int y);
+        static int getNumOfDigits(long long x);
+
+        //***PARTITION METHODS FOR ALGORITHMS***
+        Integer getHighPart(int index) const;
+        Integer getLowPart(int index) const;
+
+        //***MULTIPLICATION ALGORITHMS***
+        static Integer multiplyConventional(const Integer& num1, const Integer& num2);
+        static Integer multiplyKaratsuba(const Integer& num1, const Integer& num2);
+        
+        //***DIVISION HELPER***
+        static int estimateQuotient(const Integer& rem, const Integer& divisor);
+
+    public:
+        //***CONSTRUCTORS***
+        Integer();
+        Integer(long long x);
+        Integer(const Integer& toC);
+        ~Integer();
+
+        //***COMPARISON OPERATORS***
+        
+        bool operator==(const Integer& other) const override;
+        friend bool operator==(const int int_num, const Integer& num);
+        friend bool operator==(const Integer& num, const int int_num);
+        
+        friend bool operator!=(const Integer& num1, const int num2);
+        friend bool operator!=(const int num1, const Integer& num2);
+        
+        bool operator<(const Integer& other) const override;
+        bool operator<(const int int_num);
+        friend bool operator<(int int_num1, const Integer& num2);
+
+        friend bool operator<=(const int int_num, const Integer& num);
+        friend bool operator<=(const Integer& num, const int int_num);
+        
+        friend bool operator>(const int int_num1, const Integer& num2);
+        friend bool operator>(const Integer& num1, const int int_num2);
+        
+        friend bool operator>=(const int int_num1, const Integer& num2);
+        friend bool operator>=(const Integer& num1, const int int_num2);
+
+        //***ARITHMETIC OPERATORS***
+        Integer operator+(const Integer& other) const override;
+        friend Integer operator+(int num1, const Integer& num2);
+        friend Integer operator+(const Integer& num1, int num2);
+
+        Integer operator-(const Integer& other) const override;
+        friend Integer operator-(int num1, Integer& num2);
+        friend Integer operator-(Integer& num1, int num2);
+        Integer operator-() const override;
+
+        Integer operator*(const Integer& other) const override;
+        friend Integer operator*(int num1, const Integer& num2);
+        friend Integer operator*(const Integer& num1, int num2);
+
+        Integer operator/(const Integer& other) const override;
+        friend Integer operator/(int num1, const Integer& num2);
+        friend Integer operator/(const Integer& num1, int num2);
+
+        Integer operator%(const Integer& other) const;
+        friend Integer operator%(int num1, const Integer& num2);
+        friend Integer operator%(const Integer& num1, int num2);
+
+        Integer operator^(const Integer& other) const override;
+        
+        Integer operator=(const Integer& other) override;
+        Integer operator=(const long long num_int);
+
+        //***NON-STATIC UTILITY METHODS***
+        Integer divideBy2() const;
+        Integer multiplyByDigit(int x) const;
+        
+        //***STATIC UTILITY METHODS***
+        static Integer abs(const Integer& r);
+        static Integer divideRecursively(const Integer& num1, const Integer& num2);
+        static Integer multiplyByBase(const Integer& num, int times);
+        static Integer binaryEcludian(Integer n1, Integer n2);
+        static List<Integer> extendEuclidean(const Integer& num1, const Integer& num2);
+        
+        //***BASE CONVERSION***
+        void changeBase(int newBase, Integer& number);
+
+        //***STREAM OPERATORS***
+        friend std::ostream& operator<<(std::ostream& os, const Integer& number);
+        friend std::istream& operator>>(std::istream& is, Integer& num);
+        
+        //***GETTERS***
+        int getBase() const;
+        int getNumberSize() const;
+        List<int> getList();
+        bool isEven() const;
+};
+
+void Integer::addDigit(long long newDigit)
+{
+    if(newDigit <= 0) return;
+    forceAdd(newDigit);
+}
+
+void Integer::addDigit(const Integer& newDigit)
+{
+    if(BASE != newDigit.BASE)
+        throw std::invalid_argument("Not implemented digits in diferents bases");
+    
+    for(int x: newDigit.digitsInteger)
+        digitsInteger.add(x);
+    
+}
+
+void Integer::forceAdd(long long newDigit)
+{
+    if(newDigit == 0) digitsInteger.add(0);
+    while(0 < newDigit)
+    {
+        int res = newDigit%BASE;
+        newDigit /= BASE;
+        digitsInteger.add(res);
+    }
+}
+
+void Integer::setSize(int newSize)
+{
+    List<int> newList(newSize);
+    for(int i = 0; i < newSize; i++)
+        newList.add(digitAt(i));
+
+    digitsInteger = newList;
+}
+
+
+int Integer::digitAt(int index) const
+{
+    try{
+        return digitsInteger[index];
+    }catch(const std::invalid_argument& e)
+    {
+        return 0;
+    }
+}
+
+//*Only to access the index (for now)
+int Integer::operator[](int index) const {
+    if (index >= 0 && index < digitsInteger.size()) {
+        return digitsInteger[index];
+    }
+    return 0;
+}
+
+//***STATIC HELPER METHODS***
+
+void Integer::cleanDigits(Integer& num)
+{
+    int length = num.digitsInteger.getCapacity();
+    while(0 < length && num.digitAt(length-1) == 0)
+        length--;
+    if(length == num.getNumberSize()) return;
+    List<int> clean(length);
+    for(int i = 0; i < length; i++)
+        clean.add(num.digitAt(i));
+
+    num.digitsInteger = clean;
+}
+
+int Integer::max_int(int x, int y)
+{
+    if(x < y) return y;
+    return x;
+}
+
+int Integer::min_int(int y, int x)
+{
+    if(x < y) return x;
+    return y;
+}
+
+int Integer::getNumOfDigits(long long x)
+{
+    if(x == 0) return 1;
+    int c = 0;
+    while(x != 0)
+    {
+        x /= 10;
+        c++;
+    }
+    return c;
+}
+
+
+//***PARTITION METHODS FOR ALGORITHMS***
+
+Integer Integer::getHighPart(int index) const
+{
+    Integer toR;
+    for(int i = digitsInteger.size() - index -1; i < digitsInteger.size(); i++)
+        toR.addDigit(this->digitAt(i));
+
+    Integer::cleanDigits(toR);
+    return toR;
+}
+
+Integer Integer::getLowPart(int index) const
+{
+    Integer toR;
+    for(int i = 0; i < index; i++)
+        toR.digitsInteger.add(this->digitAt(i));
+    Integer::cleanDigits(toR);
+    return toR;
+}
+
+
+//***MULTIPLICATION ALGORITHMS***
+
+Integer Integer::multiplyConventional(const Integer& num1, const Integer& num2)
+{
+    Integer product;
+    product.BASE = num1.BASE;
+    int totalSize = num1.getNumberSize() + num2.getNumberSize();
+
+    for(int i = 0; i < totalSize; i++)
+        product.digitsInteger.add(0);
+
+    for(int j = 0; j < num2.getNumberSize(); j++)
+    {
+        if(num2.digitAt(j) == 0) continue;
+        long long carry = 0;
+        for(int i = 0; i < num1.getNumberSize(); i++)
+        {
+            long long realSum = carry + 1LL * num1.digitAt(i)*num2.digitAt(j) + product.digitAt(i+j);
+            product.digitsInteger.replace(realSum%num1.BASE, i+j);
+            carry = realSum/num1.BASE;
+        }
+        product.digitsInteger.replace(carry, num1.getNumberSize()+j);
+    }
+
+    Integer::cleanDigits(product);
+    return product;
+}
+
+Integer Integer::multiplyKaratsuba(const Integer& num1, const Integer& num2)
+{
+    if(num1.getNumberSize() <= 15 || num2.getNumberSize() <= 15)
+        return multiplyConventional(num1, num2);
+    int upperSize = Integer::max_int(num1.getNumberSize(), num2.getNumberSize())/2;
+
+    Integer uper1 = num1.getHighPart(upperSize);
+    Integer lower1 = num1.getLowPart(upperSize);
+    Integer upper2 = num2.getHighPart(upperSize);
+    Integer lower2 = num2.getLowPart(upperSize);
+
+    Integer U = multiplyKaratsuba(uper1, upper2);
+    Integer V = multiplyKaratsuba(lower1, lower2);
+    Integer W = multiplyKaratsuba(uper1 + lower1, upper2 + lower2) -U -V;
+    return multiplyByBase(V, 2*upperSize) + multiplyByBase(W, upperSize) + U;
+}
+
+//***DIVISION HELPER***
+
+
+int Integer::estimateQuotient(const Integer& rem, const Integer& divisor) {
+    const int n = divisor.getNumberSize(), m = rem.getNumberSize();
+    const long long top = 1LL * rem.digitAt(m-1) * rem.BASE + rem.digitAt(m-2);
+    return min_int(top / divisor.digitAt(n-1), rem.BASE-1);
+}
+
+
+//---PRIVATE METHODS---
+
+//***CONSTRUCTORS AND DESTRUCTOR***
+
+Integer::Integer(): Number<Integer>() {}
+Integer::Integer(long long x): Number<Integer>()
+{
+    sign = x >= 0;
+    addDigit(sign? x: -x);
+    Integer::cleanDigits(*this);
+}
+Integer::Integer(const Integer& toC) : Number<Integer>(toC.sign, toC.BASE), digitsInteger(toC.digitsInteger) {}
+Integer::~Integer()=default;
+
+
+//***COMPARISON OPERATORS***
+
+bool Integer::operator==(const Integer& other) const 
+{
+    return other.sign == sign &&
+            other.BASE == BASE &&
+            other.digitsInteger == digitsInteger;
+}  
+
+bool operator==(const int int_num, const Integer& num)
+{
+    Integer num1(int_num);
+    return num1 == num;
+}
+
+bool operator==(const Integer& num, const int int_num)
+{
+    Integer num2(int_num);
+    return num == num2;
+}
+
+bool operator!=(const Integer& num1, const int num2)
+{
+    Integer num2_integer = num2;
+    return !(num1 == num2_integer);
+}
+
+bool operator!=(const int num1, const Integer& num2)
+{
+    Integer num1_integer(num1);
+    return !(num1_integer == num2);
+}
+
+bool Integer::operator<(const Integer& other) const
+{
+    if(sign == 0 && other.sign == 1) return true;
+    else if(sign == 1 && other.sign == 0) return false;
+    else if(sign == 1 && other.sign == 1)
+    {
+        //*This case does take into account when both numbers are equal
+        int length = Integer::max_int(this->getNumberSize(), other.getNumberSize());
+        for(int i = length - 1; 0 <= i; i--)
+        {
+            if(other.digitAt(i) < this->digitAt(i))
+                return false;
+            else if(this->digitAt(i) < other.digitAt(i))
+                return true;
+        }
+
+        return false;
+    }
+    else
+        //*Both are negative
+        return -other < -(*this); //!May be wrong
+}
+
+bool Integer::operator<(const int int_num)
+{
+    Integer num = int_num;
+    return (*this) < num;
+}
+
+bool operator<(int int_num1, const Integer& num2)
+{
+    Integer num1(int_num1);
+    return num2 < num1;
+}
+
+
+bool operator<=(const int int_num, const Integer& num)
+{
+    Integer num1(int_num);
+    return num1 <= num;
+}
+
+bool operator<=(const Integer& num, const int int_num)
+{
+    Integer num2(int_num);
+    return num <= num2;
+}
+
+
+bool operator>(const int int_num1, const Integer& num2)
+{
+    return !(int_num1 <= num2);
+}
+
+bool operator>(const Integer& num1, const int int_num2)
+{
+    return !(num1 <= int_num2);
+}
+
+bool operator>=(const int int_num1, const Integer& num2)
+{
+    return int_num1 > num2 || int_num1 == num2;
+}
+
+bool operator>=(const Integer& num1, const int int_num2)
+{
+    return num1 > int_num2 || num1 == int_num2;
+}
+        
+
+//***ARITHMETIC OPERATORS***
+
+Integer Integer::operator+(const Integer& other) const
+{
+    if (BASE != other.BASE) 
+        throw std::invalid_argument("Not defined sum of integers in different Bases yet");
+    
+    if (sign ^ other.sign) 
+    {
+        if(sign)
+            return *this - (-other);
+        return other - (-(*this)); //!This may not work.
+    }
+
+    Integer sumOfIntegers;
+    sumOfIntegers.BASE = BASE;
+    int length = Integer::max_int(getNumberSize(), other.getNumberSize());
+    int c = 0;
+    long long res = 0;
+
+    while (c < length || res != 0)
+    {
+        res += digitAt(c) + other.digitAt(c);
+        sumOfIntegers.forceAdd(res % BASE);
+        res /= BASE;
+        c++;
+    }
+    sumOfIntegers.sign = sign;
+    Integer::cleanDigits(sumOfIntegers);
+    return sumOfIntegers;
+}
+
+Integer operator+(int num1, const Integer& num2)
+{
+    Integer new_int = num1;
+    return new_int + num2;
+}
+
+Integer operator+(const Integer& num1, int num2)
+{
+    Integer new_int = num2;
+    return num1 + new_int;
+}
+
+Integer Integer::operator-(const Integer& other) const
+{
+    if((*this) < other)
+        return -(other - (*this));
+    if(!other.sign)
+        return *this + (-other);
+
+    bool carry = 0;
+    int maxSize = Integer::max_int(getNumberSize(), other.getNumberSize());
+    Integer result;
+    result.BASE = BASE;
+
+    for(int i = 0; i < maxSize; i++)
+    {
+        int kResult = digitAt(i) - other.digitAt(i) - carry;
+        if(kResult < 0)
+        {
+            carry = 1;
+            kResult += BASE;
+        }
+        else carry = 0;
+        result.forceAdd(kResult);
+    }
+
+    Integer::cleanDigits(result);
+    return result;
+}
+
+Integer operator-(int num1, Integer& num2)
+{
+    Integer new_int = num1;
+    return new_int - num2;
+}
+
+Integer operator-(Integer& num1, int num2)
+{
+    Integer new_int = num2;
+    return num1 - new_int;
+}
+
+Integer Integer::operator-() const
+{
+    Integer toR(*(this));
+    toR.sign = !toR.sign;
+    return toR;
+}
+
+Integer Integer::operator*(const Integer& other) const
+{
+    if(BASE != other.BASE) throw std::invalid_argument("Error");
+    if(*this == 0 || other == 0) return Integer();
+    Integer mult = Integer::multiplyKaratsuba(*this, other);
+    mult.sign = !(sign ^ other.sign);
+    mult.BASE= BASE;
+    Integer::cleanDigits(mult);
+    return mult;
+}
+
+Integer operator*(int num1, const Integer& num2)
+{
+    Integer new_int = num1;
+    return new_int * num2;
+}
+
+Integer operator*(const Integer& num1, int num2)
+{
+    Integer new_int = num2;
+    return num1 * new_int;
+}
+
+Integer Integer::operator/(const Integer& other) const
+{
+    if (other == 0) throw std::invalid_argument("Division by zero");
+    if (BASE != other.BASE) throw std::invalid_argument("Different bases");
+    
+    // Manejo rápido de casos especiales
+    if (getNumberSize() < other.getNumberSize()) return 0;
+    if (other == 1) return *this;
+
+    if(other == 2)
+        return this->divideBy2();
+
+    Integer a = (sign) ? *this: -*this;
+    Integer b = (other.sign)? other: -other;
+    if(b.digitAt(b.getNumberSize() -1) < BASE/2)
+    {
+        long long x = BASE/(b.digitAt(b.getNumberSize() -1) + 1);
+        a = a.multiplyByDigit(x);
+        b = b.multiplyByDigit(x);
+    }
+
+    const int m = a.getNumberSize() - b.getNumberSize();
+    Integer quant;
+    quant.setSize(m + 1);
+
+    Integer currentRemainder;
+    for(int i = m; i < a.getNumberSize(); i++)
+        currentRemainder.digitsInteger.add(a.digitAt(i));
+
+    for (int j = m; j >= 0; --j) {
+        
+        int q;
+        if(currentRemainder < b) q = 0;
+        else q = Integer::estimateQuotient(currentRemainder, b);
+        Integer help = b.multiplyByDigit(q);
+        while (help > currentRemainder) {
+            q--; help -= b;
+            // std::cout << q << std::endl;
+        }
+        
+        currentRemainder = currentRemainder - help;
+        quant.digitsInteger.replace(q, j); 
+        currentRemainder.digitsInteger.add(a.digitAt(j), 0);
+    }
+
+    Integer::cleanDigits(quant);
+    return quant;
+}
+
+Integer operator/(int num1, const Integer& num2)
+{
+    Integer new_int = num1;
+    return new_int / num2;
+}
+
+Integer operator/(const Integer& num1, int num2)
+{
+    Integer new_int = num2;
+    return num1 / new_int;
+}
+
+Integer Integer::operator%(const Integer& other) const 
+{
+    //? Could also be this->add((this->divide(other)).multiply(other).negate());
+    return *this - (*this/other)*other;
+}
+
+Integer operator%(int num1, const Integer& num2)
+{
+    Integer new_int = num1;
+    return new_int % num2;
+}
+
+Integer operator%(const Integer& num1, int num2)
+{
+    Integer new_int = num2;
+    return num1 % new_int;
+}
+
+Integer Integer::operator^(const Integer& other) const
+{
+    if (other < Integer(0))
+        return 1/((*this)^other);
+
+    Integer exp(other);
+    Integer base(*this);
+    Integer result(1);
+    while (exp > 0)
+    {
+        if (!exp.isEven())
+            result = result * base;
+
+        base *= base;
+        exp /= 2;
+    }
+
+    return result;
+}
+
+Integer Integer::operator=(const Integer& other)
+{
+    this->sign = other.sign;
+    this->BASE = other.BASE;
+    this->digitsInteger = other.digitsInteger;
+    return *this;
+}
+
+Integer Integer::operator=(const long long num_int)
+{
+    Integer num(num_int);
+    return *this = num;
+}
+
+
+//***NON-STATIC UTILITY METHODS***
+
+Integer Integer::divideBy2() const
+{
+    Integer result;
+    result.sign = this->sign;
+    result.setSize(digitsInteger.size());
+
+    int carry = 0;
+    for (int i = (int)digitsInteger.size() - 1; i >= 0; --i) {
+        long long current = carry * 100000LL + this->digitAt(i);  // base = 10^5
+        result.digitsInteger.replace(current / 2, i);
+        carry = current % 2;
+    }
+
+    Integer::cleanDigits(result);
+    return result;
+}  
+
+Integer Integer::multiplyByDigit(int x) const
+{
+    if(x == 0) return Integer(0);
+    if(x == 1) return *this;
+    if(x == -1) return -*this;
+    bool flag = false;
+    if(x < 0)
+    {
+        flag = true;
+        x = -x;
+    }
+
+    Integer result; //result.setSize(this->getNumberSize() + 1);
+    long long carry = 0;
+    for(long long num: digitsInteger)
+    {
+        long long sum = x*num + carry;
+        result.digitsInteger.add(sum%BASE);
+        carry = sum/BASE;
+    }
+    if(carry > 0) result.addDigit(carry);
+    result.sign = (!flag == this->sign);
+    Integer::cleanDigits(result);
+    return result;
+}
+
+
+//***STATIC UTILITY METHODS***
+
+Integer Integer::abs(const Integer& r)
+{
+    if(r.sign) return r;
+    return -r;
+}
+
+Integer Integer::multiplyByBase(const Integer& num, int times)
+{
+    Integer result;
+    for(int i = 0; i < times; i++)
+        result.digitsInteger.add(0);
+    result.addDigit(num);
+    return result;
+}
+
+Integer Integer::divideRecursively(const Integer& num1, const Integer& num2)
+{
+    if(num1.getNumberSize() < 15 || num2.getNumberSize() < 15)
+        return num1/num2;
+
+    int upperSize = Integer::max_int(num1.getNumberSize(), num2.getNumberSize())/2;
+
+    Integer upper1 = num1.getHighPart(upperSize);
+    Integer lower1 = num1.getLowPart(upperSize);
+    Integer upper2 = num2.getHighPart(upperSize);
+    //Integer lower2 = num2.getLowPart(upperSize);
+
+    Integer q1 = Integer::divideRecursively(upper1, upper2);
+    Integer r1 = upper1 - q1 * upper2;
+
+    Integer comb;
+    comb.digitsInteger = List<int>::concatenate(r1.digitsInteger, lower1.digitsInteger);
+
+    Integer q2 = Integer::divideRecursively(comb, upper1);
+
+    q1.digitsInteger = List<int>::concatenate(q1.digitsInteger, q2.digitsInteger);
+    return q1;
+}
+
+List<Integer> Integer::extendEuclidean(const Integer& num1, const Integer& num2)
+{
+    List<Integer> u = {(num1.sign)? num1: -num1, 1, 0};
+    List<Integer> v = {(num2.sign)? num2: -num2, 0, 1};
+
+    while(0 != v[0])
+    {
+        Integer q = u[0]/v[0];
+
+        List<Integer> r = {u[0] - (q*v[0]), u[1] - (q*v[1]), u[2] - (q*v[2])};
+        u = v;
+        v = r;
+    }
+    return u;
+}
+
+Integer Integer::binaryEcludian(Integer n1, Integer n2)
+{
+    if(!n1.sign)
+        n1.sign = true;
+    if(!n2.sign)
+        n2.sign = true;
+    if(n1 == 0 || n2 == 0)
+        return ((n1 < n2) ? n2 : n1); //*max
+
+    Integer gcd = 1;
+    while(n1.digitAt(0)%2 == 0 && n2.digitAt(0)%2 == 0)
+    {
+        n1 = n1.divideBy2();
+        n2 = n2.divideBy2();
+        gcd = 2*gcd;
+    }
+
+    while(0 < n1 && n2 != 1)
+    {
+        while(n1.digitAt(0)%2 == 0) n1 = n1.divideBy2();
+        while(n2.digitAt(0)%2 == 0) n2 = n2.divideBy2();
+        Integer t = n1 - n2;
+        t.sign = true;
+        if(n1 < n2) n2 = n1; 
+        n1 = t;
+    }
+    return gcd*n2;
+}
+
+void Integer::changeBase(int newBase, Integer& number)
+{
+    if(newBase < 2) throw std::invalid_argument("Base must be grader than 2");
+    Integer divisor;
+    divisor.BASE = number.BASE;
+    divisor.addDigit(newBase);
+    Integer zero = 0;
+    
+    List<int> digit;
+    while(number != zero)
+    {
+        Integer quotient = number/divisor;
+        //añadir el residuo de la división
+        digit.add((number - quotient*divisor).digitAt(0));
+        number = quotient;
+    }
+
+    number.BASE = newBase;
+    number.digitsInteger = digit;
+    Integer::cleanDigits(number);
+}
+
+//***STREAM OPERATORS***
+
+std::ostream& operator<<(std::ostream& os, const Integer& number)
+{
+    if(number.digitsInteger.size() == 0) return os << '0';
+
+    if(!number.sign) os << "-";
+    
+    os << number.digitAt(number.digitsInteger.size() - 1);
+    if(number.BASE != Integer::DEFAULT_BASE)
+    {
+        for(int i = number.digitsInteger.size() - 2; i >= 0; i--)
+            os << number.digitAt(i);
+    }
+    else for(int i = number.digitsInteger.size() - 2; i >= 0; i--)
+    {
+        for(int j = 0; j < Integer::digitsByBlock - Integer::getNumOfDigits(number.digitAt(i)); j++)
+            os << '0';
+        os << number.digitAt(i);
+    }  
+    return os /*<< " (based-)" << number.BASE*/;
+}
+
+std::istream& operator>>(std::istream& is, Integer& num)
+{
+    long long read;
+    is >> read;
+    num = read;
+    return is;
+}
+
+
+//***GETTERS***
+
+int Integer::getBase() const
+{
+    return BASE;
+}
+
+int Integer::getNumberSize() const
+{
+    return digitsInteger.size();
+}
+
+List<int> Integer::getList()
+{
+    return List(digitsInteger);
+}
+
+bool Integer::isEven() const
+{
+    return digitAt(0)%2 == 0;
+}
+
+
+
+class Rational: public Number<Rational> {
+    private:
+        Integer numerator, denominator;
+
+        // aqui se calcula a^{1/p}, con p entero
+        Rational root(const Integer& po) const;
+        // aqui se calcula a^p, con p entero
+        Rational integerPow(Integer po);
+    public:
+        //Rational(long long x): Rational(Integer(x), 1) {}
+        Rational(): Rational(0, 1) {}
+        Rational(const Integer& numerator): Rational(numerator, 1) {}
+        Rational(const Integer& num, const Integer& den)
+        {
+            if (den == 0)
+                throw std::invalid_argument("Denominator cannot be zero");
+
+            // Signo: true = positivo, false = negativo
+            sign = (num.getSign() == den.getSign());
+
+            // Magnitudes absolutas
+            Integer absNum = Integer::abs(num);
+            Integer absDen = Integer::abs(den);
+            // // Reducción a mínima expresión
+            // Integer g = Integer::binaryEcludian(absNum, absDen);
+            // numerator   = absNum / g;
+            // denominator = absDen / g;
+
+            numerator = absNum;
+            denominator = absDen;
+            std::cout << "In constructor: " << numerator.getSign() << "/" << denominator.getSign() << "\n";
+        }
+        Rational(int num, int den): Rational(Integer(num), Integer(den)) {}
+        Rational(double x);
+
+        // implementación de los métodos de comparación
+        bool operator==(const Rational& other) const;
+        bool operator<(const Rational& other) const;
+
+        // implementación de los métodos de operaciones
+        Rational operator+(const Rational& other) const override;
+        Rational operator-(const Rational& other) const;
+        Rational operator-() const;
+        Rational operator*(const Rational& other) const;
+        Rational operator/(const Rational& other) const;
+        Rational operator^(const Rational& other) const;
+        Rational operator=(const Rational& other);
+
+        static Rational abs(const Rational& p)
+        {
+            if(p < 0) return -p;
+            return p;
+        }
+
+        friend std::ostream& operator<<(std::ostream& os, const Rational& rational)
+        {
+            Integer num = rational.numerator, den = rational.denominator;
+            
+            if(!rational.sign)  os << "-";
+            
+            // for(int i = 0; i < 5; i++)
+            // {
+            //     Integer q = nume/den;
+            //     if(i == 1) os << ".";
+            //     os << q;
+            //     nume = nume - q*den;
+            //     nume = Integer::multiplyByBase(nume, 1);
+            // }
+
+            os << num << "/" << den;
+
+            return os;
+        }
+};
+
+Rational Rational::root(const Integer& po) const
+{
+    Rational constantC = *this / po;
+    Rational constantQ(po - 1, po);
+    Rational x = (constantC < 1) ? Rational(1) : constantC;
+
+    Rational prev;
+    const Rational tolerance(1, 1000000);  // Precisión de 1e-6
+
+    do {
+        prev = x;
+        Rational pow = x.integerPow(po - 1);
+        x = constantQ * x + constantC / pow;
+        std::cout << x.numerator << "  " << x.denominator << std::endl;
+    } while (Rational::abs(x - prev) > tolerance);
+
+    return x;
+}
+
+
+Rational Rational::integerPow(Integer exp)
+{
+    if(numerator == 0) return 0;
+    if(numerator == denominator) return 1;
+    bool flag = false;
+    if (exp < 0)
+    {
+        flag = true;
+        exp.setSign(true);
+    }
+
+    Rational base = *this;
+    Rational result = 1;
+    while (exp > 0)
+    {
+        if (!exp.isEven())
+            result = result * base;
+
+        base = base * base;
+        exp = exp.divideBy2();
+    }
+
+    if(flag) return Rational(result.denominator, result.numerator);
+    return result;
+}
+
+
+Rational::Rational(double x)
+{
+    if(x < 0) 
+    {
+        this->sign = 0;
+        x = -x;
+    }
+
+    long long digits = x;
+    int base = 0;
+
+    while(x != digits)
+    {
+        x *= 10;
+        digits = x;
+        base++;
+    }
+
+    denominator = 1;
+    for(int i = 0; i < base%5; i++)
+        denominator = denominator * 10;
+    denominator = Integer::multiplyByBase(denominator, base/5);
+    numerator = x;
+
+    Integer gcd = Integer::binaryEcludian(numerator, denominator);
+    numerator = numerator/gcd;
+    denominator = denominator/gcd;
+}
+
+bool Rational::operator==(const Rational& other) const 
+{
+    return numerator == other.numerator && denominator == other.denominator;
+}
+
+bool Rational::operator<(const Rational& other) const 
+{
+    if (!sign && other.sign) return true;
+    if (sign && !other.sign) return false;
+    if(this->sign == 1 && other.sign == 1)
+        return numerator*other.denominator < other.numerator*denominator;
+
+    return numerator*other.denominator > other.numerator*denominator;
+}
+
+Rational Rational::operator*(const Rational& other)  const 
+{
+    return Rational(numerator*other.numerator, denominator*other.denominator);
+}
+
+Rational Rational::operator/(const Rational& other)  const
+{
+    return Rational(numerator*other.denominator, denominator*other.numerator);
+}
+
+Rational Rational::operator^(const Rational& other) const
+{
+    return (this->root(other.denominator)).integerPow(other.numerator);
+}
+
+Rational Rational::operator=(const Rational& other)
+{
+    this->sign = other.getSign();
+    numerator = other.numerator;
+    denominator = other.denominator;
+    return *this;
+}
+
+Rational Rational::operator+(const Rational& other) const
+{
+    Integer gcd = Integer::binaryEcludian(denominator, other.denominator);
+    Integer num1 = (numerator*other.denominator)/gcd;
+    Integer num2 = (denominator*other.numerator)/gcd;
+
+    return Rational(num1+num2, (denominator *other.denominator)/gcd);
+}
+
+Rational Rational::operator-(const Rational& other) const
+{
+    Rational inv = other;
+    inv.sign = !inv.sign;
+    return *this + inv;
+}
+
+Rational Rational::operator-() const
+{
+    Rational inv(numerator, denominator);
+    inv.sign = !inv.sign;
+    return inv;
+}
+
+class PolyTerm {
+    public:
+        Rational coeff;
+        int exp;
+};
+
+class Polynomial {
+private:
+    std::vector<Rational> dense;  // Dense representation: coefficients indexed by power
+    std::vector<PolyTerm> sparse;  // Sparse representation: [coefficient, power] pairs
+    bool is_dense_valid = false;
+    bool is_sparse_valid = false;
+    bool is_ordered = false;
+    int degree = 0;
+
+public:
+
+    // // Parse polynomial from string
+    // void parseFromString(const std::string& poly_str) {
+    //     clear();
+    //     std::map<int, double> terms;
+        
+    //     // Clean the string: remove spaces and handle signs
+    //     std::string cleaned = poly_str;
+    //     cleaned.erase(std::remove(cleaned.begin(), cleaned.end(), ' '), cleaned.end());
+        
+    //     // Add '+' at the beginning if it doesn't start with '+' or '-'
+    //     if (!cleaned.empty() && cleaned[0] != '+' && cleaned[0] != '-') {
+    //         cleaned = "+" + cleaned;
+    //     }
+        
+    //     // Regular expression to match terms like +3x^4, -2x^2, +5x, -7, etc.
+    //     std::regex term_regex(R"([+-](?:\d*\.?\d*)?(?:x(?:\^-?\d+)?)?)");
+        
+    //     std::sregex_iterator iter(cleaned.begin(), cleaned.end(), term_regex);
+    //     std::sregex_iterator end;
+        
+    //     for (; iter != end; ++iter) {
+    //         std::string term = iter->str();
+    //         if (term.empty() || term == "+" || term == "-") continue;
+            
+    //         double coeff = 0;
+    //         int power = 0;
+            
+    //         // Parse coefficient and power
+    //         if (term.find('x') == std::string::npos) {
+    //             // Constant term
+    //             coeff = std::stod(term);
+    //             power = 0;
+    //         } else {
+    //             // Term with x
+    //             size_t x_pos = term.find('x');
+                
+    //             // Extract coefficient
+    //             std::string coeff_str = term.substr(0, x_pos);
+    //             if (coeff_str == "+" || coeff_str.empty()) {
+    //                 coeff = 1;
+    //             } else if (coeff_str == "-") {
+    //                 coeff = -1;
+    //             } else {
+    //                 coeff = std::stod(coeff_str);
+    //             }
+                
+    //             // Extract power
+    //             if (x_pos + 1 < term.length() && term[x_pos + 1] == '^') {
+    //                 power = std::stoi(term.substr(x_pos + 2));
+    //             } else {
+    //                 power = 1;  // Just 'x' means x^1
+    //             }
+    //         }
+            
+    //         // Add to terms map (combining like terms)
+    //         terms[power] += coeff;
+    //         degree = std::max(degree, power);
+    //     }
+        
+    //     // Convert to sparse representation
+    //     for (const auto& term : terms) {
+    //         if (term.second != 0) {  // Only store non-zero coefficients
+    //             sparse.push_back({term.second, term.first});
+    //         }
+    //     }
+        
+    //     // Sort sparse representation by power (descending)
+    //     std::sort(sparse.begin(), sparse.end(), 
+    //               [](const std::pair<double, int>& a, const std::pair<double, int>& b) {
+    //                   return a.second > b.second;
+    //               });
+        
+    //     is_sparse_valid = true;
+    //     generateDense();
+    // }
+    
+    // // Generate dense representation from sparse (stored in descending order of powers)
+    // void generateDense() {
+    //     if (!is_sparse_valid) return;
+        
+    //     dense.clear();
+    //     dense.resize(degree + 1, 0.0);
+        
+    //     for (const auto& term : sparse) {
+    //         if (term.second >= 0 && term.second <= degree) {
+    //             // Store in descending order: index 0 = highest power, index degree = constant term
+    //             dense[degree - term.second] = term.first;
+    //         }
+    //     }
+        
+    //     is_dense_valid = true;
+    // }
+    
+    // Generate sparse representation from dense (dense is in descending order)
+    void generateSparse() {
+        if (!is_dense_valid) return;
+        
+        sparse.clear();
+        for (int i = 0; i < static_cast<int>(dense.size()); ++i) {
+            if (dense[i] != 0) {
+                // Convert from descending order index to actual power
+                int power = degree - i;
+                sparse.push_back({dense[i], power});
+            }
+        }
+        
+        is_sparse_valid = true;
+    }
+    
+    // Get maximum degree of the polynomial
+    int getDegree() {
+        return degree;
+    }
+
+    // // Get dense representation
+    // std::vector<Rational> getDense() {
+    //     if (!is_dense_valid) generateDense();
+    //     return dense;
+    // }
+    
+    // Get sparse representation
+    std::vector<PolyTerm> getSparse() {
+        if (!is_sparse_valid) generateSparse();
+        return sparse;
+    }
+    
+    // // Print dense representation
+    // void printDense() {
+    //     if (!is_dense_valid) generateDense();
+        
+    //     std::cout << "Dense representation: [";
+    //     for (size_t i = 0; i < dense.size(); ++i) {
+    //         std::cout << dense[i];
+    //         if (i < dense.size() - 1) std::cout << ", ";
+    //     }
+    //     std::cout << "]" << std::endl;
+    // }
+    
+    // // Print sparse representation
+    // void printSparse() {
+    //     if (!is_sparse_valid) generateSparse();
+        
+    //     std::cout << "Sparse representation: [";
+    //     for (size_t i = 0; i < sparse.size(); ++i) {
+    //         std::cout << "[" << sparse[i].first << ", " << sparse[i].second << "]";
+    //         if (i < sparse.size() - 1) std::cout << ", ";
+    //     }
+    //     std::cout << "]" << std::endl;
+    // }
+    
+    // Print the polynomial in standard mathematical form
+    void printPolynomial() {
+        int n = sparse.size();
+        
+        for(int i = 0; i < n; i++) {
+            std::cout << sparse[i].coeff << "x^" << sparse[i].exp;
+            if(i < n - 1) std::cout<< " + ";
+        }
+        // if (!is_sparse_valid) generateSparse();
+        
+        // if (sparse.empty()) {
+        //     std::cout << "0" << std::endl;
+        //     return;
+        // }
+        
+        // std::cout << "Polynomial: ";
+        // bool first = true;
+        
+        // for (const auto& term : sparse) {
+        //     double coeff = term.first;
+        //     int power = term.second;
+            
+        //     // Handle sign
+        //     if (!first) {
+        //         std::cout << (coeff >= 0 ? " + " : " - ");
+        //         coeff = std::fabs(coeff);
+        //     } else if (coeff < 0) {
+        //         std::cout << "-";
+        //         coeff = std::fabs(coeff);
+        //     }
+            
+        //     // Handle coefficient
+        //     if (power == 0 || coeff != 1) {
+        //         std::cout << coeff;
+        //     }
+            
+        //     // Handle variable and power
+        //     if (power > 0) {
+        //         std::cout << "x";
+        //         if (power > 1) {
+        //             std::cout << "^" << power;
+        //         }
+        //     }
+            
+        //     first = false;
+        // }
+        // std::cout << std::endl;
+    }
+    
+    void clear() {
+        dense.clear();
+        sparse.clear();
+        is_dense_valid = false;
+        is_sparse_valid = false;
+        degree = 0;
+    }
+
+    //***UTILS***
+    void order_poly() {
+        if(is_ordered) return;
+        PolyTerm temp;
+
+        std::sort(sparse.begin(), sparse.end(), 
+                [](const PolyTerm& a, const PolyTerm& b) {
+                    return a.exp > b.exp;
+                });
+
+        is_ordered = true;
+    }
+
+    //***OSTREAM AND ISTREAM***
+
+    Polynomial operator=(std::string str) {
+        std::cout << "In function---\n";
+        bool is_rational = false;
+        if(str.find('/') != std::string::npos) is_rational = true;
+
+        std::vector<std::string> tokens;
+        std::stringstream ss(str);
+        std::string token;
+        
+        while (std::getline(ss, token, ' ')) {
+            tokens.push_back(token);
+        }
+
+        PolyTerm term;
+        std::string::size_type num_index;
+        int num, den;
+        int n = tokens.size();
+        for (const std::string& token : tokens) {
+            std::cout << "Token: " << token << "\n";
+        }
+        if(n % 2 == 1) throw std::invalid_argument("There must be one coefficient per each exponent");
+
+        for(int i = 0; i < n; i += 2) {
+            num_index = tokens[i].find('/');
+            
+            if(is_rational) {
+                //*Rational number
+                if(num_index != std::string::npos) {
+                    num = std::stoi(tokens[i].substr(0, num_index));
+                    den = std::stoi(tokens[i].substr(num_index + 1));
+                    std::cout << "Coefficient: " << tokens[i] << "\n";
+                }
+                else {
+                    num = std::stoi(tokens[i].substr(0));
+                    den = 1;
+                }
+            }
+            else {
+                //*Integer
+                num = std::stoi(tokens[i]);
+                den = 1;
+            }
+            // std::cout << "Checkpoint 1. Num: " << num << ", den: " << den << "\n";
+            Rational coeff(num, den);
+            // std::cout << "Final coefficient: " << coeff << "\n";
+            term.coeff = coeff;
+            term.exp = std::stoi(tokens[i + 1]);
+            sparse.push_back(term);
+        }
+
+        std::cout << "Checkpoint\n";
+
+        order_poly();
+
+        std::cout << "---exiting function\n";
+
+        return *this;
+    }
+
+    friend std::istream& operator>>(std::istream& is, Polynomial& poly) {
+        std::string line;
+        std::getline(is, line);
+        if (!line.empty()) {
+            poly = line;
+        }
+        return is;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const Polynomial& poly) {
+        int n = poly.sparse.size();
+
+        for(int i = 0; i < n; i++) {
+            os << poly.sparse[i].coeff << "x^" << poly.sparse[i].exp;
+            if(i < n - 1) os << " + ";
+        }
+
+        return os;
+    }
+
+    //***COMPARISON OPERATIONS***
+
+    // std::istream& operator>>(std::istream& is, const Polynomial& other) {
+
+    // }
+
+    //***ARITHMETIC OPERATIONS***
+
+    Polynomial multiply_by_single_term_poly(Polynomial& longPoly, const PolyTerm& singleTerm) {
+        longPoly.order_poly();
+        if((singleTerm.coeff == 1) && (singleTerm.exp == 0)) return longPoly;
+
+        int n = longPoly.sparse.size();
+        Polynomial prod;
+        PolyTerm prodTerm;
+
+        for(int i = 0; i < n; i++) {
+            prodTerm.coeff = longPoly.sparse[i].coeff * singleTerm.coeff;
+            prodTerm.exp = longPoly.sparse[i].exp + singleTerm.exp;
+            prod.sparse.push_back(prodTerm);
+        }
+        prod.is_ordered = true;
+        return prod;
+    }
+
+    // Polynomial add(Polynomial poly1, Polynomial poly2) {
+
+    // }
+
+    // Polynomial divide_poly(Polynomial num, Polynomial den) {
+
+    // }
+};
+
+int main() {
+    // Rational rational(1, 2);
+    // std::cout << rational << "\n";
+    
+    Polynomial poly;
+
+    std::cin >> poly;
+    std::cout << poly << "\n";
+    
+//     // Test examples
+//     std::vector<std::string> test_cases = {
+//         "3x^4 + 2x^2 - 1",
+//         "x^3 - 2x + 5",
+//         "2x^5 - x^4 + 3x^2 - 7x + 1",
+//         "-x^2 + 4x - 3",
+//         "5",
+//         "x",
+//         "-x^3"
+//     };
+    
+//     for (const std::string& test : test_cases) {
+//         std::cout << "\n" << std::string(50, '=') << std::endl;
+//         std::cout << "Input: \"" << test << "\"" << std::endl;
+//         std::cout << std::string(50, '=') << std::endl;
+        
+//         poly.parseFromString(test);
+//         poly.printPolynomial();
+//         poly.printDense();
+//         poly.printSparse();
+//     }
+    
+//     // Interactive mode
+//     std::cout << "\n" << std::string(50, '=') << std::endl;
+//     std::cout << "Interactive Mode (enter 'quit' to exit)" << std::endl;
+//     std::cout << std::string(50, '=') << std::endl;
+    
+//     std::string input;
+//     while (true) {
+//         std::cout << "\nEnter a polynomial: ";
+//         std::getline(std::cin, input);
+        
+//         if (input == "quit" || input == "exit") {
+//             break;
+//         }
+        
+//         if (input.empty()) {
+//             continue;
+//         }
+        
+//         try {
+//             poly.parseFromString(input);
+//             poly.printPolynomial();
+//             poly.printDense();
+//             poly.printSparse();
+//         } catch (const std::exception& e) {
+//             std::cout << "Error parsing polynomial: " << e.what() << std::endl;
+//         }
+//     }
+    
+    return 0;
+}
