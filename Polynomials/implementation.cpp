@@ -1243,7 +1243,14 @@ class Rational: public Number<Rational> {
             //     nume = nume - q*den;
             //     nume = Integer::multiplyByBase(nume, 1);
             // }
-
+            if (num == 0) {
+                os << "0";
+                return os;
+            }
+            if (den == 1) {
+                os << Integer::abs(num);
+                return os;
+            }
             os << Integer::abs(num) << "/" << Integer::abs(den);
 
             return os;
@@ -1598,12 +1605,29 @@ public:
     
     // Print the polynomial in standard mathematical form
     void printPolynomial() {
-        int n = sparse.size();
-        
-        for(int i = 0; i < n; i++) {
-            std::cout << sparse[i].coeff << "x^" << sparse[i].exp;
-            if(i < n - 1) std::cout<< " + ";
+        // print only the nonzero coefficients in the dense representation
+        int degree = getDegree();
+        for (const auto& coeff : dense) {
+            if (coeff != 0) {
+                std::cout << coeff << " " << "x^" << degree--;
+                if (degree >= 0) {
+                    std::cout << " + ";
+                }
+            }
+            else {
+                degree--;
+            }
+            
         }
+        std::cout << std::endl;
+        // int n = sparse.size();
+        
+        // for(int i = 0; i < n; i++) {
+        //     std::cout << sparse[i].coeff << "x^" << sparse[i].exp;
+        //     if(i < n - 1) std::cout<< " + ";
+        // }
+
+
         // if (!is_sparse_valid) generateSparse();
         
         // if (sparse.empty()) {
@@ -1719,7 +1743,23 @@ public:
         }
 
         order_poly();
+        degree = sparse[0].exp;  // The first term is the one with the greatest exponent
+        //std::cout << "Degree: " << degree << " "<< sparse.size() << "\n";
 
+        // Generate dense representation from sparse
+        int deg = degree;
+        int i = 0;
+        while (deg != -1){
+            if (deg == sparse[i].exp){
+                dense.push_back(sparse[i].coeff);
+                i++;
+            }
+            else {
+                dense.push_back(Rational(0));
+            }
+            deg--;
+        }
+        is_dense_valid = true;
         return *this;
     }
 
@@ -1733,13 +1773,22 @@ public:
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Polynomial& poly) {
-        int n = poly.sparse.size();
 
-        for(int i = 0; i < n; i++) {
-            os << poly.sparse[i];
-            if(i < n - 1) os << " + ";
+        if(poly.is_dense_valid) {
+            os << "Dense representation: ";
+            for (const auto& coeff : poly.dense) {
+                os << coeff << " ";
+            }
+            os << "\n";
         }
+        else{
+            int n = poly.sparse.size();
 
+            for(int i = 0; i < n; i++) {
+                os << poly.sparse[i];
+                if(i < n - 1) os << " + ";
+            }
+        }
         return os;
     }
 
@@ -1861,17 +1910,32 @@ public:
         return gcd;
     }
 
-    // Polynomial divide_poly(Polynomial num, Polynomial den) {
-    //     if(num.is_rational) {
-    //         PolyTerm term;
-    //         term.coeff = num.
-    //         divide_poly(num)
-    //     }
+    Polynomial operator/(const Polynomial& other) const {
+        Polynomial u = *this;
+        Polynomial r,q;
+        r = u;
+        std::string q_str = "0 " + std::to_string(u.degree - other.degree);
+        q = q_str;
 
-    // }
+        for(int i = 0; i <= u.degree - other.degree; i++){
+            std::cout << "i: " << i << ", r.dense[i]: " << r.dense[i] << ", other.dense[0]: " << other.dense[0] << "\n";
+            q.dense[i] = r.dense[i] / other.dense[0];
+            std::cout << "q.dense[" << i << "]: " << q.dense[i] << "\n";
+            for(int j = 0; j <= other.degree ; j++){
+                std::cout << "i: " << i << ", j: " << j << ", r.dense[i+j]: " << r.dense[i+j] << ", q.dense[i]: " << q.dense[i] << ", other.dense[j]: " << other.dense[j] << "\n";
+                r.dense[i + j] = r.dense[i+j] - (q.dense[i] * other.dense[j]); 
+                std::cout << "r.dense[" << i + j << "]: " << r.dense[i + j] << "\n";
+
+            }
+            std::cout << "Iteration " << i << "\n";
+            std::cout << "q: " << q << "\n";
+            std::cout << "r: " << r << "\n";
+        }
+        return q;
+    }
 };
 
-int main() {
+int main2() {
     Rational rational(1, 2);
     // std::cout << rational + (rational / 6) << "\n";
     
@@ -1951,5 +2015,19 @@ int main() {
 //         }
 //     }
     
+    return 0;
+}
+
+
+int main(){
+    Polynomial poly1, poly2;
+    poly1 = "1 4 -3 3 5 2 -1 1 2 0";
+    poly2 = "1 2 1 1 -1 0";
+    poly1.printPolynomial();
+    poly2.printPolynomial();
+
+    Polynomial poly3 = poly1 / poly2;
+    std::cout << poly3 << "\n";
+    poly3.printPolynomial();
     return 0;
 }
