@@ -1269,21 +1269,7 @@ class Rational: public Number<Rational> {
 
 Rational Rational::root(const Integer& po) const
 {
-    Rational constantC = *this / po;
-    Rational constantQ(po - 1, po);
-    Rational x = (constantC < 1) ? Rational(1) : constantC;
-
-    Rational prev;
-    const Rational tolerance(1, 1000000);  // Precisión de 1e-6
-
-    do {
-        prev = x;
-        Rational pow = x.integerPow(po - 1);
-        x = constantQ * x + constantC / pow;
-        std::cout << x.numerator << "  " << x.denominator << std::endl;
-    } while (Rational::abs(x - prev) > tolerance);
-
-    return x;
+    return 1;
 }
 
 Rational Rational::integerPow(Integer exp)
@@ -1358,16 +1344,18 @@ bool Rational::operator<(const Rational& other) const
 
 Rational Rational::operator*(const Rational& other)  const 
 {
-    return Rational(numerator*other.numerator, denominator*other.denominator);
-}
-
-Rational operator*(const Rational& num1, const Integer& num2) {
-    return Rational(num1.numerator * num2, num1.denominator);
+    bool result_sign = (sign == other.sign);
+    Rational result(numerator * other.numerator, denominator * other.denominator);
+    result.setSign(result_sign);
+    return result;
 }
 
 Rational Rational::operator/(const Rational& other)  const
 {
-    return Rational(numerator*other.denominator, denominator*other.numerator);
+    bool result_sign = (sign == other.sign);
+    Rational result(numerator * other.denominator, denominator * other.numerator);
+    result.setSign(result_sign);
+    return result;
 }
 
 Rational Rational::operator^(const Rational& other) const
@@ -1384,25 +1372,32 @@ Rational Rational::operator=(const Rational& other)
 }
 
 Rational Rational::operator+(const Rational& other) const
-{
-    Integer gcd = Integer::binaryEuclidean(denominator, other.denominator);
-    Integer num1 = (numerator*other.denominator)/gcd;
-    Integer num2 = (denominator*other.numerator)/gcd;
+{       
+    Integer left = sign ? numerator : -numerator;
+    Integer right = other.sign ? other.numerator : -other.numerator;
 
-    return Rational(num1+num2, (denominator *other.denominator)/gcd);
+    Integer lcm = (denominator * other.denominator) / Integer::binaryEuclidean(denominator, other.denominator);
+
+    Integer left_scaled = left * (lcm / denominator);
+    Integer right_scaled = right * (lcm / other.denominator);
+
+    Integer result_num = left_scaled + right_scaled;
+
+    return Rational(result_num, lcm);
 }
 
 Rational Rational::operator-(const Rational& other) const
 {
-    Rational inv = other;
-    inv.sign = !inv.sign;
-    return *this + inv;
+    return *this + (-other);
 }
 
 Rational Rational::operator-() const
 {
+    if (numerator == 0)
+        return *this;
+
     Rational inv(numerator, denominator);
-    inv.sign = !inv.sign;
+    inv.sign = !sign;
     return inv;
 }
 
@@ -1606,26 +1601,28 @@ public:
     // Print the polynomial in standard mathematical form
     void printPolynomial() {
         // print only the nonzero coefficients in the dense representation
-        int degree = getDegree();
-        for (const auto& coeff : dense) {
-            if (coeff != 0) {
-                std::cout << coeff << " " << "x^" << degree--;
-                if (degree >= 0) {
-                    std::cout << " + ";
-                }
-            }
-            else {
-                degree--;
-            }
+        // int degree = getDegree();
+        // for (const auto& coeff : dense) {
+        //     if (coeff != 0) {
+        //         std::cout << coeff << " " << "x^" << degree--;
+        //         if (degree >= 0) {
+        //             std::cout << " + ";
+        //         }
+        //     }
+        //     else {
+        //         degree--;
+        //     }
             
+        // }
+        std::cout << std::endl;
+        int n = sparse.size();
+        
+        for(int i = 0; i < n; i++) {
+            std::cout << sparse[i].coeff << "x^" << sparse[i].exp;
+            if(i < n - 1) std::cout<< " + ";
         }
         std::cout << std::endl;
-        // int n = sparse.size();
-        
-        // for(int i = 0; i < n; i++) {
-        //     std::cout << sparse[i].coeff << "x^" << sparse[i].exp;
-        //     if(i < n - 1) std::cout<< " + ";
-        // }
+
 
 
         // if (!is_sparse_valid) generateSparse();
@@ -1760,6 +1757,20 @@ public:
             deg--;
         }
         is_dense_valid = true;
+        return *this;
+    }
+
+    Polynomial update_sparse(){
+        sparse.clear();
+        int n = dense.size();
+        for(int i = 0; i < n; i++) {
+            if(dense[i] != Rational(0)) {
+                PolyTerm term;
+                term.coeff = dense[i];
+                term.exp = n - 1 - i;  // Convert index to exponent
+                sparse.push_back(term);
+            }
+        }
         return *this;
     }
 
@@ -1910,6 +1921,19 @@ public:
         return gcd;
     }
 
+    Integer find_lcm_of_poly_terms() {
+        if (sparse.size() < 2) return sparse[0].coeff.getDenominator();
+        
+        Integer lcm = sparse[0].coeff.getDenominator();
+        for(int i = 1; i < (int)sparse.size(); i++) {
+            Integer current_den = sparse[i].coeff.getDenominator();
+            Integer gcd = Integer::binaryEuclidean(lcm, current_den);
+            lcm = (lcm * current_den) / gcd;
+        }
+
+        return lcm;
+    }
+
     Polynomial operator/(const Polynomial& other) const {
         Polynomial u = *this;
         Polynomial r,q;
@@ -1930,9 +1954,85 @@ public:
             std::cout << "Iteration " << i << "\n";
             std::cout << "q: " << q << "\n";
             std::cout << "r: " << r << "\n";
+
         }
+        q.update_sparse();
+        r.update_sparse();
         return q;
     }
+
+    std::pair<Polynomial, Polynomial> divide_by(const Polynomial& divisor) const {
+        Polynomial u = *this;
+        Polynomial r, q;
+        r = u;
+        std::string q_str = "0 " + std::to_string(u.degree - divisor.degree);
+        q = q_str;
+
+        for(int i = 0; i <= u.degree - divisor.degree; i++){
+            q.dense[i] = r.dense[i] / divisor.dense[0];
+            for(int j = 0; j <= divisor.degree ; j++){
+                r.dense[i + j] = r.dense[i+j] - (q.dense[i] * divisor.dense[j]); 
+            }
+        }
+        q.update_sparse();
+        r.update_sparse();
+        return {q, r};
+    }
+
+    Polynomial pseudoquotient(Polynomial u, Polynomial v) {
+        Integer beta = u.find_lcm_of_poly_terms();
+        Integer gamma = v.find_gcd_of_poly_terms();
+        PolyTerm term1, term2;
+        term1.coeff = Rational(beta, 1);
+        term1.exp = 0;
+        term2.coeff = Rational(gamma, 1);
+        term2.exp = 0;
+
+        Polynomial u_prime = u.multiply_by_single_term_poly(term1);
+        Polynomial v_prime = v.multiply_by_single_term_poly(term2);
+
+        Integer alpha = v_prime.sparse[0].coeff.getDenominator()^Integer(u.getDegree() - v.getDegree() + 1);
+        std::cout << "Alpha: " << alpha << "\n";
+
+        PolyTerm term3;
+        term3.coeff = Rational(alpha, 1);
+        term3.exp = 0;
+
+        Polynomial u_prime_scaled = u_prime.multiply_by_single_term_poly(term3);
+        Polynomial q = u_prime_scaled / v_prime;
+
+        PolyTerm term4;
+        term4.coeff = Rational(gamma, beta * alpha);
+        term4.exp = 0;
+
+        Polynomial q_scaled = q.multiply_by_single_term_poly(term4);
+        return q_scaled;
+    }   
+
+    Polynomial pseudoremainder(Polynomial u, Polynomial v) {
+        Integer beta = u.find_lcm_of_poly_terms();
+        Integer gamma = v.find_gcd_of_poly_terms();
+        PolyTerm term1, term2;
+        term1.coeff = Rational(beta, 1);
+        term1.exp = 0;
+        term2.coeff = Rational(gamma, 1);
+        term2.exp = 0;
+
+        Polynomial u_prime = u.multiply_by_single_term_poly(term1);
+        Polynomial v_prime = v.multiply_by_single_term_poly(term2);
+
+        Integer alpha = v_prime.sparse[0].coeff.getDenominator()^Integer(u.getDegree() - v.getDegree() + 1);
+        std::cout << "Alpha: " << alpha << "\n";
+
+        PolyTerm term3;
+        term3.coeff = Rational(alpha, 1);
+        term3.exp = 0;
+
+        Polynomial u_prime_scaled = u_prime.multiply_by_single_term_poly(term3);
+        Polynomial r = u_prime_scaled.divide_by(v_prime).second;
+
+        return r;
+    } 
 };
 
 int main2() {
@@ -2026,6 +2126,16 @@ int main(){
     poly1.printPolynomial();
     poly2.printPolynomial();
 
+    Rational n1(-3, 1);
+    Rational n2(1,1 );
+    Rational n3(1,1);
+
+    std::cout << n1 - (n2 * n3) << "\n";
+
+    // poly1 = "3 4 7 0";
+    // poly2 = "4 1 -1 0";
+    // poly1.printPolynomial();
+    // poly2.printPolynomial();
     Polynomial poly3 = poly1 / poly2;
     std::cout << poly3 << "\n";
     poly3.printPolynomial();
