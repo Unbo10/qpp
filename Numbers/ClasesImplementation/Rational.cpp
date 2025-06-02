@@ -118,8 +118,8 @@ Rational Rational::operator=(const Rational& other)
 Rational Rational::operator+(const Rational& other) const
 {       
     Integer gcd = Integer::binaryEcludian(denominador, other.denominador);
-    Integer num1 = numerador*((other.denominador)/gcd);
-    Integer num2 = other.numerador*((denominador)/gcd);
+    Integer num1 = numerador*((gcd != 1)? (other.denominador)/gcd: other.denominador);
+    Integer num2 = other.numerador*((gcd != 1)? (denominador)/gcd: denominador);
     if(other.sign == this->sign)
     {
         Rational result(num1+num2, (denominador *other.denominador)/gcd);

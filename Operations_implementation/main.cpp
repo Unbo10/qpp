@@ -7,8 +7,7 @@
 #include "../utils/OrderedList.cpp"
 
 int main() {
-    Integer tres = -3;
-    Rational num1(tres), num2(1);
+    Rational num1(-3), num2(1);
 
     std::cout << num1 << "  -  " << num2 << "\n";
 
