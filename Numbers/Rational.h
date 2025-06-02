@@ -16,7 +16,15 @@ class Rational: public Number<Rational>
     public:
         //Rational(long long x): Rational(Integer(x), 1) {}
         Rational(): Rational(0, 1) {}
-        Rational(const Integer& numerador): Rational(numerador, 1) {}
+        Rational(const Integer& numerador) 
+        {
+            std::cout << numerador << "\n";
+            this->sign = numerador.getSign();
+            this->numerador = numerador;
+            this->denominador = 1;
+            this->numerador.setSign(true);
+        }
+
         Rational(const Integer& num, const Integer& den)
         {
             if (den == 0)
@@ -68,14 +76,13 @@ class Rational: public Number<Rational>
 
         friend std::ostream& operator<<(std::ostream& os, const Rational& num)
         {
+            if(!num.sign)  os << "-";
             if(num.denominador == 1)
             {
                 os << num.numerador;
                 return os;
             }
             Integer nume = num.numerador, den = num.denominador;
-            
-            if(!num.sign)  os << "-";
             
             for(int i = 0; i < 5; i++)
             {

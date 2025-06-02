@@ -116,12 +116,21 @@ Rational Rational::operator=(const Rational& other)
 }
 
 Rational Rational::operator+(const Rational& other) const
-{
+{       
     Integer gcd = Integer::binaryEcludian(denominador, other.denominador);
-    Integer num1 = (numerador*other.denominador)/gcd;
-    Integer num2 = (denominador*other.numerador)/gcd;
+    Integer num1 = numerador*((other.denominador)/gcd);
+    Integer num2 = other.numerador*((denominador)/gcd);
+    if(other.sign == this->sign)
+    {
+        Rational result(num1+num2, (denominador *other.denominador)/gcd);
+        result.setSign(this->sign);
+        return result;
+    }
+    
+    if(!other.sign)
+        return Rational(num1-num2, (denominador *other.denominador)/gcd);
 
-    return Rational(num1+num2, (denominador *other.denominador)/gcd);
+    return Rational(num2-num1, (denominador *other.denominador)/gcd);
 }
 
 Rational Rational::operator-(const Rational& other) const
