@@ -72,7 +72,7 @@ Rational::Rational(double x)
     denominator = Integer::multiplyByBase(denominator, base/5);
     numerator = x;
 
-    Integer gcd = Integer::binaryEcludian(numerator, denominator);
+    Integer gcd = Integer::binaryEuclidean(numerator, denominator);
     numerator = numerator/gcd;
     denominator = denominator/gcd;
 }
@@ -94,12 +94,16 @@ bool Rational::operator<(const Rational& other) const
 
 Rational Rational::operator*(const Rational& other)  const 
 {
-    return Rational(numerator*other.numerator, denominator*other.denominator);
-}
+    Rational ret(numerador*other.numerador, denominador*other.denominador);
+    ret.setSign(this->sign == other.sign);
+    return ret;
+}   
 
 Rational Rational::operator/(const Rational& other)  const
 {
-    return Rational(numerator*other.denominator, denominator*other.numerator);
+    Rational ret(numerator*other.denominator, denominator*other.numerator);
+    ret.setSign(this->sign == other.sign);
+    return ret;
 }
 
 Rational operator/(const Rational& num, int den)
@@ -122,7 +126,7 @@ Rational Rational::operator=(const Rational& other)
 
 Rational Rational::operator+(const Rational& other) const
 {       
-    Integer gcd = Integer::binaryEcludian(denominator, other.denominator);
+    Integer gcd = Integer::binaryEuclidean(denominator, other.denominator);
     Integer num1 = numerator*((gcd != 1)? (other.denominator)/gcd: other.denominator);
     Integer num2 = other.numerator*((gcd != 1)? (denominator)/gcd: denominator);
     if(other.sign == this->sign)
