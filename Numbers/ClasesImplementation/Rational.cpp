@@ -94,12 +94,16 @@ bool Rational::operator<(const Rational& other) const
 
 Rational Rational::operator*(const Rational& other)  const 
 {
-    return Rational(numerador*other.numerador, denominador*other.denominador);
-}
+    Rational ret(numerador*other.numerador, denominador*other.denominador);
+    ret.setSign(this->sign == other.sign);
+    return ret;
+}   
 
 Rational Rational::operator/(const Rational& other)  const
 {
-    return Rational(numerador*other.denominador, denominador*other.numerador);
+    Rational ret(numerador*other.denominador, denominador*other.numerador);
+    ret.setSign(this->sign == other.sign);
+    return ret;
 }
 
 Rational Rational::operator^(const Rational& other) const

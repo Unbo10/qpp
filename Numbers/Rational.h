@@ -7,13 +7,14 @@
 class Rational: public Number<Rational>
 {
     private:
-        Integer numerador, denominador;
+        // Integer numerador, denominador;
 
         // aqui se calcula a^{1/p}, con p entero
         Rational root(const Integer& po) const;
         // aqui se calcula a^p, con p entero
         Rational integerPow(Integer po);
     public:
+        Integer numerador, denominador;
         //Rational(long long x): Rational(Integer(x), 1) {}
         Rational(): Rational(0, 1) {}
         Rational(const Integer& numerador) 
@@ -76,22 +77,11 @@ class Rational: public Number<Rational>
 
         friend std::ostream& operator<<(std::ostream& os, const Rational& num)
         {
-            if(!num.sign)  os << "-";
-            if(num.denominador == 1)
-            {
-                os << num.numerador;
-                return os;
-            }
-            Integer nume = num.numerador, den = num.denominador;
-            
-            for(int i = 0; i < 5; i++)
-            {
-                Integer q = nume/den;
-                if(i == 1) os << ".";
-                os << q;
-                nume = nume - q*den;
-                nume = Integer::multiplyByBase(nume, 1);
-            }
+            if (!num.sign) os << "-";
+
+            os << num.numerador;
+            if (num.denominador != 1)
+                os << "/" << num.denominador;
 
             return os;
         }
