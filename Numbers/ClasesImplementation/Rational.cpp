@@ -13,7 +13,7 @@ Rational Rational::root(const Integer& po) const
         prev = x;
         Rational pow = x.integerPow(po - 1);
         x = constantQ * x + constantC / pow;
-        std::cout << x.numerador << "  " << x.denominador << std::endl;
+        std::cout << x.numerator << "  " << x.denominator << std::endl;
     } while (Rational::abs(x - prev) > tolerance);
 
     return x;*/
@@ -23,8 +23,8 @@ Rational Rational::root(const Integer& po) const
 
 Rational Rational::integerPow(Integer exp)
 {
-    if(numerador == 0) return 0;
-    if(numerador == denominador) return 1;
+    if(numerator == 0) return 0;
+    if(numerator == denominator) return 1;
     bool flag = false;
     if (exp < 0)
     {
@@ -43,7 +43,7 @@ Rational Rational::integerPow(Integer exp)
         exp = exp.divideBy2();
     }
 
-    if(flag) return Rational(result.denominador, result.numerador);
+    if(flag) return Rational(result.denominator, result.numerator);
     return result;
 }
 
@@ -66,20 +66,20 @@ Rational::Rational(double x)
         base++;
     }
 
-    denominador = 1;
+    denominator = 1;
     for(int i = 0; i < base%5; i++)
-        denominador = denominador * 10;
-    denominador = Integer::multiplyByBase(denominador, base/5);
-    numerador = x;
+        denominator = denominator * 10;
+    denominator = Integer::multiplyByBase(denominator, base/5);
+    numerator = x;
 
-    Integer gcd = Integer::binaryEcludian(numerador, denominador);
-    numerador = numerador/gcd;
-    denominador = denominador/gcd;
+    Integer gcd = Integer::binaryEcludian(numerator, denominator);
+    numerator = numerator/gcd;
+    denominator = denominator/gcd;
 }
 
 bool Rational::operator==(const Rational& other) const 
 {
-    return numerador == other.numerador && denominador == other.denominador;
+    return numerator == other.numerator && denominator == other.denominator;
 }
 
 bool Rational::operator<(const Rational& other) const 
@@ -87,50 +87,55 @@ bool Rational::operator<(const Rational& other) const
     if (!sign && other.sign) return true;
     if (sign && !other.sign) return false;
     if(this->sign == 1 && other.sign == 1)
-        return numerador*other.denominador < other.numerador*denominador;
+        return numerator*other.denominator < other.numerator*denominator;
 
-    return numerador*other.denominador > other.numerador*denominador;
+    return numerator*other.denominator > other.numerator*denominator;
 }
 
 Rational Rational::operator*(const Rational& other)  const 
 {
-    return Rational(numerador*other.numerador, denominador*other.denominador);
+    return Rational(numerator*other.numerator, denominator*other.denominator);
 }
 
 Rational Rational::operator/(const Rational& other)  const
 {
-    return Rational(numerador*other.denominador, denominador*other.numerador);
+    return Rational(numerator*other.denominator, denominator*other.numerator);
+}
+
+Rational operator/(const Rational& num, int den)
+{
+    return num / Rational(1, 1);
 }
 
 Rational Rational::operator^(const Rational& other) const
 {
-    return (this->root(other.denominador)).integerPow(other.numerador);
+    return (this->root(other.denominator)).integerPow(other.numerator);
 }
 
 Rational Rational::operator=(const Rational& other)
 {
     this->sign = other.getSign();
-    numerador = other.numerador;
-    denominador = other.denominador;
+    numerator = other.numerator;
+    denominator = other.denominator;
     return *this;
 }
 
 Rational Rational::operator+(const Rational& other) const
 {       
-    Integer gcd = Integer::binaryEcludian(denominador, other.denominador);
-    Integer num1 = numerador*((gcd != 1)? (other.denominador)/gcd: other.denominador);
-    Integer num2 = other.numerador*((gcd != 1)? (denominador)/gcd: denominador);
+    Integer gcd = Integer::binaryEcludian(denominator, other.denominator);
+    Integer num1 = numerator*((gcd != 1)? (other.denominator)/gcd: other.denominator);
+    Integer num2 = other.numerator*((gcd != 1)? (denominator)/gcd: denominator);
     if(other.sign == this->sign)
     {
-        Rational result(num1+num2, (denominador *other.denominador)/gcd);
+        Rational result(num1+num2, (denominator *other.denominator)/gcd);
         result.setSign(this->sign);
         return result;
     }
     
     if(!other.sign)
-        return Rational(num1-num2, (denominador *other.denominador)/gcd);
+        return Rational(num1-num2, (denominator *other.denominator)/gcd);
 
-    return Rational(num2-num1, (denominador *other.denominador)/gcd);
+    return Rational(num2-num1, (denominator *other.denominator)/gcd);
 }
 
 Rational Rational::operator-(const Rational& other) const
@@ -142,8 +147,18 @@ Rational Rational::operator-(const Rational& other) const
 
 Rational Rational::operator-() const
 {
-    Rational inv(numerador, denominador);
+    Rational inv(numerator, denominator);
     inv.sign = !inv.sign;
     return inv;
+}
+
+Integer Rational::getDenominator() const
+{
+    return denominator;
+}
+
+Integer Rational::getNumerator() const
+{
+    return numerator;
 }
 

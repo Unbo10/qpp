@@ -547,7 +547,7 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
             return u;
         }
 
-        static Integer binaryEcludian(Integer n1, Integer n2)
+        static Integer binaryEuclidean(Integer n1, Integer n2)
         {
             if(!n1.sign)
                 n1.sign = true;

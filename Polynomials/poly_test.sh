@@ -1,6 +1,6 @@
 #!/bin/bash
 
-g++ -Wall -O2 implementation.cpp -o output
+g++ -Wall -O2 implementation_includes.cpp Polynomial.cpp PolyTerm.cpp -o output
 
 #*Check if compilation was successful
 if [ $? -eq 0 ]; then

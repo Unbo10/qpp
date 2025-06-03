@@ -1407,7 +1407,10 @@ class PolyTerm {
         //!ISSUE WHEN ORDERING INTEGERS
         int exp;
 
-        PolyTerm() : coeff(0), exp(0) {}
+        PolyTerm() : coeff(Rational(0)), exp(0) {}
+        PolyTerm(Rational coeff, int exp) : coeff(coeff), exp(exp) {}
+        PolyTerm(Integer coeff, int exp) : coeff(Rational(coeff, Integer(1))), exp(exp) {}
+        PolyTerm(int coeff, int exp) : coeff(Rational(coeff)), exp(exp) {}
         ~PolyTerm() {}
 
         //***ARITHMETIC OPERATIONS***
@@ -1447,6 +1450,18 @@ private:
     int degree = 0;
 
 public:
+
+    Polynomial() {}
+
+    Polynomial(PolyTerm& term) {
+        dense = std::vector<Rational>(term.exp);
+        degree = term.exp;
+        sparse.push_back(term);
+        if((term.coeff.getDenominator() != 1) || (term.coeff.getDenominator() != -1)) 
+            is_rational = true;
+        is_dense_valid = true;
+        is_sparse_valid = true;
+    }
 
     // // Parse polynomial from string
     // void parseFromString(const std::string& poly_str) {
@@ -1690,6 +1705,17 @@ public:
 
     //***OSTREAM AND ISTREAM***
 
+    Polynomial operator=(const Polynomial& other) {
+        degree = other.degree;
+        dense = other.dense;
+        sparse = other.sparse;
+        is_dense_valid = other.is_dense_valid;
+        is_ordered = other.is_ordered;
+        is_rational = other.is_rational;
+        is_sparse_valid = other.is_sparse_valid;
+        return *this;
+    }
+
     Polynomial operator=(std::string str) {
         if(str.find('/') != std::string::npos) is_rational = true;
 
@@ -1740,6 +1766,7 @@ public:
         }
 
         order_poly();
+        dense = std::vector<Rational>(degree);
         degree = sparse[0].exp;  // The first term is the one with the greatest exponent
         //std::cout << "Degree: " << degree << " "<< sparse.size() << "\n";
 
@@ -1934,12 +1961,13 @@ public:
         return lcm;
     }
 
-    Polynomial operator/(const Polynomial& other) const {
+    Polynomial operator/(const Polynomial& other) {
         Polynomial u = *this;
-        Polynomial r,q;
-        r = u;
-        std::string q_str = "0 " + std::to_string(u.degree - other.degree);
-        q = q_str;
+        Polynomial r = u;
+        Polynomial q;
+        q.dense = std::vector<Rational>(degree - other.degree + 1);
+        std::cout << q.dense.size() << " VS " << degree - other.degree << "\n";
+        std::cout.flush();
 
         for(int i = 0; i <= u.degree - other.degree; i++){
             std::cout << "i: " << i << ", r.dense[i]: " << r.dense[i] << ", other.dense[0]: " << other.dense[0] << "\n";
@@ -2132,6 +2160,7 @@ int main(){
 
     std::cout << n1 - (n2 * n3) << "\n";
 
+    std::cout << "\nPOLYNOMIAL DIVISION\n";
     // poly1 = "3 4 7 0";
     // poly2 = "4 1 -1 0";
     // poly1.printPolynomial();

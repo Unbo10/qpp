@@ -1,5 +1,4 @@
-#ifndef RATIONAL_H
-#define RATIONAL_H
+#pragma once
 
 #include "Number.cpp"
 #include "Integer.cpp"
@@ -7,7 +6,7 @@
 class Rational: public Number<Rational>
 {
     private:
-        Integer numerador, denominador;
+        Integer numerator, denominator;
 
         // aqui se calcula a^{1/p}, con p entero
         Rational root(const Integer& po) const;
@@ -16,13 +15,13 @@ class Rational: public Number<Rational>
     public:
         //Rational(long long x): Rational(Integer(x), 1) {}
         Rational(): Rational(0, 1) {}
-        Rational(const Integer& numerador) 
+        Rational(const Integer& numerator) 
         {
-            std::cout << numerador << "\n";
-            this->sign = numerador.getSign();
-            this->numerador = numerador;
-            this->denominador = 1;
-            this->numerador.setSign(true);
+            std::cout << numerator << "\n";
+            this->sign = numerator.getSign();
+            this->numerator = numerator;
+            this->denominator = 1;
+            this->numerator.setSign(true);
         }
 
         Rational(const Integer& num, const Integer& den)
@@ -40,19 +39,18 @@ class Rational: public Number<Rational>
             absDen.setSign(true);
 
             // Reducción a mínima expresión
-            Integer g = Integer::binaryEcludian(absNum, absDen);
+            Integer g = Integer::binaryEuclidean(absNum, absDen);
             if(g > 1)
             {
-                numerador   = absNum / g;
-                denominador = absDen / g;
+                numerator   = absNum / g;
+                denominator = absDen / g;
             }
             else
             {
-                numerador = absNum;
-                denominador = absDen;
+                numerator = absNum;
+                denominator = absDen;
             }
         }
-
         Rational(double x);
 
         // implementación de los métodos de comparación
@@ -65,6 +63,7 @@ class Rational: public Number<Rational>
         Rational operator-() const;
         Rational operator*(const Rational& other) const;
         Rational operator/(const Rational& other) const;
+        friend Rational operator/(const Rational& num, int den);
         Rational operator^(const Rational& other) const;
         Rational operator=(const Rational& other);
 
@@ -77,12 +76,12 @@ class Rational: public Number<Rational>
         friend std::ostream& operator<<(std::ostream& os, const Rational& num)
         {
             if(!num.sign)  os << "-";
-            if(num.denominador == 1)
+            if(num.denominator == 1)
             {
-                os << num.numerador;
+                os << num.numerator;
                 return os;
             }
-            Integer nume = num.numerador, den = num.denominador;
+            Integer nume = num.numerator, den = num.denominator;
             
             for(int i = 0; i < 5; i++)
             {
@@ -95,6 +94,8 @@ class Rational: public Number<Rational>
 
             return os;
         }
-};
 
-#endif
+        //***GETTERS***
+        Integer getDenominator() const;
+        Integer getNumerator() const;
+};
