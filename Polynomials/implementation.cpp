@@ -1167,7 +1167,7 @@ int Integer::getNumberSize() const
 
 List<int> Integer::getList()
 {
-    return List(digitsInteger);
+    return List<int>(digitsInteger);
 }
 
 bool Integer::isEven() const
@@ -1177,7 +1177,8 @@ bool Integer::isEven() const
 
 
 
-class Rational: public Number<Rational> {
+class Rational: public Number<Rational>
+{
     private:
         Integer numerator, denominator;
 
@@ -1186,39 +1187,50 @@ class Rational: public Number<Rational> {
         // aqui se calcula a^p, con p entero
         Rational integerPow(Integer po);
     public:
-        //Rational(long long x): Rational(Integer(x), 1) {}
         Rational(): Rational(0, 1) {}
-        Rational(const Integer& numerator): Rational(numerator, 1) {}
+        Rational(const Integer& numerator) 
+        {
+            std::cout << numerator << "\n";
+            this->sign = numerator.getSign();
+            this->numerator = numerator;
+            this->denominator = 1;
+            this->numerator.setSign(true);
+        }
+
         Rational(const Integer& num, const Integer& den)
         {
             if (den == 0)
                 throw std::invalid_argument("Denominator cannot be zero");
 
-            // Signo: true = positivo, false = negativo
             sign = (num.getSign() == den.getSign());
 
-            // // Reducción a mínima expresión
-            Integer g = Integer::binaryEuclidean(Integer::abs(num), Integer::abs(den));
-            // numerator   = absNum / g;
-            // denominator = absDen / g;
+            Integer absNum = num;
+            Integer absDen = den;
+            absNum.setSign(true);
+            absDen.setSign(true);
 
-            numerator = num / g;
-            denominator = den / g;
-            // std::cout << "In constructor: " << numerator.getSign() << "/" << denominator.getSign() << "\n";
+            Integer g = Integer::binaryEuclidean(absNum, absDen);
+            if(g > 1)
+            {
+                numerator   = absNum / g;
+                denominator = absDen / g;
+            }
+            else
+            {
+                numerator = absNum;
+                denominator = absDen;
+            }
         }
-        Rational(int num, int den): Rational(Integer(num), Integer(den)) {}
+
         Rational(double x);
 
-        // implementación de los métodos de comparación
         bool operator==(const Rational& other) const;
         bool operator<(const Rational& other) const;
 
-        // implementación de los métodos de operaciones
         Rational operator+(const Rational& other) const override;
         Rational operator-(const Rational& other) const;
         Rational operator-() const;
         Rational operator*(const Rational& other) const;
-        friend Rational operator*(const Rational& num1, const Integer& num2);
         Rational operator/(const Rational& other) const;
         Rational operator^(const Rational& other) const;
         Rational operator=(const Rational& other);
@@ -1229,29 +1241,24 @@ class Rational: public Number<Rational> {
             return p;
         }
 
-        friend std::ostream& operator<<(std::ostream& os, const Rational& rational)
+        friend std::ostream& operator<<(std::ostream& os, const Rational& num)
         {
-            Integer num = rational.numerator, den = rational.denominator;
-            
-            if(!rational.sign)  os << "-";
-            
-            // for(int i = 0; i < 5; i++)
-            // {
-            //     Integer q = nume/den;
-            //     if(i == 1) os << ".";
-            //     os << q;
-            //     nume = nume - q*den;
-            //     nume = Integer::multiplyByBase(nume, 1);
-            // }
-            if (num == 0) {
-                os << "0";
+            if(!num.sign)  os << "-";
+            if(num.denominator == 1)
+            {
+                os << num.numerator;
                 return os;
             }
-            if (den == 1) {
-                os << Integer::abs(num);
-                return os;
+            Integer nume = num.numerator, den = num.denominator;
+
+            for(int i = 0; i < 5; i++)
+            {
+                Integer q = nume / den;
+                if(i == 1) os << ".";
+                os << q;
+                nume = nume - q * den;
+                nume = Integer::multiplyByBase(nume, 1);
             }
-            os << Integer::abs(num) << "/" << Integer::abs(den);
 
             return os;
         }
@@ -1317,14 +1324,14 @@ Rational::Rational(double x)
     }
 
     denominator = 1;
-    for(int i = 0; i < base%5; i++)
+    for(int i = 0; i < base % 5; i++)
         denominator = denominator * 10;
-    denominator = Integer::multiplyByBase(denominator, base/5);
+    denominator = Integer::multiplyByBase(denominator, base / 5);
     numerator = x;
 
     Integer gcd = Integer::binaryEuclidean(numerator, denominator);
-    numerator = numerator/gcd;
-    denominator = denominator/gcd;
+    numerator = numerator / gcd;
+    denominator = denominator / gcd;
 }
 
 bool Rational::operator==(const Rational& other) const 
@@ -1337,25 +1344,19 @@ bool Rational::operator<(const Rational& other) const
     if (!sign && other.sign) return true;
     if (sign && !other.sign) return false;
     if(this->sign == 1 && other.sign == 1)
-        return numerator*other.denominator < other.numerator*denominator;
+        return numerator * other.denominator < other.numerator * denominator;
 
-    return numerator*other.denominator > other.numerator*denominator;
+    return numerator * other.denominator > other.numerator * denominator;
 }
 
 Rational Rational::operator*(const Rational& other)  const 
 {
-    bool result_sign = (sign == other.sign);
-    Rational result(numerator * other.numerator, denominator * other.denominator);
-    result.setSign(result_sign);
-    return result;
+    return Rational(numerator * other.numerator, denominator * other.denominator);
 }
 
 Rational Rational::operator/(const Rational& other)  const
 {
-    bool result_sign = (sign == other.sign);
-    Rational result(numerator * other.denominator, denominator * other.numerator);
-    result.setSign(result_sign);
-    return result;
+    return Rational(numerator * other.denominator, denominator * other.numerator);
 }
 
 Rational Rational::operator^(const Rational& other) const
@@ -1373,33 +1374,36 @@ Rational Rational::operator=(const Rational& other)
 
 Rational Rational::operator+(const Rational& other) const
 {       
-    Integer left = sign ? numerator : -numerator;
-    Integer right = other.sign ? other.numerator : -other.numerator;
+    Integer gcd = Integer::binaryEuclidean(denominator, other.denominator);
+    Integer num1 = numerator * ((gcd != 1)? (other.denominator)/gcd: other.denominator);
+    Integer num2 = other.numerator * ((gcd != 1)? (denominator)/gcd: denominator);
+    if(other.sign == this->sign)
+    {
+        Rational result(num1 + num2, (denominator * other.denominator) / gcd);
+        result.setSign(this->sign);
+        return result;
+    }
 
-    Integer lcm = (denominator * other.denominator) / Integer::binaryEuclidean(denominator, other.denominator);
+    if(!other.sign)
+        return Rational(num1 - num2, (denominator * other.denominator) / gcd);
 
-    Integer left_scaled = left * (lcm / denominator);
-    Integer right_scaled = right * (lcm / other.denominator);
-
-    Integer result_num = left_scaled + right_scaled;
-
-    return Rational(result_num, lcm);
+    return Rational(num2 - num1, (denominator * other.denominator) / gcd);
 }
 
 Rational Rational::operator-(const Rational& other) const
 {
-    return *this + (-other);
+    Rational inv = other;
+    inv.sign = !inv.sign;
+    return *this + inv;
 }
 
 Rational Rational::operator-() const
 {
-    if (numerator == 0)
-        return *this;
-
     Rational inv(numerator, denominator);
-    inv.sign = !sign;
+    inv.sign = !inv.sign;
     return inv;
 }
+
 
 class PolyTerm {
     public:
@@ -1672,6 +1676,20 @@ public:
         is_dense_valid = false;
         is_sparse_valid = false;
         degree = 0;
+    }
+
+    bool isZero() const {
+        if(is_dense_valid) {
+            for(const auto& coeff : dense) {
+                if(coeff != Rational(0)) return false;
+            }
+        }
+        else {
+            for(const auto& term : sparse) {
+                if(term.coeff != Rational(0)) return false;
+            }
+        }
+        return true;
     }
 
     //***UTILS***
@@ -2033,6 +2051,47 @@ public:
 
         return r;
     } 
+
+    Polynomial primitivePolyGCD(Polynomial u, Polynomial v) {
+
+        Integer u_content = u.find_gcd_of_poly_terms();
+        Integer v_content = v.find_gcd_of_poly_terms();
+
+        PolyTerm term1, term2;
+        term1.coeff = Rational(1, u_content);
+        term1.exp = 0;
+        term2.coeff = Rational(1, v_content);
+        term2.exp = 0;
+
+        Polynomial u_primitive = u.multiply_by_single_term_poly(term1);
+        Polynomial v_primitive = v.multiply_by_single_term_poly(term2);
+
+        Integer c = Integer::binaryEuclidean(u_content, v_content);
+
+        while (v.getDegree() > 0) {
+            Polynomial r = pseudoremainder(u_primitive ,v_primitive);
+            Integer r_content = r.find_gcd_of_poly_terms();
+            PolyTerm term3;
+            term3.coeff = Rational(1, r_content);
+            term3.exp = 0;
+            Polynomial r_primitive = r.multiply_by_single_term_poly(term3);
+            u_primitive = v_primitive;
+            u = v;
+            v = r_primitive;
+        }
+        if (v_primitive.isZero()) {
+            PolyTerm term4;
+            term4.coeff = Rational(c, 1);
+            term4.exp = 0;
+            return u.multiply_by_single_term_poly(term4);
+        }
+        else {
+            Polynomial c_pol;
+            c_pol.dense.push_back(c);
+            c_pol.update_sparse();
+            return c_pol;
+        }
+    }
 };
 
 int main2() {
@@ -2121,23 +2180,17 @@ int main2() {
 
 int main(){
     Polynomial poly1, poly2;
-    poly1 = "1 4 -3 3 5 2 -1 1 2 0";
-    poly2 = "1 2 1 1 -1 0";
-    poly1.printPolynomial();
-    poly2.printPolynomial();
-
-    Rational n1(-3, 1);
-    Rational n2(1,1 );
-    Rational n3(1,1);
-
-    std::cout << n1 - (n2 * n3) << "\n";
-
-    // poly1 = "3 4 7 0";
-    // poly2 = "4 1 -1 0";
+    // poly1 = "1 4 -3 3 5 2 -1 1 2 0";
+    // poly2 = "1 2 1 1 -1 0";
     // poly1.printPolynomial();
     // poly2.printPolynomial();
-    Polynomial poly3 = poly1 / poly2;
-    std::cout << poly3 << "\n";
-    poly3.printPolynomial();
+
+    poly1 = "1/2 4 1/6 0";
+    poly2 = "1/4 1 -1/3 0";
+    // poly1.printPolynomial();
+    // poly2.printPolynomial();
+    std::cout << poly2.find_lcm_of_poly_terms() << "\n";
+    //Polynomial poly3 = poly1 / poly2;
+    // poly3.printPolynomial();
     return 0;
 }

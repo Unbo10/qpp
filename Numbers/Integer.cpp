@@ -675,7 +675,7 @@ class Integer: public Number<Integer> //?Does it also need to inherit from compa
 
         List<int> getList() const
         {
-            return List(digitsInteger);
+            return List<int>(digitsInteger);
         }
 
         static Integer multiplyByBase(const Integer& num, int times)
