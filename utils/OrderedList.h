@@ -1,13 +1,12 @@
-#ifndef ORDERED_LIST
-#define ORDERED_LIST
-#include "../utils/List.cpp"
-#include "../utils/Comparable.cpp"
+#pragma once
+#include "../utils/List.h"
+#include "../utils/Comparable.h"
 
 template <typename T>
 class OrderedList: public List<T>
 {
     public: 
-        // static_assert(std::is_base_of_v<Comparable<T>, T>, "T must be comparable");
+        static_assert(std::is_base_of_v<Comparable<T>, T>, "T must be comparable");
         OrderedList(int INITIAL_SIZE) : List<T>(INITIAL_SIZE) {}
         OrderedList() {}
         OrderedList(const OrderedList<T>& list)
@@ -114,6 +113,3 @@ class OrderedList: public List<T>
             list.capacity = list.length;
         }
 };
-
-
-#endif 

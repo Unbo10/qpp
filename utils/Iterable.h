@@ -1,6 +1,6 @@
-#ifndef ITERABLE_H
-#define ITERABLE_H
-#include "Iterator.cpp"
+#pragma once
+
+#include "Iterator.h"
 
 template <typename U>
 class Iterable
@@ -9,5 +9,3 @@ class Iterable
         virtual Iterator<U> begin() const = 0;
         virtual Iterator<U> end() const = 0;
 };
-
-#endif

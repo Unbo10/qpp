@@ -1,10 +1,8 @@
-#ifndef NUMBER_H
-#define NUMBER_H
+#pragma once
 
 #include <iostream>
 
-#include "../utils/Comparable.cpp"
-//!The header guards should go in header files. There their need.
+#include "../utils/Comparable.h"
 
 template <typename T>
 class Number: public Comparable<T>
@@ -76,7 +74,5 @@ class Number: public Comparable<T>
 
         bool getSign() const {return sign;}
 
-        void setSign(bool sign) {this->sign = sign;}
+        void setSign(bool sign) {sign = sign;}
 };
-
-#endif

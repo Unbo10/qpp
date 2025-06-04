@@ -1,10 +1,10 @@
 #include <iostream>
 #include <sstream>
-#include "../Numbers/Integer.cpp"
-#include "../Numbers/Number.cpp"
+#include "../Numbers/Integer.h"
+#include "../Numbers/Number.h"
 #include "../Numbers/Rational.h"
-#include "../Numbers/ClasesImplementation/Rational.cpp"
-#include "../utils/OrderedList.cpp"
+#include "../Numbers/Rational.h"
+#include "../utils/OrderedList.h"
 
 int main() {
     Rational num1(-3,1), num2(1,1), num3(1,1);

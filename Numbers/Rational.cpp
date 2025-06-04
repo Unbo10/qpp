@@ -1,4 +1,4 @@
-#include "../Rational.h"
+#include "Rational.h"
 
 Rational Rational::root(const Integer& po) const
 {
@@ -94,10 +94,11 @@ bool Rational::operator<(const Rational& other) const
 
 Rational Rational::operator*(const Rational& other)  const 
 {
-    Rational ret(numerador*other.numerador, denominador*other.denominador);
+    Rational ret(numerator*other.numerator, denominator*other.denominator);
     ret.setSign(this->sign == other.sign);
+    std::cout << "Result: " << ret << "\n";
     return ret;
-}   
+} 
 
 Rational Rational::operator/(const Rational& other)  const
 {
@@ -126,9 +127,15 @@ Rational Rational::operator=(const Rational& other)
 
 Rational Rational::operator+(const Rational& other) const
 {       
+    std::cout << *this << " + " << other << "\n";
     Integer gcd = Integer::binaryEuclidean(denominator, other.denominator);
-    Integer num1 = numerator*((gcd != 1)? (other.denominator)/gcd: other.denominator);
-    Integer num2 = other.numerator*((gcd != 1)? (denominator)/gcd: denominator);
+    Integer num1 = numerator*((gcd != 1) ? (other.denominator)/gcd: other.denominator);
+    num1.setSign(sign);
+    std::cout << "Num2: \n";
+    Integer num2 = other.numerator*((gcd != 1) ? (Integer::abs(denominator))/gcd: Integer::abs(denominator));
+    num2.setSign(other.sign);
+    std::cout << num2.getSign() << " " << other.sign << "\n";
+    std::cout << "Nums: " << num1 << " + " << num2 << "\n";
     if(other.sign == this->sign)
     {
         Rational result(num1+num2, (denominator *other.denominator)/gcd);
@@ -146,13 +153,17 @@ Rational Rational::operator-(const Rational& other) const
 {
     Rational inv = other;
     inv.sign = !inv.sign;
+    std::cout << "Inv: " << inv.sign << inv.numerator << "/" << inv.denominator << "\n";
     return *this + inv;
 }
 
 Rational Rational::operator-() const
 {
+    std::cout << "In -\n";
     Rational inv(numerator, denominator);
+    std::cout << inv.numerator << "/" << inv.denominator << " " << inv.sign << "aaa\n";
     inv.sign = !inv.sign;
+    std::cout << "Inv: " << sign << numerator << "/" << denominator << " exit\n";
     return inv;
 }
 

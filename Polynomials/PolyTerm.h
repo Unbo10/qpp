@@ -1,6 +1,6 @@
 #pragma once
 
-#include <bits/stdc++.h>
+#include <iostream>
 #include "../Numbers/Rational.h"
 
 class PolyTerm {

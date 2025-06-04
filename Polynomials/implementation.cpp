@@ -6,11 +6,10 @@
 #include <algorithm>
 #include <sstream>
 #include <cmath>
-#include "../Numbers/Integer.cpp"
-#include "../Numbers/Number.cpp"
+#include "../Numbers/Integer.h"
+#include "../Numbers/Number.h"
 #include "../Numbers/Rational.h"
-#include "../Numbers/ClasesImplementation/Rational.cpp"
-#include "../utils/OrderedList.cpp"
+#include "../utils/OrderedList.h"
 
 // template <typename T>
 // class Comparable
@@ -1937,7 +1936,7 @@ public:
         int n = sparse.size();
         
         for(int i = 0; i < n; i++) {
-            Integer current_den = sparse[i].coeff.denominador;
+            Integer current_den = sparse[i].coeff.denominator;
             Integer gcd = Integer::binaryEuclidean(lcm_den, current_den);
             lcm_den = (lcm_den * current_den) / gcd;
         }
@@ -1945,9 +1944,9 @@ public:
         Polynomial result;
         for(int i = 0; i < n; i++) {
             PolyTerm term = sparse[i];
-            Integer factor = lcm_den / term.coeff.denominador;
+            Integer factor = lcm_den / term.coeff.denominator;
             // std::cout << "FActor: " << factor << ", " << lcm_den << ", " << term.coeff.getDenominator() << "\n";
-            term.coeff = Rational(term.coeff.numerador * factor, 1);
+            term.coeff = Rational(term.coeff.numerator * factor, 1);
             result.sparse.push_back(term);
         }
         
@@ -1959,25 +1958,25 @@ public:
 
     //*For integer polynomials
     Integer find_gcd_of_poly_terms() {
-        if (sparse.size() < 2) return sparse[0].coeff.numerador;
+        if (sparse.size() < 2) return sparse[0].coeff.numerator;
         
         Integer gcd;
-        gcd = Integer::binaryEuclidean(sparse[0].coeff.numerador, sparse[1].coeff.numerador);
+        gcd = Integer::binaryEuclidean(sparse[0].coeff.numerator, sparse[1].coeff.numerator);
         // std::cout << "GCD of " << sparse[0].coeff.getNumerator() << ", " << sparse[1].coeff.getNumerator() << " is " << gcd << ", " << sparse.size() << "\n";
         for(int i = 2; i < (int)sparse.size(); i++) {
             // std::cout << "GCD: " << gcd << "\n";
-            gcd = Integer::binaryEuclidean(gcd, sparse[i].coeff.numerador);
+            gcd = Integer::binaryEuclidean(gcd, sparse[i].coeff.numerator);
         }
 
         return gcd;
     }
 
     Integer find_lcm_of_poly_terms() {
-        if (sparse.size() < 2) return sparse[0].coeff.denominador;
+        if (sparse.size() < 2) return sparse[0].coeff.denominator;
         
-        Integer lcm = sparse[0].coeff.denominador;
+        Integer lcm = sparse[0].coeff.denominator;
         for(int i = 1; i < (int)sparse.size(); i++) {
-            Integer current_den = sparse[i].coeff.denominador;
+            Integer current_den = sparse[i].coeff.denominator;
             Integer gcd = Integer::binaryEuclidean(lcm, current_den);
             lcm = (lcm * current_den) / gcd;
         }
@@ -2034,7 +2033,7 @@ public:
         Polynomial u_prime = u.multiply_by_single_term_poly(term1);
         Polynomial v_prime = v.multiply_by_single_term_poly(term2);
 
-        Integer alpha = v_prime.sparse[0].coeff.denominador^Integer(u.getDegree() - v.getDegree() + 1);
+        Integer alpha = v_prime.sparse[0].coeff.denominator^Integer(u.getDegree() - v.getDegree() + 1);
         std::cout << "Alpha: " << alpha << "\n";
 
         PolyTerm term3;
@@ -2064,7 +2063,7 @@ public:
         Polynomial u_prime = u.multiply_by_single_term_poly(term1);
         Polynomial v_prime = v.multiply_by_single_term_poly(term2);
 
-        Integer alpha = v_prime.sparse[0].coeff.denominador^Integer(u.getDegree() - v.getDegree() + 1);
+        Integer alpha = v_prime.sparse[0].coeff.denominator^Integer(u.getDegree() - v.getDegree() + 1);
         std::cout << "Alpha: " << alpha << "\n";
 
         PolyTerm term3;

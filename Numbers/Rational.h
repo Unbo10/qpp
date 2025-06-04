@@ -1,24 +1,24 @@
 #pragma once
 
-#include "Number.cpp"
-#include "Integer.cpp"
+#include "Number.h"
+#include "Integer.h"
 
 class Rational: public Number<Rational>
 {
     private:
-        Integer numerator, denominator;
+        // Integer numerator, denominator;
 
         // aqui se calcula a^{1/p}, con p entero
         Rational root(const Integer& po) const;
         // aqui se calcula a^p, con p entero
         Rational integerPow(Integer po);
     public:
-        Integer numerador, denominador;
+        //? Can it be made private?
+        Integer numerator, denominator;
         //Rational(long long x): Rational(Integer(x), 1) {}
         Rational(): Rational(0, 1) {}
         Rational(const Integer& numerator) 
         {
-            std::cout << numerator << "\n";
             this->sign = numerator.getSign();
             this->numerator = numerator;
             this->denominator = 1;
@@ -78,11 +78,11 @@ class Rational: public Number<Rational>
         {
             if (!num.sign) os << "-";
 
-            os << num.numerador;
-            if (num.denominador != 1)
-                os << "/" << num.denominador;
+            os << Integer::abs(num.numerator);
+            if (num.denominator != 1)
+                os << "/" << Integer::abs(num.denominator);
 
-            // Integer nume = num.numerador, den = num.denominador;
+            // Integer nume = num.numerator, den = num.denominator;
             
             // for(int i = 0; i < 5; i++)
             // {
