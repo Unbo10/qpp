@@ -31,7 +31,7 @@ class List : public Iterable<U>
 {
     protected:
         static const int DEFAULT_INITIAL_CAPACITY = 10;
-        static constexpr double DEFAULT_RESIZE = 1.4;
+        static constexpr double DEFAULT_RElength = 1.4;
 
         U* array;
         /**
@@ -45,13 +45,13 @@ class List : public Iterable<U>
 
 
         /**
-         * @brief Resizes the internal array to increase its capacity.
+         * @brief Relengths the internal array to increase its capacity.
          * 
          * @note Does so by a factor of 1.4
          */
         void resize()
         {
-            int NEW_CAPACITY = capacity*DEFAULT_RESIZE;
+            int NEW_CAPACITY = capacity*DEFAULT_RElength;
             U* help = array;
             array = new U[NEW_CAPACITY];
 
@@ -168,7 +168,7 @@ class List : public Iterable<U>
          * @brief Adds an item to the end of the list.
          * 
          * This is a convinience method that calls `add(const U&, int index)`
-         * and is equivalent to `add(item, list.size())`.
+         * and is equivalent to `add(item, length)`.
          * 
          * @param item The item to be added.
          */
@@ -224,7 +224,7 @@ class List : public Iterable<U>
          * @brief Remove and return the first element from the list.
          * 
          * Convinience method that calls `pop(int index)` and is equivalent to
-         * `pop(list.size())`.
+         * `pop(length)`.
          *
          * @return U The first element of the list that was removed.
          * @throws `std::out_of_range` If the list is empty.
@@ -244,9 +244,9 @@ class List : public Iterable<U>
         }
 
         /**
-         * @return int Size of the list (number of elements).
+         * @return int length of the list (number of elements).
          */
-        int getSize() const
+        int size() const
         {
             return length;
         }
@@ -255,7 +255,7 @@ class List : public Iterable<U>
          * @return int Capacity of the list (maximum number of elements without
          * resizing).
          */
-        int getCapacity() const 
+        int capacity() const 
         {
             return capacity;
         }
