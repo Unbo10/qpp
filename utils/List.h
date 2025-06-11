@@ -255,12 +255,16 @@ class List : public Iterable<U>
          */
         void clear()
         {
-            delete[] array;
-            length = 0;
-            array = new U[DEFAULT_INITIAL_CAPACITY];
-            capacity = DEFAULT_INITIAL_CAPACITY;
+            this->clear(DEFAULT_INITIAL_CAPACITY);
         }
 
+        void clear(int newSize)
+        {
+            delete[] array;
+            length = 0;
+            array = new U[newSize];
+            capacity = newSize;
+        }
         /**
          * @brief Concatenates two lists into a new list.
          * 

@@ -3,7 +3,8 @@
 #include "include/Natural.h"
 
 int main() {
-    Natural num1(157), num2(366);
+    Natural num(11062401249);
+    Natural num2 = 1;
 
-    std::cout << num1 + num2;
+    std::cout << num2 - num;
 }

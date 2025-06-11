@@ -33,6 +33,7 @@ class Natural: public Comparable<Natural>
         es decir, lugares que no se usan a la derecha, o ceros a la derecha
     */
         static void cleanDigits(Natural& num);
+        static void cleanDigits(Natural& num, int index);
 
         Natural(int x, int size): digits(size) {}
     public:
@@ -44,6 +45,10 @@ class Natural: public Comparable<Natural>
 
         unsigned short operator[](int index) const;
         friend Natural operator+(const Natural& num1, const Natural& num2);
+        friend List<Natural> operator-(const Natural& num1, const Natural& num2);
+        friend Natural operator*(const Natural& num1, const Natural& num2);
+        friend Natural operator/(Natural& num1, const Natural& num2);
+        static unsigned short stimateQuant(Natural& num1, Natural& num2);
 
         friend std::ostream& operator<<(std::ostream& os, const Natural& num);
         friend std::istream& operator>>(std::istream& is, Natural& num);
