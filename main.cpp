@@ -1,11 +1,11 @@
 #include <iostream>
 #include <sstream>
 #include "include/Natural.h"
-//#include "include/Integer.h"
+#include "include/Integer.h"
+#include "include/Rational.h"
 
 int main() {
-    Natural num = 50712489014174, num1 = 444;
-    std::cout << ((num1)/num1) << std::endl;
-        
-    //std::cout << num;
+    Rational pi(3.141596), e(2.7198247);
+
+    std::cout << pi*e;
 }

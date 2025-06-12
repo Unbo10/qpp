@@ -130,25 +130,34 @@ Natural operator*(const Natural& num1, const Natural& num2)
     if(num1 == 1) return num2;
     if(num2 == 1) return num1;
 
-    Natural counter(num2), sum(num1), result(0);
-    while(counter > 0)
+    Natural product(0, num1.digits.size() + num2.digits.size());
+    for(int i = 0; i < num1.digits.size() + num2.digits.size(); i++)
+        product.digits.add(0);
+
+    for(int j = 0; j < num2.digits.size(); j++)
     {
-        if(counter[0]%2 == 1)
-            result = result + sum;
-        
-        sum = sum + sum;
-        counter = Natural::divideBy2(counter);
+        if(num2[j] == 0) continue;
+        unsigned short carry = 0;
+        for(int i = 0; i < num1.digits.size(); i++)
+        {
+            unsigned short realSum = carry + num1[i]*num2[j] + product[i+j];
+            product.digits.replace(realSum%100, i+j);
+            carry = realSum/100;
+        }
+        product.digits.replace(carry, num1.digits.size()+j);
     }
 
-    return result;
+    Natural::cleanDigits(product);
+    return product;
 }
 
 Natural operator/(const Natural& num1, const Natural& num2)
 {
     if(num1 == num2) return 1;
-    if(num2.digits.size() == 0) 
+    if(num2 == 0) 
         throw std::invalid_argument("Math error: division by zero");
 
+    if(num2 == 2) return Natural::divideBy2(num1);
     if(num2 == 1) return num1;
 
     unsigned short scaleFactor = 100/(num2.digits[num2.digits.size()-1] + 1);
@@ -163,7 +172,6 @@ Natural operator/(const Natural& num1, const Natural& num2)
         
     for(int j = m; j >= 0; j--)
     {
-        std::cout << U << "     " << quant << std::endl;
         unsigned short q;
         if(U[divisor.digits.size()] == divisor[divisor.digits.size()-1])
             q = 99;
@@ -259,6 +267,31 @@ Natural Natural::divideBy2(const Natural& num)
 
     return quant;
 }
+
+Natural Natural::gcd(const Natural& num1, const Natural& num2)
+{
+    Natural number1 = num1, number2 = num2;
+
+    Natural gcd = 1;
+    while(number1[0]%2 == 0 && number2[0]%2 == 0)
+    {
+        number1 = Natural::divideBy2(number1);
+        number2 = Natural::divideBy2(number2);
+        gcd = 2*gcd;
+    }
+
+    while(number1 > 0 && number2 != 1)
+    {
+        while(number1[0]%2 == 0) number1 = Natural::divideBy2(number1);
+        while(number2[0]%2 == 0) number2 = Natural::divideBy2(number2);
+        Natural t = (number1 - number2)[0];
+        if(number1 < number2) number2 = number1;
+        number1 = t;
+    }
+
+    return gcd*number2;
+}
+
 
 List<unsigned short> Natural::getList()
 {

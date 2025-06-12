@@ -60,7 +60,13 @@ class Natural: public Comparable<Natural>
         friend std::istream& operator>>(std::istream& is, Natural& num);
 
         static Natural divideBy2(const Natural& num);
+        void multiplyBy100() {digits.add(0, 0);}
+        static Natural gcd(const Natural& num1, const Natural& num2);
 
         List<unsigned short> getList();
+        explicit operator bool() const 
+        {
+            return digits[0]%2;
+        }
 };
 #endif 
