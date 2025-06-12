@@ -36,7 +36,7 @@ List<Natural> res(const Natural& num1, const Natural& num2, bool re)
             kResult += BASE;
         }
         else carry = 0;
-        result.digits.add(kResult);
+        result.digits.replace(kResult, i);
     }
 
     Natural::cleanDigits(result);
@@ -111,10 +111,10 @@ Natural operator+(const Natural& num1, const Natural& num2)
             carry = 1;
         }
         else carry = 0;
-        result.digits.add(res);
+        result.digits.replace(res, i);
     }
 
-    if(carry) result.digits.add(1);
+    if(carry) result.digits.replace(1, size);
     Natural::cleanDigits(result);
     return result;
 }
@@ -126,7 +126,6 @@ List<Natural> operator-(const Natural& num1, const Natural& num2)
 
 Natural operator*(const Natural& num1, const Natural& num2)
 {
-
     if(num2 == 0 || num1 == 0) return 0;
     if(num1 == 1) return num2;
     if(num2 == 1) return num1;
@@ -144,46 +143,42 @@ Natural operator*(const Natural& num1, const Natural& num2)
     return result;
 }
 
-Natural operator/(Natural& num1, const Natural& num2)
+Natural operator/(const Natural& num1, const Natural& num2)
 {
+    if(num1 == num2) return 1;
     if(num2.digits.size() == 0) 
         throw std::invalid_argument("Math error: division by zero");
 
     if(num2 == 1) return num1;
 
-    unsigned short scaleFactor = (num2.digits[num2.digits.size()-1] < 5)? 10/(num2.digits[num2.digits.size()-1] + 1): 1;
-    if(scaleFactor != 1)
-        num1 = num1 * scaleFactor;
-
-    Natural divisor = (scaleFactor == 1)? num2: num2*scaleFactor;
-    int m = num1.digits.size() - num2.digits.size();
-    Natural quant(0, m + 1);
-    for(int i = 0; i < m + 1; i++)
-        quant.digits.add(0);
-
-    Natural currentRemainder(0, num1.digits.size() - m);
-    for(int i = m; i < num1.digits.size(); i++)
-        currentRemainder.digits.add(num1[i]);
-    
-    std::cout << divisor << "   " << num1 << "\n";
-    for (int j = m; j >= 0; --j) 
+    unsigned short scaleFactor = 100/(num2.digits[num2.digits.size()-1] + 1);
+    Natural dividend = num1*scaleFactor;
+    Natural divisor = num2*scaleFactor;
+    int m = dividend.digits.size() - divisor.digits.size()-1;
+    if(m < 0) return 0;
+    Natural U(0, divisor.digits.size()+1);
+    Natural quant(0, m+1);
+    for(int i = m; i < dividend.digits.size(); i++)
+        U.digits.replace(dividend[i], i-m);
+        
+    for(int j = m; j >= 0; j--)
     {
-        short q = stimateQuant(currentRemainder, divisor);
-        std::cout << q << " " << currentRemainder << "  Cociente"<< std::endl;
-        Natural help = divisor*q;
-        while(help > currentRemainder)
+        std::cout << U << "     " << quant << std::endl;
+        unsigned short q;
+        if(U[divisor.digits.size()] == divisor[divisor.digits.size()-1])
+            q = 99;
+        else q = stimateQuant(U, divisor);
+        Natural w = divisor*q;
+        while(w > U)
         {
             q--;
-            help = (help - divisor)[0];
+            w = (w - divisor)[0];
         }
-        std::cout << q << "  cociente final \n"; 
-
-        currentRemainder = (currentRemainder - help)[0];
         quant.digits.replace(q, j);
-        currentRemainder.digits.add(divisor[j], 0);
+        U = (U - w)[0];
+        if(j > 0)
+            U.digits.add(dividend[j-1], 0);
     }
-
-    Natural::cleanDigits(quant);
     return quant;
 }
 
@@ -191,14 +186,9 @@ Natural operator/(Natural& num1, const Natural& num2)
 unsigned short stimateQuant(const Natural& num1, const Natural& num2)
 {
     int size = num1.digits.size()-1;
-    if(num1[size] < 10)
-    {
-        if(num1.digits.size() == 1)
-            return num1[size]/num2[num2.digits.size()-1];
-        return (num1[size]*10 + num1[size -1]/10)/num2[num2.digits.size()-1];
-    }
-
-    return num1[size]/num2[num2.digits.size()-1];
+    if(size == 0)
+        return num1[size]/num2[num2.digits.size()-1];
+    return (num1[size]*100 + num1[size -1])/num2[num2.digits.size()-1];
 }
 
 /* fin de estimacion */
@@ -257,17 +247,20 @@ Natural Natural::divideBy2(const Natural& num)
 {
     if(num == 0) return 0;
 
-    Natural quant(0, num.digits.size());
-    for(int i = 0; i < num.digits.size(); i++)
-        quant.digits.add(0);
+    Natural quant(0, (num[num.digits.size()-1] < 2) ?  num.digits.size()-1: num.digits.size());
 
-    int currentResult = 0;
-    for(int i = num.digits.size()-1; i >= 0; i--)
+    int currentResult = (num[num.digits.size()-1] < 2) ? num[num.digits.size()-1]: 0;
+    for(int i = quant.digits.getCapacity()-1; i >= 0; i--)
     {
         currentResult = currentResult*100 + num[i];
         quant.digits.replace(currentResult/2, i);
         currentResult = currentResult%2;
     }
-    Natural::cleanDigits(quant);
+
     return quant;
+}
+
+List<unsigned short> Natural::getList()
+{
+    return List(digits);
 }

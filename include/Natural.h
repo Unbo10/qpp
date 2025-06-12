@@ -35,7 +35,11 @@ class Natural: public Comparable<Natural>
         static void cleanDigits(Natural& num);
         static void cleanDigits(Natural& num, int index);
 
-        Natural(int x, int size): digits(size) {}
+        Natural(int x, int size): digits(size) 
+        {
+            for(int i = 0; i< size; i++)
+                digits.add(0);
+        }
         friend List<Natural> res(const Natural& num1, const Natural& num2, bool re);
         friend unsigned short stimateQuant(const Natural& num1, const Natural& num2);
     public:
@@ -50,11 +54,13 @@ class Natural: public Comparable<Natural>
         friend Natural operator+(const Natural& num1, const Natural& num2);
         friend List<Natural> operator-(const Natural& num1, const Natural& num2);
         friend Natural operator*(const Natural& num1, const Natural& num2);
-        friend Natural operator/(Natural& num1, const Natural& num2);
+        friend Natural operator/(const Natural& num1, const Natural& num2);
 
         friend std::ostream& operator<<(std::ostream& os, const Natural& num);
         friend std::istream& operator>>(std::istream& is, Natural& num);
 
         static Natural divideBy2(const Natural& num);
+
+        List<unsigned short> getList();
 };
 #endif 
