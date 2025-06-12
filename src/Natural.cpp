@@ -18,6 +18,30 @@ void Natural::cleanDigits(Natural& num, int index)
     num.digits = copy;
 }
 
+
+List<Natural> res(const Natural& num1, const Natural& num2, bool re)
+{
+    if(re && num1 < num2)
+        return {res(num2, num1, 0)[0], 0};
+        
+    bool carry = 0;
+    int maxSize = (num1.digits.size() < num2.digits.size())? num2.digits.size(): num1.digits.size();
+    Natural result(0, maxSize);
+    for(int i = 0; i < maxSize; i++)
+    {
+        short kResult = num1[i] - num2[i] - carry;
+        if(kResult < 0)
+        {
+            carry = 1;
+            kResult += BASE;
+        }
+        else carry = 0;
+        result.digits.add(kResult);
+    }
+
+    Natural::cleanDigits(result);
+    return {result, 1};
+}
 /* Fin de metodo privados */
 
 
@@ -35,12 +59,16 @@ Natural::Natural(long long x)
     Natural::cleanDigits(*this);
 }
 
+Natural::Natural(const Natural& other)
+{
+    digits = other.digits;
+}
 /* Comparaciones */
 bool Natural::operator<(const Natural& num) const 
 {
     int size = (num.digits.size() < digits.size())? digits.size(): num.digits.size();
 
-    for(int i = 0; i < size; i++)
+    for(int i = size-1; i >= 0; i--)
     {
         if(this->operator[](i) < num[i])
             return true;
@@ -93,34 +121,7 @@ Natural operator+(const Natural& num1, const Natural& num2)
 
 List<Natural> operator-(const Natural& num1, const Natural& num2)
 {
-    bool carry = 0;
-    int maxSize = (num1.digits.size() < num2.digits.size())? num2.digits.size(): num1.digits.size();
-    Natural result(0, maxSize);
-    for(int i = 0; i < maxSize; i++)
-    {
-        if(i >= num1.digits.size())
-        {
-            result.digits.add(num2[i]);
-            carry = 1;
-            continue;
-        }
-
-        int kResult = num1[i] - num2[i] - carry;
-        if(kResult < 0 && !carry)
-        {
-            kResult = -kResult;
-        }
-        else if(kResult < 0)
-        {
-            carry = 1;
-            kResult += BASE;
-        }
-        else carry = 0;
-        result.digits.add(kResult);
-    }
-
-    Natural::cleanDigits(result);
-    return {result, !carry};
+    return res(num1, num2, 1);
 }
 
 Natural operator*(const Natural& num1, const Natural& num2)
@@ -130,25 +131,17 @@ Natural operator*(const Natural& num1, const Natural& num2)
     if(num1 == 1) return num2;
     if(num2 == 1) return num1;
 
-    Natural product(0, num1.digits.size() + num2.digits.size());
-    for(int i = 0; i < num1.digits.size() + num2.digits.size(); i++)
-        product.digits.add(0);
-
-    for(int j = 0; j < num2.digits.size(); j++)
+    Natural counter(num2), sum(num1), result(0);
+    while(counter > 0)
     {
-        if(num2[j] == 0) continue;
-        unsigned short carry = 0;
-        for(int i = 0; i < num1.digits.size(); i++)
-        {
-            unsigned short realSum = carry + num1[i]*num2[j] + product[i+j];
-            product.digits.replace(realSum%100, i+j);
-            carry = realSum/100;
-        }
-        product.digits.replace(carry, num1.digits.size()+j);
+        if(counter[0]%2 == 1)
+            result = result + sum;
+        
+        sum = sum + sum;
+        counter = Natural::divideBy2(counter);
     }
 
-    Natural::cleanDigits(product);
-    return product;
+    return result;
 }
 
 Natural operator/(Natural& num1, const Natural& num2)
@@ -158,7 +151,7 @@ Natural operator/(Natural& num1, const Natural& num2)
 
     if(num2 == 1) return num1;
 
-    unsigned short scaleFactor = (num2.digits[num2.digits.size()-1] < 50)? 100/(num2.digits[num2.digits.size()-1] + 1): 1;
+    unsigned short scaleFactor = (num2.digits[num2.digits.size()-1] < 5)? 10/(num2.digits[num2.digits.size()-1] + 1): 1;
     if(scaleFactor != 1)
         num1 = num1 * scaleFactor;
 
@@ -172,13 +165,44 @@ Natural operator/(Natural& num1, const Natural& num2)
     for(int i = m; i < num1.digits.size(); i++)
         currentRemainder.digits.add(num1[i]);
     
-    for (int j = m; j >= 0; --j) {
+    std::cout << divisor << "   " << num1 << "\n";
+    for (int j = m; j >= 0; --j) 
+    {
+        short q = stimateQuant(currentRemainder, divisor);
+        std::cout << q << " " << currentRemainder << "  Cociente"<< std::endl;
+        Natural help = divisor*q;
+        while(help > currentRemainder)
+        {
+            q--;
+            help = (help - divisor)[0];
+        }
+        std::cout << q << "  cociente final \n"; 
 
-
+        currentRemainder = (currentRemainder - help)[0];
+        quant.digits.replace(q, j);
+        currentRemainder.digits.add(divisor[j], 0);
     }
 
-    return 1;
+    Natural::cleanDigits(quant);
+    return quant;
 }
+
+/* Estimacion de cociente */
+unsigned short stimateQuant(const Natural& num1, const Natural& num2)
+{
+    int size = num1.digits.size()-1;
+    if(num1[size] < 10)
+    {
+        if(num1.digits.size() == 1)
+            return num1[size]/num2[num2.digits.size()-1];
+        return (num1[size]*10 + num1[size -1]/10)/num2[num2.digits.size()-1];
+    }
+
+    return num1[size]/num2[num2.digits.size()-1];
+}
+
+/* fin de estimacion */
+
 
 void Natural::operator=(const Natural& num2)
 {
@@ -226,4 +250,24 @@ std::istream& operator>>(std::istream& is, Natural& num)
     }
     Natural::cleanDigits(num, pos-1);
     return is;
+}
+
+// division por 2
+Natural Natural::divideBy2(const Natural& num)
+{
+    if(num == 0) return 0;
+
+    Natural quant(0, num.digits.size());
+    for(int i = 0; i < num.digits.size(); i++)
+        quant.digits.add(0);
+
+    int currentResult = 0;
+    for(int i = num.digits.size()-1; i >= 0; i--)
+    {
+        currentResult = currentResult*100 + num[i];
+        quant.digits.replace(currentResult/2, i);
+        currentResult = currentResult%2;
+    }
+    Natural::cleanDigits(quant);
+    return quant;
 }
