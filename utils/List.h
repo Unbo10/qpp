@@ -154,6 +154,11 @@ class List : public Iterable<U>
             add(item, length);
         }
 
+        void add(U& item)
+        {
+            add(item, length);
+        }
+
         /**
          * @brief Replaces an item at a specified index in the list.
          * 

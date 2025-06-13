@@ -1,5 +1,7 @@
 #pragma once
 
+#include <variant>
+
 #include "Number.h"
 #include "Integer.h"
 
@@ -32,6 +34,20 @@ class Rational: public Number<Rational>
         Rational operator/(const Rational& other) const;
         Rational operator^(const Rational& other) const;
         
+        std::variant<Integer, Rational> checkForInteger() const 
+        {
+            if(denominator != 1)
+                return std::variant<Integer, Rational>(
+                    std::in_place_type<Rational>,
+                    Rational(Integer(numerator, this->sign), denominator)
+                );
+
+                
+            return std::variant<Integer, Rational>(
+                std::in_place_type<Integer>,
+                Integer(numerator, this->sign)
+            );
+        }
 
         static Rational abs(const Rational& p)
         {

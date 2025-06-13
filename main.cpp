@@ -1,11 +1,12 @@
 #include <iostream>
 #include <sstream>
-#include "include/Natural.h"
-#include "include/Integer.h"
-#include "include/Rational.h"
+#include "include/LinearAlgebra/Vector.h"
 
 int main() {
-    Rational pi(3.141596), e(2.7198247);
+    Vector x(10);
 
-    std::cout << pi*e;
+    for(int i = 0; i < 10; i++)
+        x.replace(Rational(1, 50), i);
+
+    std::cout << x << std::endl;
 }
