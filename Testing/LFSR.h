@@ -21,14 +21,6 @@ class LeftShiftRegister{
     private:
         int length = 16;  // Length of the LFSR
         int feedback_coefficients[4] = {16, 15, 13, 4}; // Feedback coefficients for the LFSR
-        /**
-         * @brief Warms up the LFSR by generating a sequence of bits.
-         * 
-         * This method runs n times generate() to warm up the
-         * LFSR, ensuring that it is in a good state for subsequent calls to
-         * generate().
-         */
-        void warmup(int n);
     public:
         int LFSR[16];
         /**
@@ -46,4 +38,12 @@ class LeftShiftRegister{
          * @return std::vector<int> A vector containing the generated pseudo-random bits.
          */
         std::vector<int> generate(int n);
+        /**
+         * @brief Warms up the LFSR by generating a sequence of bits.
+         * 
+         * This method runs n times generate() to warm up the
+         * LFSR, ensuring that it is in a good state for subsequent calls to
+         * generate().
+         */
+        void warmup(int n);
 };

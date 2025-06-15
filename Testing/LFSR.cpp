@@ -30,7 +30,7 @@ std::vector<int> LeftShiftRegister::generate(int n) {
         }
         LFSR[0] = new_bit; // Insert new bit at the front
     }
-    warmup(10); // Warm up the LFSR
+    warmup(100); // Warm up the LFSR
     return bits;
 }
 LeftShiftRegister::LeftShiftRegister() {
