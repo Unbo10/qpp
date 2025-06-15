@@ -295,5 +295,5 @@ Natural Natural::gcd(const Natural& num1, const Natural& num2)
 
 List<unsigned short> Natural::getList()
 {
-    return List(digits);
+    return List<unsigned short>(digits);
 }
