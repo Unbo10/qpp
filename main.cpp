@@ -5,9 +5,13 @@
 #include "Numbers/Rational.h"
 #include "utils/OrderedList.h"
 #include "include/Natural.h"
+#include "include/LinearAlgebra/Vector.h"
 
 int main() {
-    Natural num1(157), num2(366);
+    Vector x(10);
 
-    std::cout << num1 + num2;
+    for(int i = 0; i < 10; i++)
+        x.replace(Rational(1, 50), i);
+
+    std::cout << x << std::endl;
 }

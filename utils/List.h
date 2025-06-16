@@ -177,6 +177,11 @@ class List : public Iterable<U>
             add(item, length);
         }
 
+        void add(U& item)
+        {
+            add(item, length);
+        }
+
         /**
          * @brief Replaces an item at a specified index in the list.
          * 
@@ -255,7 +260,7 @@ class List : public Iterable<U>
          * @return int Capacity of the list (maximum number of elements without
          * resizing).
          */
-        int capacity() const 
+        int getCapacity() const 
         {
             return capacity;
         }
@@ -278,12 +283,16 @@ class List : public Iterable<U>
          */
         void clear()
         {
-            delete[] array;
-            length = 0;
-            array = new U[DEFAULT_INITIAL_CAPACITY];
-            capacity = DEFAULT_INITIAL_CAPACITY;
+            this->clear(DEFAULT_INITIAL_CAPACITY);
         }
 
+        void clear(int newSize)
+        {
+            delete[] array;
+            length = 0;
+            array = new U[newSize];
+            capacity = newSize;
+        }
         /**
          * @brief Concatenates two lists into a new list.
          * 
