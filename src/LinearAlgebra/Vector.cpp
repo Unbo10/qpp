@@ -1,6 +1,6 @@
 #include "../../include/LinearAlgebra/Vector.h"
 
-Vector::Vector(const Vector& another): Vector(another.size())
+Vector::Vector(const Vector& another): components(another.components.size())
 {
     for(const Rational& x: another)
     {
@@ -27,6 +27,18 @@ Vector Vector::operator+(const Vector& other) const
     return result;
 }
 
+Vector Vector::operator-(const Vector& other) const 
+{
+    if(this->dimension() != other.dimension())
+        throw std::invalid_argument("Vector dimensions don't match");
+
+    Vector result(other);
+    for(int i = 0; i < this->dimension(); i++)
+        result.replace(components[i] - result[i], i);
+
+    return result;
+}
+
 Rational Vector::operator*(const Vector& other) const
 {
     if(this->dimension() != other.dimension())
@@ -49,4 +61,10 @@ Vector operator*(const Rational& num, const Vector& vector)
         result.replace(num*result[i], i);
 
     return result;
+}
+
+Vector Vector::projectionIn(const Vector& other) const
+{
+    Rational scalar = (this->operator*(other))/(other*other);
+    return scalar*other;
 }

@@ -17,6 +17,9 @@ Rational Rational::integerPow(Integer po)
 
 Rational::Rational(const Integer& num, const Integer& den)
 {
+    if(den == 0)
+        throw std::invalid_argument("Math error: division by zero");
+        
     this->sign = (num.getSign() == den.getSign());
     numerator = num.getAbsolutePart();
     denominator = den.getAbsolutePart();
@@ -174,11 +177,12 @@ Rational Rational::operator*(const Rational& other) const
 
     Rational result;
     result.setSign(this->sign == other.sign);
+
     result.numerator = ((gcd1 == 1)? other.numerator: other.numerator/gcd1)*
                        ((gcd2 == 1)? this->numerator: this->numerator/gcd2);
 
-    result.denominator = ((gcd1 == 1)? other.denominator: other.denominator/gcd1)*
-                         ((gcd2 == 1)? this->denominator: this->denominator/gcd2);
+    result.denominator = ((gcd1 == 1)? this->denominator: this->denominator/gcd1)*
+                         ((gcd2 == 1)? other.denominator: other.denominator/gcd2);
 
     return result;
 }
@@ -196,8 +200,8 @@ Rational Rational::operator/(const Rational& other) const
     result.numerator = ((gcd1 == 1)? numerator: numerator/gcd1) *
                        ((gcd2 == 1)? other.denominator: other.denominator/gcd2);
 
-    result.denominator = ((gcd1 == 1)? denominator: denominator/gcd1) *
-                         ((gcd2 == 1)? other.numerator: other.numerator/gcd2);
+    result.denominator = ((gcd1 == 1)? other.numerator: other.numerator/gcd1) *
+                         ((gcd2 == 1)? denominator: denominator/gcd2);
 
     return result;
 }
@@ -216,11 +220,12 @@ std::ostream& operator<<(std::ostream& os, const Rational& number)
         return os;
     }
     if(!number.sign) os << '-';
-    if(number.denominator == 1)
+    if(number.denominator == 1 /*|| number.denominator == 0*/)
     {
-        os << number.denominator;
+        os << number.numerator;
         return os;   
     }
+
     Natural num = number.numerator, den = number.denominator;
     if(Rational::decimalPoints == 0)
     {

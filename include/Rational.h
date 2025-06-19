@@ -21,6 +21,7 @@ class Rational: public Number<Rational>
         Rational(): Rational(0, 1) {}
         Rational(const Integer& numeratr): numerator(numeratr.getAbsolutePart()), denominator(1)  {}
         Rational(const Integer& num, const Integer& den);
+        Rational(const Natural& num): numerator(num), denominator(1) {this->setSign(true);}
         Rational(double x);
 
         // implementación de los métodos de comparación y asignacion
