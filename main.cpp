@@ -3,10 +3,11 @@
 #include "include/LinearAlgebra/Vector.h"
 
 int main() {
-    Vector x(10);
-
-    for(int i = 0; i < 10; i++)
-        x.replace(Rational(1, 50), i);
-
-    std::cout << x << std::endl;
+    Rational number(1, 1);
+    Rational::decimalPoints = 10000;
+    while(number != 0)
+    {
+        std::cout << number << std::endl;
+        number = number/2;
+    }
 }

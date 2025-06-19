@@ -61,6 +61,7 @@ class Natural: public Comparable<Natural>
 
         static Natural divideBy2(const Natural& num);
         void multiplyBy100() {digits.add(0, 0);}
+        void multiplyBy10();
         static Natural gcd(const Natural& num1, const Natural& num2);
 
         List<unsigned short> getList();

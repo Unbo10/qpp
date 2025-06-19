@@ -1,18 +1,52 @@
 #include "../../include/LinearAlgebra/Vector.h"
-using Datos = std::variant<Integer, Rational>;
 
 Vector::Vector(const Vector& another): Vector(another.size())
 {
-    for(const Datos& x: another)
+    for(const Rational& x: another)
     {
         components.add(x);
     }
 }
 
-void Vector::replace(const Datos& value, int index)
+void Vector::replace(const Rational& value, int index)
 {
-    if(std::holds_alternative<Rational>(value))
-        components.replace(std::get<Rational>(value).checkForInteger(), index); 
-    else components.replace(value, index);
-    //components.replace(value, index);
+    components.replace(value, index);
+}
+
+/*  operaciones entre vectores */
+
+Vector Vector::operator+(const Vector& other) const
+{
+    if(this->dimension() != other.dimension())
+        throw std::invalid_argument("Vector dimensions don't match");
+
+    Vector result(this->dimension());
+    for(int i = 0; i < this->dimension(); i++)
+        result.replace(components[i] + other[i], i);
+
+    return result;
+}
+
+Rational Vector::operator*(const Vector& other) const
+{
+    if(this->dimension() != other.dimension())
+        throw std::invalid_argument("Vector dimensions don't match");
+
+    Rational result(0);
+    for(int i = 0; i < this->dimension(); i++)
+        result = result + components[i]*other[i];
+        
+    return result;
+}
+
+Vector operator*(const Rational& num, const Vector& vector)
+{
+    if(num == 0) return Vector(vector.dimension());
+
+    Vector result(vector);
+
+    for(int i = 0; i < vector.dimension(); i++)
+        result.replace(num*result[i], i);
+
+    return result;
 }

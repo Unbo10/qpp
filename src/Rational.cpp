@@ -1,5 +1,7 @@
 #include "../include/Rational.h"
 
+unsigned int Rational::decimalPoints = 5;
+
 /*  Metodos privados  */
 
 Rational Rational::root(const Integer& po) const
@@ -208,16 +210,38 @@ Rational Rational::operator^(const Rational& other) const
 // entradas y salidas
 std::ostream& operator<<(std::ostream& os, const Rational& number)
 {
-    if(!number.sign) os << '-';
-    Natural num = number.numerator, den = number.denominator;
-
-    for(int i = 0; i <5; i++)
+    if(number.numerator == 0) 
     {
+        os << "0";
+        return os;
+    }
+    if(!number.sign) os << '-';
+    if(number.denominator == 1)
+    {
+        os << number.denominator;
+        return os;   
+    }
+    Natural num = number.numerator, den = number.denominator;
+    if(Rational::decimalPoints == 0)
+    {
+        os << num/den;
+        return os;
+    }
+    for(int i = 0; i < Rational::decimalPoints; i++)
+    {
+        if(num == 0) return os;
         Natural q = num/den;
         os << q;
         if(i == 0) os << ".";
         num = (num - q*den)[0];
-        num.multiplyBy100();
+        num.multiplyBy10();
     }
     return os;
+}
+
+void showFraction(const Rational& num)
+{
+    if(num.denominator == 1)
+        std::cout << num.numerator << "\n";
+    else std::cout << num.numerator << "/" << num.denominator << "\n";
 }

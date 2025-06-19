@@ -15,6 +15,8 @@ class Rational: public Number<Rational>
         // aqui se calcula a^p, con p entero
         Rational integerPow(Integer po);
     public:
+        static unsigned int decimalPoints;
+
         //Rational(long long x): Rational(Integer(x), 1) {}
         Rational(): Rational(0, 1) {}
         Rational(const Integer& numeratr): numerator(numeratr.getAbsolutePart()), denominator(1)  {}
@@ -56,4 +58,8 @@ class Rational: public Number<Rational>
         }
 
         friend std::ostream& operator<<(std::ostream& os, const Rational& num);
+        friend void showFraction(const Rational& num);
+
+        explicit operator Natural() {return this->numerator/this->denominator;}
+        explicit operator Integer() {return Integer(this->numerator/this->denominator, this->sign);}
 };
