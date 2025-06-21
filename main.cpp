@@ -1,8 +1,8 @@
 #include <iostream>
 #include <sstream>
-#include "Numbers/Integer.h"
-#include "Numbers/Number.h"
-#include "Numbers/Rational.h"
+#include "include/Integer.h"
+#include "include/Number.h"
+#include "include/Rational.h"
 #include "utils/OrderedList.h"
 #include "include/Natural.h"
 #include "include/LinearAlgebra/Vector.h"

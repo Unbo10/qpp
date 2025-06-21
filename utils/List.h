@@ -1,3 +1,11 @@
+#pragma once
+
+#include <iostream>
+#include <initializer_list>
+
+#include "Iterator.h"
+#include "Iterable.h"
+
 /**
  * @brief A dynamic array-based list implementation that provides common list
  * operations.
@@ -17,15 +25,6 @@
  * 
  * @note The list implements the Iterable interface for iteration support
  */
-#pragma once
-
-#include <iostream>
-#include <initializer_list>
-
-#include "Iterator.h"
-#include "Iterable.h"
-
-
 template <typename U>
 class List : public Iterable<U>
 {
@@ -64,6 +63,8 @@ class List : public Iterable<U>
 
         
     public:
+        //***CONSTRUCTORS AND DESTRUCTOR***
+
         /**
          * @brief Default constructor
          * 
@@ -133,6 +134,8 @@ class List : public Iterable<U>
         {
             delete[] array;
         }
+
+        //***SINGLE-ELEMENT OPERATIONS***
 
         /**
          * @brief Inserts an item at a specified index in the list.
@@ -239,6 +242,8 @@ class List : public Iterable<U>
             return pop(0);
         }
 
+        //***GETTERS***
+
         /**
          * @return bool True if the list has no elements stored. False
          * otherwise.
@@ -266,33 +271,46 @@ class List : public Iterable<U>
         }
 
         /**
-         * @return U The array-like object with which the list was ipmlemented.
+         * @return U The array-like object with which the list was implemented.
          */
         U* getArray() const
         {
             return array;
         }
 
+        //***UTIL METHODS***
+
         /**
          * @brief Clears the list and resets it to its default state (no
-         * elements stored and default capacity).
+         * elements stored and default capacity, 10).
          * 
-         * This method deallocates the current array, sets the length to zero,
-         * allocates a new array with the default initial length, and updates
-         * the capacity to the default initial length.
+         * Equivalent to calling `clear(10)`.
          */
         void clear()
         {
             this->clear(DEFAULT_INITIAL_CAPACITY);
         }
-
-        void clear(int newSize)
+        
+        /**
+         * @brief Clears (empties) the list and sets its capacity to a given
+         * one.
+         * 
+         * This method deallocates the current array, sets the length to zero,
+         * allocates a new array with the default initial length, and updates
+         * the capacity to the default initial length.
+         * 
+         * @param newCapacity int new capacity of the array
+         */
+        void clear(int newCapacity)
         {
             delete[] array;
             length = 0;
-            array = new U[newSize];
-            capacity = newSize;
+            array = new U[newCapacity];
+            capacity = newCapacity;
         }
+        
+        //***OTHER OPERATIONS***
+
         /**
          * @brief Concatenates two lists into a new list.
          * 
@@ -383,7 +401,6 @@ class List : public Iterable<U>
             return *this;
         }
 
-
         /**
          * @brief Overloads the output stream operator for List objects.
          * 
@@ -406,6 +423,8 @@ class List : public Iterable<U>
             return os;
         }
         
+        //***ITERATOR INITIALIZATIONS***
+
         Iterator<U> begin() const { return Iterator<U>(array); }
         Iterator<U> end() const { return Iterator<U>(array + length); }
 };

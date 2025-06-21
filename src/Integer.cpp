@@ -2,11 +2,7 @@
 #include "../include/Integer.h"
 #include "../include/Natural.h"
 
-/* comparasiones    */
-bool Integer::operator==(const Integer& other) const
-{
-    return (this->sign == other.sign) && (absolutePart == other.absolutePart);
-}
+//***COMPARISON AND ASSIGNING OPERATIONS***
 
 bool Integer::operator<(const Integer& other) const
 {
@@ -16,6 +12,11 @@ bool Integer::operator<(const Integer& other) const
         return absolutePart > other.absolutePart;
     if(this->sign) return 0;
     return 1;
+}
+
+bool Integer::operator==(const Integer& other) const
+{
+    return (this->sign == other.sign) && (absolutePart == other.absolutePart);
 }
 
 Integer Integer::operator=(const Integer& other)
@@ -28,9 +29,8 @@ Integer Integer::operator=(const Integer& other)
     return *this;
 }
 
-/* fin de comparaciones */
+//***ARITHMETIC OPERATIONS***
 
-/* Operaciones entre enteros*/
 Integer Integer::operator+(const Integer& other) const
 {
     if(this->sign == other.getSign())
@@ -84,14 +84,21 @@ Integer Integer::operator^(const Integer& other) const
 
     return Integer(result, (this->sign)? 1: (other[0]%2 == 0)? 1: 0);
 }
-/*  Fin de operaciones*/
+
+//***UTIL METHODS***
 
 Natural Integer::gcd(const Integer& num1, const Integer& num2)
 {
     return Natural::gcd(num1.absolutePart, num2.absolutePart);
 }
 
-/* maximo comun multiplo */
+unsigned short Integer::operator[](int index) const
+{
+    return absolutePart[index];
+}
+
+//***STREAM OPERATIONS***
+
 std::ostream& operator<<(std::ostream& os, const Integer& num)
 {
     os <<((num.sign)? "": "-") << num.absolutePart;
@@ -109,9 +116,4 @@ std::istream& operator>>(std::istream& is, Integer& num)
     }
     num.absolutePart = x;
     return is;   
-}
-
-unsigned short Integer::operator[](int index) const
-{
-    return absolutePart[index];
 }

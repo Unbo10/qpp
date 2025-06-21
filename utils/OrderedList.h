@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../utils/List.h"
-#include "../utils/Comparable.h"
 
 template <typename T>
 class OrderedList: public List<T>

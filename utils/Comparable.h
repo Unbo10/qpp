@@ -1,5 +1,16 @@
 #pragma once
 
+/**
+ * @brief Abstract base class that provides comparison operations.
+ * 
+ * This class serves as a base for objects that need to be comparable.
+ * By implementing just the equality (==) and less-than (<) operators,
+ * all of the remainding comparison operators (!=, >, <=, and >=.) are
+ * implemented in the derived classes automatically:
+ * 
+ * @tparam T The type of the derived class implementing this interface.
+ *           Using the Curiously Recurring Template Pattern (CRTP).
+ */
 template <typename T>
 class Comparable
 {

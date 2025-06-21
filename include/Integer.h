@@ -14,9 +14,14 @@ class Integer : public Number<Integer>
         Integer(const Natural& natural): absolutePart(natural) {this->sign = 1;}
         Integer(const Natural& natural, bool sign): absolutePart(natural) {setSign(sign);}
 
+        //***COMPARISON AND ASSIGNING OPERATIONS***
+
         bool operator<(const Integer& other) const;
         bool operator==(const Integer& other) const;
         Integer operator=(const Integer& other);
+
+        //***ARITHMETIC OPERATIONS***
+
         Integer operator+(const Integer& other) const;
         Integer operator-(const Integer& other) const;
         Integer operator*(const Integer& other) const;
@@ -24,10 +29,14 @@ class Integer : public Number<Integer>
         Integer operator/(const Integer& other) const;
         Integer operator%(const Integer& other) const;
         Integer operator^(const Integer& other) const;
+
+        //***UTIL METHODS***
+
         unsigned short operator[](int index) const;
         Natural getAbsolutePart() const {return absolutePart;}
-
         static Natural gcd(const Integer& num1, const Integer& num2);
+        
+        //***STREAM OPERATIONS***
 
         friend std::ostream& operator<<(std::ostream& os, const Integer& num);
         friend std::istream& operator>>(std::istream& is, Integer& num);
