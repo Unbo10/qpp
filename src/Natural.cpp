@@ -293,6 +293,25 @@ Natural Natural::gcd(const Natural& num1, const Natural& num2)
 }
 
 
+void Natural::multiplyBy10()
+{
+    int size = this->digits.size();
+    if(size == 0) return;
+    unsigned short peek = this->operator[](size-1);
+    List<unsigned short> copy((peek < 10)? size: size+1);
+    unsigned short carry = 0;
+    for(unsigned short x: this->digits)
+    {
+        copy.add((x % 10)*10 + carry);
+        carry = x/10;
+    }
+
+    if(carry != 0)
+        copy.add(carry);
+
+    this->digits = copy;
+}
+
 List<unsigned short> Natural::getList()
 {
     return List<unsigned short>(digits);

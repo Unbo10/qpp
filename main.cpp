@@ -8,10 +8,18 @@
 #include "include/LinearAlgebra/Vector.h"
 
 int main() {
-    Vector x(10);
+    Rational x(1, 2), y(3, 4);
 
-    for(int i = 0; i < 10; i++)
-        x.replace(Rational(1, 50), i);
+    showFraction(x/y);
+    /*Vector array(7), invArray(7);
+    //Rational x;
 
-    std::cout << x << std::endl;
+    for(int i = 1; i < 7; i++)
+    {
+        array.replace(Rational(1, i), i);
+        invArray.replace(Rational(i, 1), i);
+    }
+        
+    std::cout << array << "\n" << invArray << "\n";    
+    std::cout << array.projectionIn(invArray);*/
 }

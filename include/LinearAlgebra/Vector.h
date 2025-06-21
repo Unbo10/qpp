@@ -7,35 +7,38 @@
 #include "../Integer.h"
 #include "../../utils/Iterable.h"
 
-#include <variant>
-using Datos = std::variant<Integer, Rational>;
-
-inline std::ostream& operator<<(std::ostream& os, const Datos& data)
-{
-    std::visit([&os](auto&& value) {
-        os << value;
-            }, data);
-    return os;
-}
-
-class Vector: public Iterable<Datos>
+class Vector: public Iterable<Rational>
 {
     private:
-        List<Datos> components;
+        List<Rational> components;
 
     public:
         Vector(int INITIAL_SIZE): components(INITIAL_SIZE) 
         {
             for(int i = 0; i < INITIAL_SIZE; i++)
-                components.add(Integer(0));        
+                components.add(Rational(0, 1));        
         }
         Vector(const Vector& another);
+        Vector(): Vector(10) {}
+        Vector(const List<Rational>& list): components(list) {}
 
         int size() const {return components.getCapacity();}
-        void replace(const Datos& value, int index);
+        void replace(const Rational& value, int index);
 
-        Iterator<Datos> begin() const {return components.begin();}
-        Iterator<Datos> end() const {return components.end();}
+        Vector operator+(const Vector& other) const;
+        Vector operator-(const Vector& other) const;
+        friend Vector operator*(const Rational& num, const Vector& vector);
+        Rational operator*(const Vector& other) const;
+        friend bool operator==(const Vector& v1, const Vector& v2) {return v1.components == v2.components;}
+
+        Vector projectionIn(const Vector& other) const;
+
+        int dimension() const {return components.getCapacity();}
+
+        Iterator<Rational> begin() const {return components.begin();}
+        Iterator<Rational> end() const {return components.end();}
+
+        Rational operator[](int index) const {return components[index];}
 
         friend std::ostream& operator<<(std::ostream& os, const Vector& tuple)
         {
