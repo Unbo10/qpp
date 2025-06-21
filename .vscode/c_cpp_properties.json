@@ -5,7 +5,6 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}",
-                "${workspaceFolder}/Numbers",
                 "${workspaceFolder}/Polynomials",
                 "${workspaceFolder}/utils"
             ],
