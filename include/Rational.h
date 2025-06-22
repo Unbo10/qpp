@@ -65,6 +65,6 @@ class Rational: public Number<Rational>
         explicit operator Natural() {return this->numerator/this->denominator;}
         explicit operator Integer() {return Integer(this->numerator/this->denominator, this->sign);}
 
-        Integer getDenominator() {return this->denominator;}
-        Integer getNumerator() {return this->numerator;}
+        Integer getDenominator() const;
+        Integer getNumerator() const;
 };

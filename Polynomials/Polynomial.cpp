@@ -3,7 +3,7 @@
 #include "Polynomial.h"
 #include "../include/Rational.h"
 
-Polynomial::Polynomial(PolyTerm& term) {
+Polynomial::Polynomial(const PolyTerm& term) {
     dense = std::vector<Rational>(term.exp);
     degree = term.exp;
     sparse.push_back(term);
@@ -98,16 +98,18 @@ void Polynomial::clear() {
 
 bool Polynomial::isZero() const {
     if(sparse.empty() && dense.empty()) return true;
-    if(is_dense_valid) {
-        for(const auto& coeff : dense) {
-            if(coeff != Rational(0)) return false;
-        }
+    // if(is_dense_valid) {
+    //     for(const auto& coeff : dense) {
+    //         if(coeff != Rational(0)) return false;
+    //     }
+    // }
+    // else {
+    for(const PolyTerm& term : sparse) {
+        if(term.coeff != 0){
+            return false;
+        } 
     }
-    else {
-        for(const auto& term : sparse) {
-            if(term.coeff != Rational(0)) return false;
-        }
-    }
+    // }
     return true;
 }
 
@@ -139,6 +141,7 @@ Polynomial Polynomial::operator=(const Polynomial& other) {
 }
 
 Polynomial Polynomial::operator=(std::string str) {
+    this->clear();
     if(str.find('/') != std::string::npos) is_rational = true;
 
     std::vector<std::string> tokens;
@@ -248,21 +251,21 @@ std::istream& operator>>(std::istream& is, Polynomial& poly) {
 
 std::ostream& operator<<(std::ostream& os, const Polynomial& poly) {
 
-    if(poly.is_dense_valid) {
-        os << "Dense representation: ";
-        for (const auto& coeff : poly.dense) {
-            os << coeff << " ";
-        }
-        os << "\n";
-    }
-    else{
-        int n = poly.sparse.size();
+    // if(poly.is_dense_valid) {
+    //     os << "Dense representation: ";
+    //     for (const auto& coeff : poly.dense) {
+    //         os << coeff << " ";
+    //     }
+    //     os << "\n";
+    // }
+    // else{
+    int n = poly.sparse.size();
 
-        for(int i = 0; i < n; i++) {
-            os << poly.sparse[i];
-            if(i < n - 1) os << " + ";
-        }
+    for(int i = 0; i < n; i++) {
+        os << poly.sparse[i];
+        if(i < n - 1) os << " + ";
     }
+    // }
     return os;
 }
 
@@ -315,7 +318,6 @@ Polynomial Polynomial::operator+(const Polynomial& other) const {
             PolyTerm newTerm;
             newTerm.coeff = sparse[i].coeff + other.sparse[j].coeff;
             if(newTerm.coeff != 0) {
-                std::cout << "NewTerm: " << newTerm.coeff << "\n";
                 newTerm.exp = sparse[i].exp;
                 result.sparse.push_back(newTerm);
             }
@@ -344,7 +346,6 @@ Polynomial Polynomial::operator+(const Polynomial& other) const {
     }
 
     //*In case it is the zero polynomial
-    std::cout << "Size: " << result.sparse.size() << "\n";
     if((int)result.sparse.size() == 0) {
         PolyTerm zeroTerm;
         zeroTerm.coeff = 0;
@@ -358,6 +359,38 @@ Polynomial Polynomial::operator+(const Polynomial& other) const {
 Polynomial operator+(const Polynomial& poly, PolyTerm& term) {
     Polynomial newPoly(term);
     return poly + newPoly;
+}
+
+Polynomial Polynomial::operator*(const Polynomial& other) {
+    Polynomial result;
+    Polynomial oneProd;
+    for(int i = 0; i < (int)other.sparse.size(); i++) {
+        oneProd = this->multiply_by_single_term_poly(other.sparse[i]);
+        result = result + oneProd;
+    }
+
+    result.order_poly();
+    return result;
+}
+
+Polynomial Polynomial::operator-() const {
+    if(this->isZero())
+        return *this;
+
+    Polynomial result = *this;
+    for(int i = 0; i < (int)this->sparse.size(); i++) {
+        result.sparse[i].coeff = -result.sparse[i].coeff;
+    }
+
+    return result;
+}
+
+Polynomial Polynomial::operator-(const Polynomial& other) const {
+    return *this + (-other);
+}
+
+Polynomial operator*(const Polynomial& lhs, const Polynomial& rhs) {
+    return Polynomial(lhs).operator*(rhs);
 }
 
 // Polynomial Polynomial::to_integer_poly() {
@@ -620,3 +653,6 @@ Polynomial Polynomial::monicPolyGCD(Polynomial p, Polynomial q) {
     }
     return Polynomial("1 0");
 }
+
+Integer Rational::getDenominator() const {return this->denominator;}
+Integer Rational::getNumerator() const {return this->numerator;}

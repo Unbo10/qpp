@@ -56,7 +56,26 @@ public:
 
     void order_poly();
 
+    void clear();
+
+    bool isZero();
+
     //***ARITHMETIC OPERATIONS***
 
+    /**
+     * @brief Adds two polynomials together.
+     * 
+     * This function performs the addition of two polynomials. It does so by
+     * adding the polynomials with the same y exponent.
+     * 
+     * @param other The polynomial to add to this polynomial
+     * @return A new SndPoly object representing the sum of the two polynomials
+     */
     SndPoly operator+(const SndPoly& other) const;
+
+    SndPoly operator-() const;
+
+    SndPoly operator-(const SndPoly& other) const;
+
+    friend SndPoly operator*(const SndPoly& poly, const SndPolyTerm& term);
 };

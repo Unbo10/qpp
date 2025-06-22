@@ -2,7 +2,7 @@
 
 unsigned int Rational::decimalPoints = 5;
 
-/*  Metodos privados  */
+//***PRIVATE METHODS***
 
 Rational Rational::root(const Integer& po) const
 {
@@ -13,7 +13,8 @@ Rational Rational::integerPow(Integer po)
 {
     return 1;
 }
-/* constructores    */
+
+//***CONSTRUCTORS***
 
 Rational::Rational(const Integer& num, const Integer& den)
 {
@@ -85,7 +86,7 @@ Rational::Rational(std::string str) {
     }
 }
 
-// implementacion de comparaciones y asignacion
+//***COMPARISON AND ASSIGNING OPERATIONS***
 
 bool Rational::operator<(const Rational& other) const 
 {
@@ -101,7 +102,10 @@ bool Rational::operator<(const Rational& other) const
 
 bool Rational::operator==(const Rational& other) const
 {
-    return this->sign == other.sign && 
+    if(this->numerator == 0 && other.numerator == 0)
+        return true;
+    else
+        return this->sign == other.sign && 
            numerator == other.numerator && 
            denominator == other.denominator;
 }
@@ -114,7 +118,8 @@ Rational Rational::operator=(const Rational& other)
     return *this;
 }
 
-// implementación de los métodos de operaciones
+//***ARITHMETIC OPERATIONS***
+
 Rational Rational::operator+(const Rational& other) const
 {
     Natural gcd = Natural::gcd(this->denominator, other.denominator);
@@ -150,8 +155,10 @@ Rational Rational::operator+(const Rational& other) const
         result.numerator = result.numerator/gcd;
         result.denominator = result.denominator/gcd;
     }
-    if(result.abs(result) == 0)
+    if(result.abs(result) == 0){
         result.setSign(true);
+        result.denominator = 1;
+    }
     return result;
 }
 
@@ -195,6 +202,10 @@ Rational Rational::operator-(const Rational& other) const
     {
         result.numerator = result.numerator/gcd;
         result.denominator = result.denominator/gcd;
+    }
+    if(result.abs(result) == 0){
+        result.setSign(true);
+        result.denominator = 1;
     }
     return result;
 }
@@ -240,7 +251,8 @@ Rational Rational::operator^(const Rational& other) const
     return 1;
 }
 
-// entradas y salidas
+//***STREAM OPERATIONS***
+
 std::ostream& operator<<(std::ostream& os, const Rational& number)
 {
     if(number.numerator == 0) 

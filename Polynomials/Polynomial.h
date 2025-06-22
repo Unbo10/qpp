@@ -19,7 +19,7 @@ public:
 
     Polynomial() = default;
 
-    Polynomial(PolyTerm& term);
+    Polynomial(const PolyTerm& term);
 
     Polynomial(const std::string& str);
 
@@ -66,10 +66,20 @@ public:
 
     Polynomial multiply_by_single_term_poly(const Polynomial& singleTerm);
 
+    Polynomial operator*(const Polynomial& other);
+
+    friend Polynomial operator*(const Polynomial& lhs, const Polynomial& rhs);
+    
+    friend Polynomial operator*(const Polynomial& poly, const PolyTerm& term);
+
     Polynomial operator+(const Polynomial& other) const;
 
     friend Polynomial operator+(const Polynomial& poly, PolyTerm& term);
 
+    Polynomial operator-() const;
+
+    Polynomial operator-(const Polynomial& other) const;
+    
     Polynomial to_integer_poly();
 
     //***INTEGER POLYNOMIALS***

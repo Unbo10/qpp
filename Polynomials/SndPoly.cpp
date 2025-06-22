@@ -26,6 +26,7 @@ std::ostream& operator<<(std::ostream& os, const SndPoly& poly) {
 }
 
 SndPoly SndPoly::operator=(std::string str) {
+    this->clear();
     std::vector<std::string> tokens;
     std::stringstream ss(str);
     std::string token;
@@ -86,6 +87,20 @@ void SndPoly::order_poly() {
     is_ordered = true;
 }
 
+void SndPoly::clear() {
+    this->sparse.clear();
+    this->dense.clear();
+    this->is_ordered = false;
+}
+
+bool SndPoly::isZero() {
+    for(const SndPolyTerm& term : this->sparse) {
+        if(!term.poly.isZero()){
+            return false;
+        }
+    }
+    return true;
+}
 
 //***ARITHMETIC OPERATIONS***
 
@@ -130,6 +145,41 @@ SndPoly SndPoly::operator+(const SndPoly& other) const {
         }
     }
 
+    if(result.isZero()) {
+        result.clear();
+        result.sparse.push_back(SndPolyTerm(Polynomial(PolyTerm(0, 0)), 0));
+    }
+
     return result;
 }
 
+SndPoly SndPoly::operator-() const {
+    SndPoly result = *this;
+
+    for(int i = 0; i < (int)result.sparse.size(); i++) {
+        result.sparse[i].poly = -result.sparse[i].poly;
+    }
+
+    return result;
+}
+
+SndPoly SndPoly::operator-(const SndPoly& other) const {
+    return *this + (-other);
+}
+
+//TODO: implement sutbtraction (will probably imply implementing an operator- for a single Polynomial, then a friend operator with two Polynomials, and finally friend with two SndPolynomial)
+
+SndPoly operator*(const SndPoly& sndPoly, const SndPolyTerm& term) {
+    SndPoly result;
+    if(term.poly.isZero()) {
+        result.sparse.push_back(SndPolyTerm(term.poly, 0));
+        return result;
+    }
+
+    for(int i = 0; i < (int)sndPoly.sparse.size(); i++) {
+        Polynomial auxPoly = sndPoly.sparse[i].poly * term.poly;
+        result.sparse.push_back(SndPolyTerm(auxPoly, sndPoly.sparse[i].exp + term.exp));
+    }
+
+    return result;
+}

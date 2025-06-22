@@ -10,6 +10,9 @@ public:
     Polynomial poly;
     int exp;
 
+    SndPolyTerm() = default;
+    SndPolyTerm(const Polynomial polynomial, const int y_exp) : poly(polynomial), exp(y_exp) {}
+
     //***STREAM OPERATIONS***
 
     friend std::ostream& operator<<(std::ostream& os, const SndPolyTerm&);
