@@ -38,7 +38,8 @@ class Vector: public Iterable<Rational>
         Iterator<Rational> begin() const {return components.begin();}
         Iterator<Rational> end() const {return components.end();}
 
-        Rational operator[](int index) const {return components[index];}
+        const Rational& operator[](int index) const {return components[index];}
+        Rational& operator[](int index) {return components[index];}
 
         friend std::ostream& operator<<(std::ostream& os, const Vector& tuple)
         {

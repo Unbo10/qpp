@@ -107,6 +107,13 @@ Rational Rational::operator+(const Rational& other) const
             result.numerator = numerator * (other.denominator/gcd) + other.numerator * (denominator/gcd);
             result.denominator = other.denominator * (denominator/gcd); 
         }
+        gcd = Natural::gcd(result.numerator, result.denominator);
+
+        if(gcd != 1)
+        {
+            result.numerator = result.numerator/gcd;
+            result.denominator = result.denominator/gcd;
+        }
         return result;
     }
 
@@ -117,7 +124,7 @@ Rational Rational::operator+(const Rational& other) const
         result.setSign(bool(res[1]));
     else result.setSign(!bool(res[1]));
 
-    gcd = Natural::gcd(numerator, denominator);
+    gcd = Natural::gcd(result.numerator, result.denominator);
     if(gcd != 1)
     {
         result.numerator = result.numerator/gcd;
