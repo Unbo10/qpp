@@ -1,6 +1,6 @@
 #!/bin/bash
 
-g++ -Wall -O2 implementation_includes.cpp Polynomial.cpp PolyTerm.cpp ../Numbers/Rational.cpp ../Numbers/Integer.cpp -o output
+g++ -Wall -O2 main.cpp SndPoly.cpp SndPolyTerm.cpp Polynomial.cpp PolyTerm.cpp ../src/Rational.cpp ../src/Integer.cpp ../src/Natural.cpp -o output
 
 #*Check if compilation was successful
 if [ $? -eq 0 ]; then

@@ -23,6 +23,7 @@ class Rational: public Number<Rational>
         Rational(const Integer& num, const Integer& den);
         Rational(const Natural& num): numerator(num), denominator(1) {this->setSign(true);}
         Rational(double x);
+        Rational(std::string str);
 
         // implementación de los métodos de comparación y asignacion
         bool operator==(const Rational& other) const;
@@ -63,4 +64,7 @@ class Rational: public Number<Rational>
 
         explicit operator Natural() {return this->numerator/this->denominator;}
         explicit operator Integer() {return Integer(this->numerator/this->denominator, this->sign);}
+
+        Integer getDenominator() {return this->denominator;}
+        Integer getNumerator() {return this->numerator;}
 };

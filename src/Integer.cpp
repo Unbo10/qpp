@@ -1,4 +1,6 @@
 #include <iostream>
+#include <vector>
+#include <sstream>
 #include "../include/Integer.h"
 #include "../include/Natural.h"
 

@@ -61,6 +61,30 @@ Rational::Rational(double x)
     }
 }
 
+Rational::Rational(std::string str) {
+    int starting_pos = 0;
+    if(str[0] == '-') {
+        this->sign = false;
+        starting_pos = 1;
+    }
+    
+    size_t slash_pos = str.find('/');
+
+    int num;
+    if(slash_pos != std::string::npos) {
+        num = std::stoi(str.substr(starting_pos, slash_pos));
+        if(slash_pos == str.size())
+            throw std::invalid_argument("No denominator given");
+        int den = std::stoi(str.substr(slash_pos + 1));
+        this->numerator = num;
+        this->denominator = den;
+    }
+    else {
+        this->numerator = Natural(std::stoi(str.substr(starting_pos)));
+        this->denominator = 1;
+    }
+}
+
 // implementacion de comparaciones y asignacion
 
 bool Rational::operator<(const Rational& other) const 
@@ -97,7 +121,6 @@ Rational Rational::operator+(const Rational& other) const
     Rational result;
     if(this->sign == other.sign)
     {
-        result.setSign(this->sign);
         if(gcd == 1)
         {
             result.numerator = numerator * other.denominator + other.numerator * denominator;
@@ -107,6 +130,10 @@ Rational Rational::operator+(const Rational& other) const
             result.numerator = numerator * (other.denominator/gcd) + other.numerator * (denominator/gcd);
             result.denominator = other.denominator * (denominator/gcd); 
         }
+        if(result.abs(result) == 0)
+            result.setSign(true);
+        else
+            result.setSign(this->sign);
         return result;
     }
 
@@ -123,6 +150,8 @@ Rational Rational::operator+(const Rational& other) const
         result.numerator = result.numerator/gcd;
         result.denominator = result.denominator/gcd;
     }
+    if(result.abs(result) == 0)
+        result.setSign(true);
     return result;
 }
 
@@ -226,21 +255,23 @@ std::ostream& operator<<(std::ostream& os, const Rational& number)
         return os;   
     }
 
-    Natural num = number.numerator, den = number.denominator;
-    if(Rational::decimalPoints == 0)
-    {
-        os << num/den;
-        return os;
-    }
-    for(int i = 0; i < Rational::decimalPoints; i++)
-    {
-        if(num == 0) return os;
-        Natural q = num/den;
-        os << q;
-        if(i == 0) os << ".";
-        num = (num - q*den)[0];
-        num.multiplyBy10();
-    }
+    os << number.numerator << "/" << number.denominator;
+
+    // Natural num = number.numerator, den = number.denominator;
+    // if(Rational::decimalPoints == 0)
+    // {
+    //     os << num/den;
+    //     return os;
+    // }
+    // for(unsigned int i = 0; i < Rational::decimalPoints; i++)
+    // {
+    //     if(num == 0) return os;
+    //     Natural q = num/den;
+    //     os << q;
+    //     if(i == 0) os << ".";
+    //     num = (num - q*den)[0];
+    //     num.multiplyBy10();
+    // }
     return os;
 }
 

@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
 
-#include "../Numbers/Rational.h"
+#include "../include/Rational.h"
 #include "Polynomial.h"
 #include "PolyTerm.h"
 
@@ -14,18 +14,18 @@ int main() {
 
     //***POLYNOMIALS***
 
-    // Polynomial poly1, poly2;
-    // poly1 = "5 4 -1 1 2 0";
-    // poly2 = "1 2 1 1 -1 0";
+    Polynomial poly1, poly2;
+    poly1 = "5 4 -1 1 2 0";
+    poly2 = "1 2 1 1 -1 0";
+    poly1.printPolynomial();
+    poly2.printPolynomial();
+
+    std::cout << "\nPOLYNOMIAL DIVISION\n";
+    // poly1 = "3 4 7 0";
+    // poly2 = "4 1 -1 0";
     // poly1.printPolynomial();
     // poly2.printPolynomial();
-
-    // std::cout << "\nPOLYNOMIAL DIVISION\n";
-    // // poly1 = "3 4 7 0";
-    // // poly2 = "4 1 -1 0";
-    // // poly1.printPolynomial();
-    // // poly2.printPolynomial();
-    // Polynomial poly3 = poly1 / poly2;
-    // std::cout << poly3 << "\n";
-    // return 0;
+    Polynomial poly3 = poly1 / poly2;
+    std::cout << poly3 << "\n";
+    return 0;
 }
