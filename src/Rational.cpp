@@ -253,7 +253,14 @@ std::ostream& operator<<(std::ostream& os, const Rational& number)
 
 void showFraction(const Rational& num)
 {
+    if(num.numerator == 0)
+    {
+        std::cout << "0";  
+        return;
+    }
+        
+    if(!num.sign) std::cout << "-";
     if(num.denominator == 1)
-        std::cout << num.numerator << "\n";
-    else std::cout << num.numerator << "/" << num.denominator << "\n";
+        std::cout << num.numerator;
+    else std::cout << num.numerator << "/" << num.denominator;
 }

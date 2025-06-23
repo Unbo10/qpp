@@ -40,6 +40,43 @@ Matrix operator-(const Matrix& m1, const Matrix& m2)
     return result;
 }
 
+Matrix operator*(const Rational& number, const Matrix& matrix)
+{
+    if(number == 0) return Matrix(matrix.rows(), matrix.columns());
+    Matrix result(matrix);
+    if(number == 1) return result;
+
+    for(int i = 0; i < result.rows(); i++)
+        result[i] = number*result[i];
+    return result;
+}
+
+Matrix operator*(const Matrix& m1, const Matrix& m2)
+{
+    if (m1.columns() != m2.rows())
+        throw std::invalid_argument("Multiplication undefined for matrices with incompatible dimensions");
+
+    int rows = m1.rows();
+    int cols = m2.columns();
+    int inner = m1.columns();
+
+    Matrix result(rows, cols);
+
+    for (int i = 0; i < rows; ++i)
+    {
+        for (int j = 0; j < cols; ++j)
+        {
+            Rational sum = 0;
+            for (int k = 0; k < inner; ++k)
+            {
+                sum = sum + m1[i][k] * m2[k][j];
+            }
+            result[i][j] = sum;
+        }
+    }
+    return result;
+}
+
 
 Matrix Matrix::scalonadeForm(const Matrix& m1)
 {
@@ -76,6 +113,29 @@ Matrix Matrix::scalonadeForm(const Matrix& m1)
     return result;
 }
 
+Matrix Matrix::identity(int n)
+{
+    Matrix result(n ,n);
+    Rational uno(1, 1);
+
+    for(int i = 0; i < n; i++)
+        result[i][i] = uno;
+    
+    return result;
+}
+
+Matrix Matrix::transpose(const Matrix& matrix)
+{
+    int rows = matrix.rows(), columns = matrix.columns();
+    Matrix result(columns, rows);
+
+    for(int i =  0; i < columns; i ++)
+        for(int j = 0; j < rows; j++)
+            result[i][j] = matrix[j][i];
+
+    return result;
+}
+
 
 std::ostream& operator<<(std::ostream& os, const Matrix& m1)
 {
@@ -86,4 +146,27 @@ std::ostream& operator<<(std::ostream& os, const Matrix& m1)
     os << "]";
 
     return os;
+}
+
+void printWithoutBrackets(const Matrix& m1)
+{
+    for(Vector x: m1)
+    {
+        for(const Rational& number: x)
+            std::cout << number << " ";
+        std::cout << "\n";
+    }
+}
+
+void printWithoutBracketsAndFractionForm(const Matrix& m1)
+{
+    for(Vector x: m1)
+    {
+        for(const Rational& number: x)
+        {
+            showFraction(number);
+            std:: cout << " ";
+        }
+        std::cout << "\n";
+    }
 }
