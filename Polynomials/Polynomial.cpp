@@ -3,8 +3,10 @@
 #include "Polynomial.h"
 #include "../include/Rational.h"
 
+Polynomial::Polynomial() {}
+
 Polynomial::Polynomial(const PolyTerm& term) {
-    dense = std::vector<Rational>(term.exp);
+    dense = std::vector<Rational>(term.exp + 1, Rational(0));
     degree = term.exp;
     sparse.push_back(term);
     if((term.coeff.getDenominator() != 1) || (term.coeff.getDenominator() != -1))
@@ -14,7 +16,18 @@ Polynomial::Polynomial(const PolyTerm& term) {
 }
 
 Polynomial::Polynomial(const std::string& str) { *this = str; }
+
+Polynomial::Polynomial(const Polynomial& other) {
+    this->dense = other.dense; 
+    this->sparse = other.sparse;
+    this->degree = other.degree;
     
+    this->is_dense_valid = other.is_dense_valid;
+    this->is_sparse_valid = other.is_sparse_valid;
+    this->is_ordered = other.is_ordered;
+    this->is_rational = other.is_rational;
+}
+
 // Print the polynomial in standard mathematical form
 void Polynomial::printPolynomial() {
         // print only the nonzero coefficients in the dense representation
@@ -130,13 +143,16 @@ Rational Polynomial::get_leading_coefficient() const { return this->sparse[0].co
 //***OSTREAM AND ISTREAM***
 
 Polynomial Polynomial::operator=(const Polynomial& other) {
-    degree = other.degree;
-    dense = other.dense;
-    sparse = other.sparse;
-    is_dense_valid = other.is_dense_valid;
-    is_ordered = other.is_ordered;
-    is_rational = other.is_rational;
-    is_sparse_valid = other.is_sparse_valid;
+    this->degree = other.degree;
+    this->dense = other.dense;
+    this->sparse = other.sparse;
+    
+    this->is_dense_valid = other.is_dense_valid;
+    this->is_ordered = other.is_ordered;
+    this->is_rational = other.is_rational;
+    this->is_sparse_valid = other.is_sparse_valid;
+    std::cout << "Assignment: other.dense.size()=" << other.dense.size() 
+              << ", this->dense.size()=" << dense.size() << std::endl;
     return *this;
 }
 
@@ -187,24 +203,8 @@ Polynomial Polynomial::operator=(std::string str) {
         sparse.push_back(term);
     }
 
-    order_poly();
-    dense = std::vector<Rational>(degree);
-    degree = sparse[0].exp;  // The first term is the one with the greatest exponent
-
-    // Generate dense representation from sparse
-    int deg = degree;
-    int i = 0;
-    while (deg != -1){
-        if (deg == sparse[i].exp){
-            dense.push_back(sparse[i].coeff);
-            i++;
-        }
-        else {
-            dense.push_back(Rational(0));
-        }
-        deg--;
-    }
-    is_dense_valid = true;
+    this->order_poly();
+    this->update_dense();
     return *this;
 }
 
@@ -230,6 +230,11 @@ Polynomial Polynomial::update_dense() {
     // Find the maximum exponent to determine the size of the dense vector
     degree = sparse[0].exp;
     dense.resize(degree + 1, Rational(0));
+
+    std::cout << "r.dense contents: " << this->dense.size() << "\n";
+    for (const auto& coeff : this->dense) {
+        std::cout << coeff << " ";
+    }
 
     for(int i = 0; i < n; i++) {
         if(sparse[i].exp >= 0 && sparse[i].exp <= degree) {
@@ -280,9 +285,9 @@ std::ostream& operator<<(std::ostream& os, const Polynomial& poly) {
 Polynomial Polynomial::multiply_by_single_term_poly(const PolyTerm& singleTerm) {
     this->order_poly();
     if((singleTerm.coeff == 0)) {
-        Polynomial result;
-        result.sparse.push_back(PolyTerm(0, 0));
-        return result;
+        Polynomial prod;
+        prod.sparse.push_back(PolyTerm(0, 0));
+        return prod;
     }
     if((singleTerm.coeff == 1) && (singleTerm.exp == 0)) return *this;
 
@@ -294,7 +299,9 @@ Polynomial Polynomial::multiply_by_single_term_poly(const PolyTerm& singleTerm) 
         prodTerm = this->sparse[i] * singleTerm;
         prod.sparse.push_back(prodTerm);
     }
+    prod.update_dense();
     prod.is_ordered = true;
+    prod.degree = prod.sparse[0].exp;
     return prod;
 }
 
@@ -474,27 +481,47 @@ Polynomial Polynomial::operator/(const Polynomial& other) {
 
 //***RATIONAL POLYNOMIALS***
 
-Polynomial Polynomial::remainder(const Polynomial& divisor) const {
-    Polynomial u = *this;
-    Polynomial r, q;
-    r = u;
-    q.dense.resize(u.degree - divisor.degree + 1, Rational(0));
+Polynomial Polynomial::remainder(const Polynomial& dividend, const Polynomial& divisor) {
+    if(dividend.degree < divisor.degree)
+        return dividend;
 
-    for(int i = 0; i <= u.degree - divisor.degree; i++){
+    Polynomial r(dividend), q;
+    std::cout << dividend << "\n/\n" << divisor << "\n";
+    q.dense.resize(dividend.degree - divisor.degree + 1, Rational(0, 1));
+
+    std::cout << "\n";
+    std::cout << "Checkpoint 1 " << divisor.degree << "\n";
+    for(int i = 0; i <= dividend.degree - divisor.degree; i++){
+        std::cout << "Division " << i << ": ";
         q.dense[i] = r.dense[i] / divisor.dense[0];
+        std::cout << r.dense[i] << " / " << divisor.dense[0] << " = " << q.dense[i] << std::endl;
+        std::cout << "q: " << q.dense[i] << "\n";
         for(int j = 0; j <= divisor.degree ; j++){
+            std::cout << "Subtracting: r[" << i + j << "] = " << r.dense[i+j] << " - (" 
+                      << q.dense[i] << " * " << divisor.dense[j] << " = " 
+                      << (q.dense[i] * divisor.dense[j]) << ")" << std::endl;
+            std::cout << -(q.dense[i] * divisor.dense[j]) << "\n";
             r.dense[i + j] = r.dense[i+j] - (q.dense[i] * divisor.dense[j]);
+            std::cout << "New value r[" << i + j << "] = " << r.dense[i+j] << std::endl;
         }
+        std::cout << "exit " << i << "\n";
     }
+    std::cout << "Checkpoint 2\n";
     q.update_sparse();
+    std::cout.flush();
+    std::cout << "q: " << q << "\n";
     r.update_sparse();
     if (r.isZero()) {
+        std::cout << "Enter\n";
         r.dense.clear();
         r.sparse.clear();
+        r.dense.push_back(Rational(0));
+        r.sparse.push_back(PolyTerm(Rational(0), 0));
         r.degree = 0;
     } else {
-        r.update_dense();
+        r.update_sparse();
     }
+    std::cout << "Exit function \n";
     return r;
 }
 
@@ -575,7 +602,7 @@ Polynomial Polynomial::pseudoremainder(Polynomial u, Polynomial v) {
     u_prime_scaled.update_dense();
     v_prime.update_dense();
 
-    Polynomial r = u_prime_scaled.remainder(v_prime);
+    Polynomial r = Polynomial::remainder(u_prime_scaled, v_prime);
     r.update_sparse();
     r.update_dense();
     return r;
@@ -590,7 +617,7 @@ Polynomial Polynomial::primitivePolyGCD(Polynomial u, Polynomial v) {
     v_primitive.update_dense();
     Integer c = Integer::gcd(u_content, v_content);
     std::cout << "U primitive: " << u_primitive << ", V pr: " << v_primitive << "\n";
-    Polynomial r = pseudoremainder(u_primitive ,v_primitive);
+    Polynomial r = Polynomial::pseudoremainder(u_primitive ,v_primitive);
     while ((v_primitive.getDegree() > 0)) {
         Polynomial r_primitive = r.primitive_part();
         u_primitive = v_primitive;
@@ -606,7 +633,7 @@ Polynomial Polynomial::primitivePolyGCD(Polynomial u, Polynomial v) {
         std::cout << "deg: " << v_primitive.getDegree() << "\n";
 
         std::cout << "Remainder: " << r << "\n";
-        r = pseudoremainder(u_primitive, v_primitive);
+        r = Polynomial::pseudoremainder(u_primitive, v_primitive);
     }
     if (v_primitive.isZero()) {
         PolyTerm term4;
@@ -623,27 +650,37 @@ Polynomial Polynomial::primitivePolyGCD(Polynomial u, Polynomial v) {
 }
 
 Polynomial Polynomial::monicPolyGCD(Polynomial p, Polynomial q) {
-    //make them monic
+    if(p.degree < q.degree)
+        return Polynomial::monicPolyGCD(q, p);
+    
+    //*Make them monic
     Rational p_leading_coeff = p.get_leading_coefficient();
     Rational q_leading_coeff = q.get_leading_coefficient();
 
     PolyTerm term1, term2;
-    term1.coeff = Rational(p_leading_coeff.getDenominator() , p_leading_coeff.getNumerator());
-    term1.coeff.setSign(p_leading_coeff.getSign());
+    term1.coeff = p_leading_coeff.invert();
     term1.exp = 0;
-    term2.coeff = Rational(q_leading_coeff.getDenominator() , q_leading_coeff.getNumerator());
-    term2.coeff.setSign(q_leading_coeff.getSign());
+    term2.coeff = q_leading_coeff.invert();
     term2.exp = 0;
+    std::cout << "p dense size" << q.dense.size() << "\n";
     Polynomial u = p.multiply_by_single_term_poly(term1);
+    std::cout << "p dense size" << u.dense.size() << "\n";
     Polynomial v = q.multiply_by_single_term_poly(term2);
+    std::cout << "Term 1: " << term1.coeff << " x^" << term1.exp << "\n";
+    std::cout << "Term 2: " << term2.coeff << " x^" << term2.exp << "\n";
+    std::cout << "Monic u: " << u << "\n";
+    std::cout << "Monic v: " << v << "\n";
+    std::cout << v.degree << "\n";
 
     while(v.getDegree() > 0) {
-        Polynomial r = u.remainder(v);
+        std::cout << "a\n";
+        Polynomial r = Polynomial::remainder(u, v);
+        std::cout << "r: " << r << "\n";
+        std::cout.flush();
         Rational r_leading_coeff = r.get_leading_coefficient();
 
         PolyTerm term3;
-        term3.coeff = Rational(r_leading_coeff.getDenominator() , r_leading_coeff.getNumerator());
-        term3.coeff.setSign(r_leading_coeff.getSign());
+        term3.coeff = r_leading_coeff.invert();
         term3.exp = 0;
         u = v;
         v = r.multiply_by_single_term_poly(term3);

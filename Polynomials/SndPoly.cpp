@@ -167,8 +167,6 @@ SndPoly SndPoly::operator-(const SndPoly& other) const {
     return *this + (-other);
 }
 
-//TODO: implement sutbtraction (will probably imply implementing an operator- for a single Polynomial, then a friend operator with two Polynomials, and finally friend with two SndPolynomial)
-
 SndPoly operator*(const SndPoly& sndPoly, const SndPolyTerm& term) {
     SndPoly result;
     if(term.poly.isZero()) {
@@ -182,4 +180,34 @@ SndPoly operator*(const SndPoly& sndPoly, const SndPolyTerm& term) {
     }
 
     return result;
+}
+
+Integer SndPoly::getUnit() {
+    if(this->sparse[0].poly.get_leading_coefficient() >= 0)
+        return Integer(1);
+    else
+        return Integer(-1);
+}
+
+Polynomial SndPoly::getCont() {
+    int sparse_size = (int)this->sparse.size();
+    if(sparse_size == 0)
+        throw std::invalid_argument("Sparse is empty");
+    if(sparse_size == 1) 
+        return this->sparse[0].poly;
+    
+    Polynomial gcd = Polynomial::monicPolyGCD(this->sparse[0].poly, this->sparse[1].poly);
+    std::cout << "gcd: " << this->sparse[0].poly << " and " << this->sparse[1].poly << " is: " << gcd << "\n";
+    for(int i = 2; i < sparse_size; i++) {
+        std::cout << "gcd: " << gcd << " and " << this->sparse[i].poly;
+        gcd = Polynomial::monicPolyGCD(gcd, this->sparse[i].poly);
+        std::cout << " is: " << gcd << "\n";
+
+    }
+
+    return gcd;
+}
+
+SndPoly SndPoly::gcd(const SndPoly& lhs, const SndPoly& rhs) {
+
 }

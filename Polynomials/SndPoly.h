@@ -78,4 +78,17 @@ public:
     SndPoly operator-(const SndPoly& other) const;
 
     friend SndPoly operator*(const SndPoly& poly, const SndPolyTerm& term);
+
+    Integer getUnit();
+
+    Polynomial getCont();
+
+    /**
+     * @brief Computes the greatest common divisor of two polynomials (with
+     * two variables).
+     * 
+     * - The unit is defined as the sign of the leading coefficient of the
+     * leading polynomial.
+     */
+    SndPoly gcd(const SndPoly& lhs, const SndPoly& rhs);
 };

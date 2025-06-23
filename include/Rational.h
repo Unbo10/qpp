@@ -10,6 +10,9 @@ class Rational: public Number<Rational>
     private:
         Natural numerator, denominator;
 
+        //*True is for positive and zero and false is for negative
+        bool sign;
+
         // aqui se calcula a^{1/p}, con p entero
         Rational root(const Integer& po) const;
         // aqui se calcula a^p, con p entero
@@ -19,6 +22,7 @@ class Rational: public Number<Rational>
 
         //Rational(long long x): Rational(Integer(x), 1) {}
         Rational(): Rational(0, 1) {}
+        Rational(const Rational& other);
         Rational(const Integer& numeratr): numerator(numeratr.getAbsolutePart()), denominator(1)  {}
         Rational(const Integer& num, const Integer& den);
         Rational(const Natural& num): numerator(num), denominator(1) {this->setSign(true);}
@@ -67,4 +71,12 @@ class Rational: public Number<Rational>
 
         Integer getDenominator() const;
         Integer getNumerator() const;
+
+        //***UTILS***
+
+        /**
+         * @brief Returns a Rational number with the numerator and denominator
+         * swapped.
+         */
+        Rational invert() const;
 };

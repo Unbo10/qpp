@@ -2,6 +2,12 @@
 
 unsigned int Rational::decimalPoints = 5;
 
+Rational::Rational(const Rational& other) {
+    this->numerator = other.numerator;
+    this->denominator = other.denominator;
+    this->sign = other.sign;
+}
+
 //***PRIVATE METHODS***
 
 Rational Rational::root(const Integer& po) const
@@ -214,9 +220,10 @@ Rational Rational::operator*(const Rational& other) const
 {
     Natural gcd1 = Natural::gcd(other.numerator, this->denominator);
     Natural gcd2 = Natural::gcd(this->numerator, other.denominator);
-
+    
     Rational result;
-    result.setSign(this->sign == other.sign);
+    result.sign = (this->sign == other.sign);
+    // std::cout << "other: " << other.sign << " and " << this->sign << " is " << result.sign << " vs " << (this->sign == other.sign) << "\n";
 
     result.numerator = ((gcd1 == 1)? other.numerator: other.numerator/gcd1)*
                        ((gcd2 == 1)? this->numerator: this->numerator/gcd2);
@@ -292,4 +299,16 @@ void showFraction(const Rational& num)
     if(num.denominator == 1)
         std::cout << num.numerator << "\n";
     else std::cout << num.numerator << "/" << num.denominator << "\n";
+}
+
+Rational Rational::invert() const {
+    if(this->numerator == 0)
+        throw std::invalid_argument("Cannot invert 0.");
+        
+    Rational result;
+    result.numerator = this->denominator;
+    result.denominator = this->numerator;
+    result.sign = this->sign;
+
+    return result;
 }

@@ -17,14 +17,14 @@ public:
     std::vector<Rational> dense;  //*Dense representation: coefficients indexed by power
     std::vector<PolyTerm> sparse;  //*Sparse representation: [coefficient, power] pairs
 
-    Polynomial() = default;
+    Polynomial();
 
     Polynomial(const PolyTerm& term);
 
     Polynomial(const std::string& str);
 
-    // Get maximum degree of the polynomial
-    
+    Polynomial(const Polynomial& other);
+        
     void printPolynomial();
     
     //***UTILS***
@@ -63,7 +63,6 @@ public:
     //***ARITHMETIC OPERATIONS***
 
     Polynomial multiply_by_single_term_poly(const PolyTerm& singleTerm);
-
     Polynomial multiply_by_single_term_poly(const Polynomial& singleTerm);
 
     Polynomial operator*(const Polynomial& other);
@@ -91,7 +90,7 @@ public:
 
     //***RATIONAL POLYNOMIALS***
 
-    Polynomial remainder(const Polynomial& divisor) const;
+    static Polynomial remainder(const Polynomial& dividend, const Polynomial& divisor);
 
     Integer content();
 
@@ -99,11 +98,11 @@ public:
 
     std::pair<Polynomial, Polynomial> divide_by(const Polynomial& divisor) const;
 
-    Polynomial pseudoquotient(Polynomial u, Polynomial v);
+    static Polynomial pseudoquotient(Polynomial u, Polynomial v);
 
-    Polynomial pseudoremainder(Polynomial u, Polynomial v);
+    static Polynomial pseudoremainder(Polynomial u, Polynomial v);
 
-    Polynomial primitivePolyGCD(Polynomial u, Polynomial v);
+    static Polynomial primitivePolyGCD(Polynomial u, Polynomial v);
 
-    Polynomial monicPolyGCD(Polynomial u, Polynomial v);
+    static Polynomial monicPolyGCD(Polynomial u, Polynomial v);
 };
