@@ -50,6 +50,7 @@ SndPoly SndPoly::operator=(std::string str) {
 
         Polynomial tempPoly;
         tempPoly.sparse.push_back(auxTerm);
+        tempPoly.degree = tempPoly.sparse[0].exp;
 
         for(int j = 0; j < (int)this->sparse.size(); j++) {
             //*In case there's already a term with y^exp
@@ -182,14 +183,48 @@ SndPoly operator*(const SndPoly& sndPoly, const SndPolyTerm& term) {
     return result;
 }
 
-Integer SndPoly::getUnit() {
+SndPoly operator*(const Integer num, const SndPoly& poly) {
+    if(num == 0)
+        return SndPoly(SndPolyTerm(Polynomial(PolyTerm(0, 0)), 0));
+    if(num == 1)
+        return poly;
+    if(num == -1)
+        return -poly;
+
+    SndPoly result(poly);
+    for(int i = 0; i < (int)poly.sparse.size(); i++) {
+        result.sparse[i].poly = result.sparse[i].poly * num;
+    }
+
+    return result;
+}
+
+SndPoly operator/(const SndPoly& dividend, const Polynomial& divisor) {
+    if(divisor.isZero())
+        throw std::invalid_argument("Division by zero");
+    
+    // std::cout << "Cont: " << divisor << "\n";
+        
+    SndPoly result(dividend);
+    for(int i = 0; i < (int)result.sparse.size(); i++) {
+        // std::cout << "Before: " << result.sparse[i].poly << std::endl;
+        result.sparse[i].poly = result.sparse[i].poly / divisor;
+        // std::cout << "After: " << result.sparse[i].poly << std::endl;
+    }
+
+    //?Divide by gcd of coefficients
+
+    return result;
+}
+
+Integer SndPoly::getUnit() const {
     if(this->sparse[0].poly.get_leading_coefficient() >= 0)
         return Integer(1);
     else
         return Integer(-1);
 }
 
-Polynomial SndPoly::getCont() {
+Polynomial SndPoly::getCont() const {
     int sparse_size = (int)this->sparse.size();
     if(sparse_size == 0)
         throw std::invalid_argument("Sparse is empty");
@@ -197,15 +232,20 @@ Polynomial SndPoly::getCont() {
         return this->sparse[0].poly;
     
     Polynomial gcd = Polynomial::monicPolyGCD(this->sparse[0].poly, this->sparse[1].poly);
-    std::cout << "gcd: " << this->sparse[0].poly << " and " << this->sparse[1].poly << " is: " << gcd << "\n";
+    // std::cout << "gcd: " << this->sparse[0].poly << " and " << this->sparse[1].poly << " is: " << gcd << "\n";
     for(int i = 2; i < sparse_size; i++) {
-        std::cout << "gcd: " << gcd << " and " << this->sparse[i].poly;
+        // std::cout << "gcd: " << gcd << " and " << this->sparse[i].poly;
         gcd = Polynomial::monicPolyGCD(gcd, this->sparse[i].poly);
-        std::cout << " is: " << gcd << "\n";
-
+        // std::cout << " is: " << gcd << "\n";
     }
 
+    // std::cout << "Cont: " << gcd << ", " << gcd.getDegree() << "\n";
+
     return gcd;
+}
+
+SndPoly SndPoly::getPrimitivePart() const {
+    return (this->getUnit() * (*this)) / this->getCont();
 }
 
 SndPoly SndPoly::gcd(const SndPoly& lhs, const SndPoly& rhs) {

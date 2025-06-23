@@ -8,8 +8,9 @@ int main() {
     std::cout << r << "\n";
     Integer i("-0"), i1(-130); //*Still ads the negative sign, but it's fine for now
     std::cout << i << "\n";
-    std::cout << (r2 != 0) << "\n\n";
-    std::cout << r2 << "*" << r3 << "=" << r2 + r3 << "\n";
+    std::cout << (r2 != 0) << "\n";
+    std::cout << r2 << "+" << r3 << "=" << r2 + r3 << "\n";
+    std::cout << "\n";
 
     // Polynomial oPoly1, oPoly2, oPoly3;
     // oPoly1 = "1 2 3 1 2 0";
@@ -48,19 +49,35 @@ int main() {
     // std::cout << poly1 * term1 << "\n";
 
     //*GCD tests
-    Polynomial poly5, poly6, poly7, poly8;
-    poly5 = "75 1 -130 0";
-    poly6 = "135 2 -225 1";
+    Polynomial poly5, poly6, poly7, poly8, poly9, poly10, poly11, poly12;
+    poly5 = "1 1 -26/15 0";
+    poly6 = "1 2 -5/3 1";
     poly7 = "2 3 3 2 -10 1 8 0";
     poly8 = "1 1 2 0";
+    poly9 = "1 2 -3 1 2 0";
+    poly10 = "1 3 -2 2 -1 1 2 0";
+    poly11 = "1/2 3 -6 2 11/2 1 -6 0";
+    poly12 = "1 2 -3/2 1 1 0";
+    std::cout << poly6 << "\n/\n" << poly5 << "\n";
     std::cout << "Remainder: " << Polynomial::remainder(poly6, poly5) << "\n";
+    std::cout << "Division: " << poly6 / poly5 << "\n";
+    std::cout << poly7 << "\n/\n" << poly8 << "\n";
     std::cout << "Remainder: " << Polynomial::remainder(poly7, poly8) << "\n";
+    std::cout << "Division : " << poly7 / poly8 << "\n";
     // std::cout << "GCD of " << poly5 << " and " << poly6 << " is: \n";
     // Polynomial gcd = Polynomial::monicPolyGCD(poly5, poly6);
     // std::cout << "|" << gcd << "\n";
-    // SndPoly poly3;
-    // poly3 = "125 0 2 -75 1 2 135 2 1 -225 1 1 30 3 0 -50 2 0";
-    // std::cout << poly3 << "\n";
-    // std::cout << poly3.getUnit() << "\n";
-    // std::cout << poly3.getCont() << "\n";
+    // std::cout << "GCD of " << poly9 << " and " << poly10 << " is: " << Polynomial::monicPolyGCD(poly9, poly10) << "\n";
+    // std::cout << "GCD of " << poly11 << " and " << poly12 << " is: " << Polynomial::monicPolyGCD(poly11, poly12) << "\n";
+
+    //*SndPoly GCD tests
+    SndPoly poly3;
+    poly3 = "125 0 2 -75 1 2 135 2 1 -225 1 1 30 3 0 -50 2 0";
+    std::cout << poly3 << "\n";
+    std::cout << "Unit: " << poly3.getUnit() << "\n";
+    std::cout << "Cont: " << poly3.getCont() << "\n";
+    SndPoly poly4;
+    poly4 = poly3.getUnit() * poly3;
+    std::cout << poly3 << " " << poly3.sparse[0].poly.getDegree() << "\n";
+    std::cout << "PP: " << poly3.getPrimitivePart() << "\n";
 }

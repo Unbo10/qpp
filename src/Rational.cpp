@@ -142,9 +142,9 @@ Rational Rational::operator+(const Rational& other) const
             result.denominator = other.denominator * (denominator/gcd); 
         }
         if(result.abs(result) == 0)
-            result.setSign(true);
+            result.sign = true;
         else
-            result.setSign(this->sign);
+            result.sign = this->sign;
         return result;
     }
 
@@ -152,8 +152,8 @@ Rational Rational::operator+(const Rational& other) const
     result.numerator = res[0];
     result.denominator = other.denominator * (denominator/gcd); 
     if(this->sign)
-        result.setSign(bool(res[1]));
-    else result.setSign(!bool(res[1]));
+        result.sign = bool(res[1]);
+    else result.sign = !bool(res[1]);
 
     gcd = Natural::gcd(numerator, denominator);
     if(gcd != 1)
@@ -162,7 +162,7 @@ Rational Rational::operator+(const Rational& other) const
         result.denominator = result.denominator/gcd;
     }
     if(result.abs(result) == 0){
-        result.setSign(true);
+        result.sign = true;
         result.denominator = 1;
     }
     return result;
@@ -173,7 +173,7 @@ Rational Rational::operator-() const
     Rational result;
     result.denominator = denominator;
     result.numerator = numerator;
-    result.setSign(!this->sign);
+    result.sign = !this->sign;
     return result;
 }
 
@@ -183,7 +183,7 @@ Rational Rational::operator-(const Rational& other) const
     Rational result;
     if(this->sign != other.sign)
     {
-        result.setSign(this->sign);
+        result.sign = this->sign;
         if(gcd == 1)
         {
             result.numerator = numerator * other.denominator + other.numerator * denominator;
@@ -200,8 +200,8 @@ Rational Rational::operator-(const Rational& other) const
     result.numerator = res[0];
     result.denominator = other.denominator * (denominator/gcd); 
     if(this->sign)
-        result.setSign(bool(res[1]));
-    else result.setSign(!bool(res[1]));
+        result.sign = bool(res[1]);
+    else result.sign = !bool(res[1]);
 
     gcd = Natural::gcd(numerator, denominator);
     if(gcd != 1)
@@ -210,7 +210,7 @@ Rational Rational::operator-(const Rational& other) const
         result.denominator = result.denominator/gcd;
     }
     if(result.abs(result) == 0){
-        result.setSign(true);
+        result.sign = true;
         result.denominator = 1;
     }
     return result;
@@ -243,7 +243,7 @@ Rational Rational::operator/(const Rational& other) const
     Natural gcd2 = Natural::gcd(denominator, other.denominator);
 
     Rational result;
-    result.setSign(this->sign == other.sign);
+    result.sign = (this->sign == other.sign);
     result.numerator = ((gcd1 == 1)? numerator: numerator/gcd1) *
                        ((gcd2 == 1)? other.denominator: other.denominator/gcd2);
 
@@ -301,9 +301,10 @@ void showFraction(const Rational& num)
     else std::cout << num.numerator << "/" << num.denominator << "\n";
 }
 
+//*Util method for GCD
 Rational Rational::invert() const {
     if(this->numerator == 0)
-        throw std::invalid_argument("Cannot invert 0.");
+        return Rational(0, 1);
         
     Rational result;
     result.numerator = this->denominator;

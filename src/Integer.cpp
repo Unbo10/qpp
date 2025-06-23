@@ -113,7 +113,7 @@ std::istream& operator>>(std::istream& is, Integer& num)
     is >> x;
     if(x < 0)
     {
-        num.setSign(false);
+        num.sign = false;
         x = -x;
     }
     num.absolutePart = x;

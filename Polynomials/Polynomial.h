@@ -11,9 +11,9 @@ bool is_dense_valid = false;
 bool is_ordered = false;
 bool is_rational = false;
 bool is_sparse_valid = false;
-int degree = 0;
 
 public:
+    int degree = 0;
     std::vector<Rational> dense;  //*Dense representation: coefficients indexed by power
     std::vector<PolyTerm> sparse;  //*Sparse representation: [coefficient, power] pairs
 
@@ -65,12 +65,6 @@ public:
     Polynomial multiply_by_single_term_poly(const PolyTerm& singleTerm);
     Polynomial multiply_by_single_term_poly(const Polynomial& singleTerm);
 
-    Polynomial operator*(const Polynomial& other);
-
-    friend Polynomial operator*(const Polynomial& lhs, const Polynomial& rhs);
-    
-    friend Polynomial operator*(const Polynomial& poly, const PolyTerm& term);
-
     Polynomial operator+(const Polynomial& other) const;
 
     friend Polynomial operator+(const Polynomial& poly, PolyTerm& term);
@@ -78,6 +72,14 @@ public:
     Polynomial operator-() const;
 
     Polynomial operator-(const Polynomial& other) const;
+
+    Polynomial operator*(const Polynomial& other);
+
+    friend Polynomial operator*(const Polynomial& lhs, const Polynomial& rhs);
+    
+    friend Polynomial operator*(const Polynomial& poly, const Integer& num);
+
+    Polynomial operator/(const Polynomial& other);
     
     Polynomial to_integer_poly();
 
@@ -85,8 +87,6 @@ public:
     Integer find_gcd_of_poly_terms();
 
     Integer find_lcm_of_poly_terms();
-
-    Polynomial operator/(const Polynomial& other);
 
     //***RATIONAL POLYNOMIALS***
 

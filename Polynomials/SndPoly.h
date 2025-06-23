@@ -79,9 +79,15 @@ public:
 
     friend SndPoly operator*(const SndPoly& poly, const SndPolyTerm& term);
 
-    Integer getUnit();
+    friend SndPoly operator*(const Integer num, const SndPoly& poly);
 
-    Polynomial getCont();
+    friend SndPoly operator/(const SndPoly& dividend, const Polynomial& divisor);
+
+    Integer getUnit() const;
+
+    Polynomial getCont() const;
+
+    SndPoly getPrimitivePart() const;
 
     /**
      * @brief Computes the greatest common divisor of two polynomials (with

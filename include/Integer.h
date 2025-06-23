@@ -13,7 +13,7 @@ class Integer : public Number<Integer>
         Integer() {}
         Integer(long long x) : absolutePart((x < 0)? -x : x) {this->sign = x>=0;}
         Integer(const Natural& natural) : absolutePart(natural) {this->sign = 1;}
-        Integer(const Natural& natural, bool sign) : absolutePart(natural) {setSign(sign);}
+        Integer(const Natural& natural, bool sign) : absolutePart(natural) {this->sign = sign;}
         Integer(std::string str) {
             int starting_pos = 0;
             if(str[0] == '-') {
@@ -35,7 +35,7 @@ class Integer : public Number<Integer>
         Integer operator+(const Integer& other) const;
         Integer operator-(const Integer& other) const;
         Integer operator*(const Integer& other) const;
-        Integer operator-() const {Integer r(*this); r.setSign(!this->sign); return r;}
+        Integer operator-() const {Integer r(*this); r.sign = !this->sign; return r;}
         Integer operator/(const Integer& other) const;
         Integer operator%(const Integer& other) const;
         Integer operator^(const Integer& other) const;
