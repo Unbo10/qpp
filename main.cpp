@@ -28,12 +28,12 @@ int main() {
 
     //std::cout << m1 << "\n"<< std::endl;
     Matrix copy = Matrix::scalonadeForm(m1);
-    printWhitoutBracketsAndFraccionForm(copy);
+    printWithoutBracketsAndFractionForm(copy);
     std::cout << std::endl;
     std::cout << std::endl;
-    printWhitoutBracketsAndFraccionForm(m1);
+    printWithoutBracketsAndFractionForm(m1);
     std::cout << std::endl;
     std::cout << std::endl;
-    printWhitoutBracketsAndFraccionForm(m1*copy);
+    printWithoutBracketsAndFractionForm(m1*copy);
     //std::cout << Matrix::scalonadeForm(m1);
 }
