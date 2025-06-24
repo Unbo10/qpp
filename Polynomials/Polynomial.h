@@ -79,7 +79,9 @@ public:
     
     friend Polynomial operator*(const Polynomial& poly, const Integer& num);
 
-    Polynomial operator/(const Polynomial& other);
+    Polynomial operator/(const Polynomial& other) const;
+
+    friend Polynomial operator^(const Polynomial& poly, int pow);
     
     Polynomial to_integer_poly();
 

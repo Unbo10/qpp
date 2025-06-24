@@ -13,7 +13,23 @@ public:
     SndPolyTerm() = default;
     SndPolyTerm(const Polynomial polynomial, const int y_exp) : poly(polynomial), exp(y_exp) {}
 
+    //***UTILS***
+
+    bool isZero();
+
     //***STREAM OPERATIONS***
 
     friend std::ostream& operator<<(std::ostream& os, const SndPolyTerm&);
+
+    //***ARITHMETIC OPERATIONS***
+
+    SndPolyTerm operator+(const SndPolyTerm& other);
+
+    SndPolyTerm operator-() const;
+
+    SndPolyTerm operator-(const SndPolyTerm& other);
+    
+    SndPolyTerm operator*(const SndPolyTerm& other);
+
+    SndPolyTerm operator/(const SndPolyTerm& other) const;
 };

@@ -392,6 +392,7 @@ Polynomial Polynomial::operator*(const Polynomial& other) {
     }
 
     result.order_poly();
+    result.degree = result.sparse[0].exp;
 
     return result;
 }
@@ -417,10 +418,9 @@ Polynomial operator*(const Polynomial& poly, const Integer& num) {
     return result;
 }
 
-Polynomial Polynomial::operator/(const Polynomial& divisor) {
+Polynomial Polynomial::operator/(const Polynomial& divisor) const {
     if(divisor.isZero()) throw std::invalid_argument("Cannot divide by zero polynomial");
     if(divisor.degree > this->degree) return Polynomial("0 0"); //*Return zero polynomial if divisor degree is greater than dividend degree
-    
     
     Polynomial r(*this), q;
     q.dense.resize(this->degree - divisor.degree + 1, Rational(0, 1));
@@ -438,6 +438,25 @@ Polynomial Polynomial::operator/(const Polynomial& divisor) {
 
 
     return q;
+}
+
+Polynomial operator^(const Polynomial& poly, int num) {
+    if(num == 1)
+        return poly;
+    Polynomial result;
+    if(num == 0){
+        result.sparse.push_back(PolyTerm(1, 0));
+        result.dense.push_back(1);
+        result.degree = 0;
+    }
+
+    result = poly;
+    for(int i = 1; i < num; i++) {
+        result = result * poly;
+    }
+
+    //*Sparse and degree updated in *
+    return result;
 }
 
 // Polynomial Polynomial::to_integer_poly() {

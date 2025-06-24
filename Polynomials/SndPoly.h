@@ -13,8 +13,9 @@ public:
     SndPoly(const SndPoly& poly);
     SndPoly(const SndPolyTerm& term);
 
-    std::vector<SndPolyTerm> dense;
+    std::vector<Polynomial> dense;
     std::vector<SndPolyTerm> sparse;
+    bool degree;
 
     //***STREAM OPERATIONS***
 
@@ -58,7 +59,9 @@ public:
 
     void clear();
 
-    bool isZero();
+    bool isZero() const;
+
+    void update_sparse();
 
     //***ARITHMETIC OPERATIONS***
 
@@ -83,6 +86,12 @@ public:
 
     friend SndPoly operator/(const SndPoly& dividend, const Polynomial& divisor);
 
+    //*Returns quotient and remainder
+    static std::vector<SndPoly> div(const SndPoly& dividend, const SndPoly& divisor);
+    
+    //*Pseudo-remainder
+    friend SndPoly operator%(const SndPoly& dividend, const SndPoly& divisor);
+
     Integer getUnit() const;
 
     Polynomial getCont() const;
@@ -96,5 +105,5 @@ public:
      * - The unit is defined as the sign of the leading coefficient of the
      * leading polynomial.
      */
-    SndPoly gcd(const SndPoly& lhs, const SndPoly& rhs);
+    static SndPoly gcd(const SndPoly& lhs, const SndPoly& rhs);
 };

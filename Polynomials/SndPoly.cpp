@@ -4,13 +4,16 @@
 SndPoly::SndPoly(const SndPoly& poly) {
     this->dense = poly.dense;
     this->sparse = poly.sparse;
+    this->degree = poly.degree;
     this->is_ordered = poly.is_ordered;
 }
 
 SndPoly::SndPoly(const SndPolyTerm& term) {
     this->dense.clear();
-    this->dense.push_back(term);
-    //?Update sparse?
+    this->dense.resize(term.exp, Polynomial("0 0"));
+    this->dense[term.exp] = term.poly;
+    this->sparse.push_back(term);
+    this->degree = term.exp;
 }
 
 //***STREAM OPERATIONS***
@@ -86,21 +89,33 @@ void SndPoly::order_poly() {
         });
 
     is_ordered = true;
+    degree = sparse[0].exp;
 }
 
 void SndPoly::clear() {
     this->sparse.clear();
     this->dense.clear();
+    this->degree = 0;
     this->is_ordered = false;
 }
 
-bool SndPoly::isZero() {
+bool SndPoly::isZero() const {
+    if(degree != 0)
+        return false;
     for(const SndPolyTerm& term : this->sparse) {
         if(!term.poly.isZero()){
             return false;
         }
     }
     return true;
+}
+
+void SndPoly::update_sparse() {
+    for(int i = 0; i < (int)dense.size(); i++) {
+        if(!dense[i].isZero()) {
+            sparse.push_back(SndPolyTerm(dense[i], i));
+        }
+    }
 }
 
 //***ARITHMETIC OPERATIONS***
@@ -180,6 +195,8 @@ SndPoly operator*(const SndPoly& sndPoly, const SndPolyTerm& term) {
         result.sparse.push_back(SndPolyTerm(auxPoly, sndPoly.sparse[i].exp + term.exp));
     }
 
+    result.degree = result.sparse[0].exp;
+
     return result;
 }
 
@@ -217,6 +234,71 @@ SndPoly operator/(const SndPoly& dividend, const Polynomial& divisor) {
     return result;
 }
 
+std::vector<SndPoly> SndPoly::div(const SndPoly& dividend, const SndPoly& divisor) {
+    if(divisor.isZero()) throw std::invalid_argument("Cannot divide by zero polynomial");
+    std::vector<SndPoly> result;
+    if(divisor.degree > dividend.degree){
+        result.push_back(SndPoly(SndPolyTerm(Polynomial("0 0"), 0)));
+        result.push_back(dividend);
+        return result;
+    } //*Return zero polynomial if divisor degree is greater than dividend degree
+
+    // std::cout << "Division\n";
+    // std::cout << dividend << " / " << divisor << "\n";
+    
+    SndPoly r(dividend), q;
+    for(int i = dividend.degree - divisor.degree; i >= 0; i++) {
+        q.dense.push_back(Polynomial("0 0"));
+    }
+    
+    // std::cout << "AAAA" << divisor.degree << " " << dividend.degree << "\n";
+    // r.update_dense();
+    for(int i = 0; i <= dividend.degree - divisor.degree; i++){
+        q.dense[i] = r.dense[i] / divisor.dense[0];
+        for(int j = 0; j <= divisor.degree ; j++){
+            r.dense[i + j] = r.dense[i+j] - (q.dense[i] * divisor.dense[j]);
+        }
+    }
+    q.update_sparse();
+    q.degree = q.sparse[0].exp;
+
+    r.update_sparse();
+    if (r.isZero()) {
+        r.dense.clear();
+        r.sparse.clear();
+        r.dense.push_back(Polynomial("0 0"));
+        r.sparse.push_back(SndPolyTerm(Polynomial("0 0"), 0));
+    }
+    r.degree = r.sparse[0].exp;
+
+    // std::cout << "a\n";
+
+    result.push_back(q);
+    result.push_back(r);
+
+    return result;
+}
+
+SndPoly operator%(const SndPoly& dividend, const SndPoly& divisor) {
+    
+    //*Since the polynomials shouldn't be divided by other polynomials,
+    //*they do not have fractions so calculating beta and gamma is not necessary
+    
+    if(dividend.degree < divisor.degree)
+        return dividend;
+
+    int exp = dividend.degree - divisor.degree + 1;
+    Polynomial alpha = divisor.sparse[0].poly^(exp);
+    SndPoly u_prime = dividend * SndPolyTerm(alpha, 0);
+
+    std::cout << "A\n";
+    std::vector<SndPoly> mod = SndPoly::div(u_prime, divisor);
+    //*mod[0] is q and mod[1] is r
+    mod[1] = mod[1] / alpha;
+
+    return mod[1];
+}
+
 Integer SndPoly::getUnit() const {
     if(this->sparse[0].poly.get_leading_coefficient() >= 0)
         return Integer(1);
@@ -249,5 +331,21 @@ SndPoly SndPoly::getPrimitivePart() const {
 }
 
 SndPoly SndPoly::gcd(const SndPoly& lhs, const SndPoly& rhs) {
+    if(lhs.degree < rhs.degree)
+        return SndPoly::gcd(rhs, lhs);
+    
+    Polynomial gcd = Polynomial::monicPolyGCD(lhs.getCont(), rhs.getCont());
+    SndPoly u = lhs.getPrimitivePart(), v = rhs.getPrimitivePart();
 
+    while(v.degree > 0) {
+        std::cout << u << " % " << v << "\n";
+        SndPoly r = u % v;
+        u = v;
+        v = r.getPrimitivePart();
+    }
+
+    if(v.isZero())
+        return u * SndPolyTerm(gcd, 0);
+    else
+        return SndPolyTerm(gcd, 0);
 }
