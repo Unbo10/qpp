@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/juans/OneDrive/Documents/AlgAbstracta/qpp/Polynomials",
-      "program": "c:/Users/juans/OneDrive/Documents/AlgAbstracta/qpp/Polynomials/build/Debug/outDebug",
+      "cwd": "c:/Users/juans/OneDrive/Documents/AlgAbstracta/qpp-1",
+      "program": "c:/Users/juans/OneDrive/Documents/AlgAbstracta/qpp-1/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

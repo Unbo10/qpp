@@ -1,5 +1,4 @@
-#ifndef NATURAL_H
-#define NATURAL_H
+#pragma once
 
 /*
     El objetivo de esta clase es optimazar el uso
@@ -15,7 +14,6 @@
 
 #include "../utils/List.h"
 #include "../utils/Comparable.h"
-//#include "../src/Natural.cpp"
 
 class Natural: public Comparable<Natural>
 {
@@ -70,4 +68,3 @@ class Natural: public Comparable<Natural>
             return digits[0]%2;
         }
 };
-#endif 

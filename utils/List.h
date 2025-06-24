@@ -1,9 +1,29 @@
+#pragma once
+
 #include <iostream>
 #include <initializer_list>
 
-#include "Iterator.h"
 #include "Iterable.h"
 
+/**
+ * @brief A dynamic array-based list implementation that provides common list
+ * operations.
+ * 
+ * It is a generic container that implements a dynamic array which resizes by
+ * a factor of 1.4.
+ * 
+ * The class supports common operations like adding, removing, and replacing
+ * elements. The List also implements expected functionality such as copy
+ * construction, assignment operations, and equality comparisons.
+ * 
+ * Additionally, ir provides iterator support (via inheriting from Iterable),
+ * enabling it to be used in range-based for loops for convenient traversal.
+ * It also includes functionality for list concatenation.
+ * 
+ * @tparam U The type of elements stored in the list
+ * 
+ * @note The list implements the Iterable interface for iteration support
+ */
 template <typename U>
 class List : public Iterable<U>
 {
@@ -17,7 +37,7 @@ class List : public Iterable<U>
          */
         int capacity;
         /**
-         * @brief Number of elements in the array (A.K.A. length).
+         * @brief Number of elements in the array (A.K.A. size).
          */
         int length;
 
@@ -42,21 +62,7 @@ class List : public Iterable<U>
 
         
     public:
-        /**
-         * @brief Constructs a new List with the specified initial capacity.
-         * 
-         * @param INITIAL_CAPACITY The initial capacity of the list.
-         * 
-         * @details This constructor creates a new list with a pre-allocated
-         * array* of length INITIAL_CAPACITY. The length of the list is initially
-         * set to 0.
-         */
-        List(int INITIAL_CAPACITY)
-        {
-            array = new U[INITIAL_CAPACITY];
-            capacity = INITIAL_CAPACITY;
-            length = 0;
-        }
+        //***CONSTRUCTORS AND DESTRUCTOR***
 
         /**
          * @brief Default constructor
@@ -66,19 +72,36 @@ class List : public Iterable<U>
         List() : List(DEFAULT_INITIAL_CAPACITY) {}
 
         /**
+         * @brief Constructs a new List with the specified initial capacity.
+         * 
+         * @param INITIAL_CAPACITY The initial capacity of the list.
+         * 
+         * @details This constructor creates a new list with a pre-allocated
+         * array of capacity 10. The length of the list is initially set to 0.
+         */
+        List(int INITIAL_CAPACITY)
+        {
+            array = new U[INITIAL_CAPACITY];
+            capacity = INITIAL_CAPACITY;
+            length = 0;
+        }
+
+        /**
          * @brief Copy constructor for creating a new list from another list.
          * 
          * Constructs a new list by copying all elements from another list
          * of potentially different type U where U is implicitly convertible to
          * T.
          * 
-         * @tparam U Type of elements in the source list (must be convertible to T)
+         * @tparam U Type of elements in the source list (must be convertible
+         * to T).
          * @param another The source list to copy from.
          * 
-         * @note This constructor first allocates memory for the new list using the length of the source list,
-         *       then copies each element individually.
+         * @note This constructor first allocates memory for the new list using
+         * the length of the source list, then copies each element
+         * individually.
          */
-        List(const List<U>& another) : List(another.size())
+        List(const List<U>& another) : List(another.getSize())
         {
             for(int i = 0; i < another.length; i++)
                 add(another[i]);
@@ -111,13 +134,15 @@ class List : public Iterable<U>
             delete[] array;
         }
 
+        //***SINGLE-ELEMENT OPERATIONS***
+
         /**
          * @brief Inserts an item at a specified index in the list.
          *
          * The function inserts the given item at the specified index and
          * shifts all elements at positions greater than or equal to index
          * one position to the right. If `length == capacity`, it will be 
-         * relengthd before inserting the new item.
+         * resized before inserting the new item.
          *
          * @param item The item to be inserted.
          * @param index The position at which to insert the item. Must be
@@ -216,6 +241,8 @@ class List : public Iterable<U>
             return pop(0);
         }
 
+        //***GETTERS***
+
         /**
          * @return bool True if the list has no elements stored. False
          * otherwise.
@@ -243,33 +270,46 @@ class List : public Iterable<U>
         }
 
         /**
-         * @return U The array-like object with which the list was ipmlemented.
+         * @return U The array-like object with which the list was implemented.
          */
         U* getArray() const
         {
             return array;
         }
 
+        //***UTIL METHODS***
+
         /**
          * @brief Clears the list and resets it to its default state (no
-         * elements stored and default capacity).
+         * elements stored and default capacity, 10).
          * 
-         * This method deallocates the current array, sets the length to zero,
-         * allocates a new array with the default initial length, and updates the
-         * capacity to the default initial length.
+         * Equivalent to calling `clear(10)`.
          */
         void clear()
         {
             this->clear(DEFAULT_INITIAL_CAPACITY);
         }
-
-        void clear(int newSize)
+        
+        /**
+         * @brief Clears (empties) the list and sets its capacity to a given
+         * one.
+         * 
+         * This method deallocates the current array, sets the length to zero,
+         * allocates a new array with the default initial length, and updates
+         * the capacity to the default initial length.
+         * 
+         * @param newCapacity int new capacity of the array
+         */
+        void clear(int newCapacity)
         {
             delete[] array;
             length = 0;
-            array = new U[newSize];
-            capacity = newSize;
+            array = new U[newCapacity];
+            capacity = newCapacity;
         }
+        
+        //***OTHER OPERATIONS***
+
         /**
          * @brief Concatenates two lists into a new list.
          * 
@@ -298,8 +338,8 @@ class List : public Iterable<U>
          * @brief Equality operator for List objects
          * 
          * Compares two lists element by element. Two lists are considered
-         * equal if they have the same length and all corresponding elements are
-         * equal.
+         * equal if they have the same length and all corresponding elements
+         * are equal.
          * 
          * @tparam U The type of elements in the lists.
          * @param l1 First list to compare.
@@ -309,9 +349,9 @@ class List : public Iterable<U>
          */
         friend bool operator==(const List<U> l1, const List<U> l2)
         {
-            if(l1.size() != l2.size()) return false;
+            if(l1.getSize() != l2.getSize()) return false;
 
-            for(int i = 0; i < l1.size(); i++)
+            for(int i = 0; i < l1.getSize(); i++)
                 if(l1[i] != l2[i]) return false;
 
             return true;
@@ -369,7 +409,6 @@ class List : public Iterable<U>
             return *this;
         }
 
-
         /**
          * @brief Overloads the output stream operator for List objects.
          * 
@@ -392,6 +431,11 @@ class List : public Iterable<U>
             return os;
         }
         
+        //***ITERATOR INITIALIZATIONS***
+
         Iterator<U> begin() const { return Iterator<U>(array); }
         Iterator<U> end() const { return Iterator<U>(array + length); }
+
+        //***GETTERS***
+        int getSize() const { return length; }
 };

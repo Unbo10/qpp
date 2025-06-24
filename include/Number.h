@@ -10,12 +10,13 @@ class Number: public Comparable<T>
     protected:
         static const int DEFAULT_BASE = 100000;
         // bool base_initialized;
-        bool sign;
         int BASE;
     public:
-        Number() : sign(true), BASE(DEFAULT_BASE) {}
-        Number(bool sgn, int base) : sign(sgn), BASE(base) {}
-        Number(bool sgn) : sign(sgn), BASE(DEFAULT_BASE) {}
+        //*True is for positive and zero and false is for negative
+        bool sign;
+        Number() : BASE(DEFAULT_BASE), sign(true) {}
+        Number(bool sgn, int base) : BASE(base), sign(sgn) {}
+        Number(bool sgn) : BASE(DEFAULT_BASE), sign(sgn) {}
         ~Number() {}
 
         virtual bool operator<(const T& other) const = 0;
@@ -74,5 +75,5 @@ class Number: public Comparable<T>
 
         bool getSign() const {return sign;}
 
-        void setSign(bool sign) {this->sign = sign;}
+        // void setSign(bool sign) {this->sign = sign;}
 };
