@@ -1,0 +1,9 @@
+#*Ignore VSCode settings folder
+./vscode
+
+#*Ignore output files
+output
+*.exe
+
+#*Ignore object files
+*.o
