@@ -18,8 +18,8 @@ class Rational: public Number<Rational>
         static unsigned int decimalPoints;
 
         //Rational(long long x): Rational(Integer(x), 1) {}
-        Rational(): Rational(0, 1) {}
-        Rational(const Integer& numeratr): numerator(numeratr.getAbsolutePart()), denominator(1)  {}
+        Rational(): numerator(0), denominator(1) {this->setSign(true);}
+        Rational(const Integer& numeratr): numerator(numeratr.getAbsolutePart()), denominator(1)  {this->setSign(numeratr.getSign());}
         Rational(const Integer& num, const Integer& den);
         Rational(const Natural& num): numerator(num), denominator(1) {this->setSign(true);}
         Rational(double x);

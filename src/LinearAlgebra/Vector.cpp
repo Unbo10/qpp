@@ -63,6 +63,16 @@ Vector operator*(const Rational& num, const Vector& vector)
     return result;
 }
 
+Vector operator/(const Vector& vector, const Rational& num)
+{
+    Vector result(vector);
+
+    for(Rational& number: result)
+        number = number/num;
+    
+    return result;
+}
+
 Vector Vector::projectionIn(const Vector& other) const
 {
     Rational scalar = (this->operator*(other))/(other*other);

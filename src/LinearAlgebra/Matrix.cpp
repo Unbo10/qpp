@@ -66,12 +66,24 @@ Matrix operator*(const Matrix& m1, const Matrix& m2)
     {
         for (int j = 0; j < cols; ++j)
         {
-            Rational sum = 0;
+            std::cout << "("<< i << ","<< j << ")"<< std::endl;
             for (int k = 0; k < inner; ++k)
             {
-                sum = sum + m1[i][k] * m2[k][j];
-            }
-            result[i][j] = sum;
+                /*std::cout << "Suma actual:  ";
+                showFraction(result[i][j]);
+                std::cout << std::endl;
+                std::cout << "Numeros a multiplicar: ";
+                showFraction(m1[i][k]);
+                std::cout << "  ";
+                showFraction(m2[k][j]);
+                std::cout << std::endl;
+                std::cout << "Multiplicacion actual:  ";
+                showFraction(m1[i][k] * m2[k][j]);
+                std::cout << std::endl;*/
+                result[i][j] = result[i][j] + (m1[i][k] * m2[k][j]);
+            }       
+            std::cout << "Suma final: "; showFraction(result[i][j]) ; 
+            std::cout << std::endl;
         }
     }
     return result;
@@ -134,6 +146,71 @@ Matrix Matrix::transpose(const Matrix& matrix)
             result[i][j] = matrix[j][i];
 
     return result;
+}
+
+Matrix Matrix::inverse(const Matrix& matrix)
+{
+    if(matrix.rows() != matrix.columns())
+        throw std::invalid_argument("A matrix must be square to have inverse");
+
+    Matrix result(matrix), inden = Matrix::identity(matrix.rows());
+    
+    int rows = result.rows();
+    int columns = result.columns();
+    int currentRow = 0;
+
+    for(int i = 0; i < columns; i++)
+    {
+        int toFindNoCero = currentRow;
+        while(toFindNoCero < rows && result[toFindNoCero][i] == 0)
+            toFindNoCero++;
+
+        if(toFindNoCero == rows) 
+            throw std::invalid_argument("This matrix don't have a inverse, have a column of ceros");
+
+        if(toFindNoCero != currentRow)
+        {
+            Vector temp = result[toFindNoCero];
+            result[toFindNoCero] = result[currentRow];
+            result[currentRow] = temp;
+            temp = inden[toFindNoCero];
+            inden[toFindNoCero] = inden[currentRow];
+            inden[currentRow] = temp;
+        }
+        
+        for(int j = currentRow + 1; j < rows; j++)
+        {
+            Rational factor = result[j][i]/ result[currentRow][i];
+            if(factor != 0) 
+            {
+                result[j] = result[j] - factor * result[currentRow];
+                inden[j] = inden[j] - factor * inden[currentRow];
+            }
+                
+        }
+
+        currentRow++;
+    }
+            
+
+    for(int i = columns - 1; i >= 0; i--)
+    {
+        Rational pivot = result[i][i];
+        if (pivot == 0)
+            throw std::invalid_argument("This matrix don't have a inverse, the determinant is cero");
+
+        result[i] = result[i] / pivot;
+        inden[i] = inden[i] / pivot;
+
+        for(int j = 0; j < i; j++)
+        {
+            Rational factor = result[j][i];
+            result[j] = result[j] - factor * result[i];
+            inden[j] = inden[j] - factor * inden[i];
+        }
+    }
+
+    return inden;
 }
 
 
