@@ -28,6 +28,7 @@ class Vector: public Iterable<Rational>
         Vector operator+(const Vector& other) const;
         Vector operator-(const Vector& other) const;
         friend Vector operator*(const Rational& num, const Vector& vector);
+        friend Vector operator/(const Vector& vector, const Rational& num);
         Rational operator*(const Vector& other) const;
         friend bool operator==(const Vector& v1, const Vector& v2) {return v1.components == v2.components;}
 
@@ -38,7 +39,8 @@ class Vector: public Iterable<Rational>
         Iterator<Rational> begin() const {return components.begin();}
         Iterator<Rational> end() const {return components.end();}
 
-        Rational operator[](int index) const {return components[index];}
+        const Rational& operator[](int index) const {return components[index];}
+        Rational& operator[](int index) {return components[index];}
 
         friend std::ostream& operator<<(std::ostream& os, const Vector& tuple)
         {

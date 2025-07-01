@@ -370,13 +370,22 @@ class List : public Iterable<U>
          * @throws std::invalid_argument If the index is out of bounds
          * (negative or >= length).
          */
-        U& operator[](int index) const
+        const U& operator[](int index) const
         {
             if (index < 0 || index >= length) {
                 throw std::invalid_argument("Index out of the range, entro");
             }
 
             return this->array[index];
+        }
+
+        U& operator[](int index)
+        {
+            if (index < 0 || index >= length) {
+                throw std::invalid_argument("Index out of the range, entro");
+            }
+
+            return this->array[index]; 
         }
 
         /**
