@@ -102,7 +102,7 @@ class List : public Iterable<U>
          * the length of the source list, then copies each element
          * individually.
          */
-        List(const List<U>& another) : List(another.getSize())
+        List(const List<U>& another) : List(another.size())
         {
             for(int i = 0; i < another.length; i++)
                 add(another[i]);
@@ -350,9 +350,9 @@ class List : public Iterable<U>
          */
         friend bool operator==(const List<U> l1, const List<U> l2)
         {
-            if(l1.getSize() != l2.getSize()) return false;
+            if(l1.size() != l2.size()) return false;
 
-            for(int i = 0; i < l1.getSize(); i++)
+            for(int i = 0; i < l1.size(); i++)
                 if(l1[i] != l2[i]) return false;
 
             return true;

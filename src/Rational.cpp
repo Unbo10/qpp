@@ -256,7 +256,7 @@ std::ostream& operator<<(std::ostream& os, const Rational& number)
         os << num/den;
         return os;
     }
-    for(int i = 0; i < Rational::decimalPoints; i++)
+    for(unsigned int i = 0; i < Rational::decimalPoints; i++)
     {
         if(num == 0) return os;
         Natural q = num/den;

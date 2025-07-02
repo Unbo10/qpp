@@ -1,6 +1,7 @@
 #include "../include/Natural.h"
 unsigned short BASE = 100;
-/* Metodos privados */
+
+//***UTILS***
 
 void Natural::cleanDigits(Natural& num)
 {
@@ -18,11 +19,12 @@ void Natural::cleanDigits(Natural& num, int index)
     num.digits = copy;
 }
 
+//***UTILS FOR ARITHMETIC OPERATIONS***
 
-List<Natural> res(const Natural& num1, const Natural& num2, bool re)
+List<Natural> subtract(const Natural& num1, const Natural& num2, bool reorder)
 {
-    if(re && num1 < num2)
-        return {res(num2, num1, 0)[0], 0};
+    if(reorder && num1 < num2)
+        return {subtract(num2, num1, 0)[0], 0};
         
     bool carry = 0;
     int maxSize = (num1.digits.size() < num2.digits.size())? num2.digits.size(): num1.digits.size();
@@ -40,10 +42,19 @@ List<Natural> res(const Natural& num1, const Natural& num2, bool re)
     }
 
     Natural::cleanDigits(result);
+    //?Why don't we just return the result?
     return {result, 1};
 }
-/* Fin de metodo privados */
 
+unsigned short estimateTrialQuotient(const Natural& num1, const Natural& num2)
+{
+    int size = num1.digits.size()-1;
+    if(size == 0)
+        return num1[size]/num2[num2.digits.size()-1];
+    return (num1[size]*100 + num1[size -1])/num2[num2.digits.size()-1];
+}
+
+//***CONSTRUCTORS***
 
 Natural::Natural(long long x)
 {
@@ -63,9 +74,12 @@ Natural::Natural(const Natural& other)
 {
     digits = other.digits;
 }
-/* Comparaciones */
+
+//***COMPARISON OPERATIONS***
+
 bool Natural::operator<(const Natural& num) const 
 {
+    //?Deberiamos limpiar los digitos antes de hacer la comparacion?
     int size = (num.digits.size() < digits.size())? digits.size(): num.digits.size();
 
     for(int i = size-1; i >= 0; i--)
@@ -82,9 +96,14 @@ bool Natural::operator==(const Natural& num) const
 {
     return digits == num.digits;
 }
-/* Fin de las comparaciones */
 
-/* Obtener digitos  */
+//***ASSIGNING AND INDEX-ACCESSING OPERATIONS***
+
+void Natural::operator=(const Natural& num2)
+{
+    digits = num2.digits;
+}
+
 unsigned short Natural::operator[](int index) const
 {
     if(index < 0 || digits.size() <= index)
@@ -93,8 +112,7 @@ unsigned short Natural::operator[](int index) const
     return digits[index];
 }
 
-
-/* Operaciones entre naturales  */
+//***ARITHMETIC OPERATIONS***
 
 Natural operator+(const Natural& num1, const Natural& num2)
 {
@@ -121,7 +139,7 @@ Natural operator+(const Natural& num1, const Natural& num2)
 
 List<Natural> operator-(const Natural& num1, const Natural& num2)
 {
-    return res(num1, num2, 1);
+    return subtract(num1, num2, 1);
 }
 
 Natural operator*(const Natural& num1, const Natural& num2)
@@ -180,7 +198,7 @@ Natural operator/(const Natural& num1, const Natural& num2)
         unsigned short q;
         if(U[divisor.digits.size()] == divisor[divisor.digits.size()-1])
             q = 99;
-        else q = stimateQuant(U, divisor);
+        else q = estimateTrialQuotient(U, divisor);
         Natural w = divisor*q;
         while(w > U)
         {
@@ -195,23 +213,7 @@ Natural operator/(const Natural& num1, const Natural& num2)
     return quant;
 }
 
-/* Estimacion de cociente */
-unsigned short stimateQuant(const Natural& num1, const Natural& num2)
-{
-    int size = num1.digits.size()-1;
-    if(size == 0)
-        return num1[size]/num2[num2.digits.size()-1];
-    return (num1[size]*100 + num1[size -1])/num2[num2.digits.size()-1];
-}
-
-/* fin de estimacion */
-
-
-void Natural::operator=(const Natural& num2)
-{
-    digits = num2.digits;
-}
-/* Implementacion de lectura y de salida*/
+//***STREAM OPERATIONS***
 
 std::ostream& operator<<(std::ostream& os, const Natural& num)
 {
@@ -239,11 +241,12 @@ std::istream& operator>>(std::istream& is, Natural& num)
     long long x;
     std::cin >> x;
     if(x < 0)
-        throw std::invalid_argument("Can't have a negative Natural. Do you want to use an Integer?");
+        throw std::invalid_argument("Can't have a negative Natural. Maybe you want to use an Integer?");
 
     int pos = 0;
     while (x != 0)
     {
+        //!Double check this logic
         if(pos < num.digits.size())
         {
             num.digits.replace(x%100, pos);
@@ -255,7 +258,8 @@ std::istream& operator>>(std::istream& is, Natural& num)
     return is;
 }
 
-// division por 2
+//***PUBLIC UTILS***
+
 Natural Natural::divideBy2(const Natural& num)
 {
     if(num == 0) return 0;
@@ -271,6 +275,25 @@ Natural Natural::divideBy2(const Natural& num)
     }
 
     return quant;
+}
+
+void Natural::multiplyBy10()
+{
+    int size = this->digits.size();
+    if(size == 0) return;
+    unsigned short peek = this->operator[](size-1);
+    List<unsigned short> copy((peek < 10)? size: size+1);
+    unsigned short carry = 0;
+    for(unsigned short x: this->digits)
+    {
+        copy.add((x % 10)*10 + carry);
+        carry = x/10;
+    }
+
+    if(carry != 0)
+        copy.add(carry);
+
+    this->digits = copy;
 }
 
 Natural Natural::gcd(const Natural& num1, const Natural& num2)
@@ -302,26 +325,6 @@ Natural Natural::gcd(const Natural& num1, const Natural& num2)
     }
 
     return gcd*number2;
-}
-
-
-void Natural::multiplyBy10()
-{
-    int size = this->digits.size();
-    if(size == 0) return;
-    unsigned short peek = this->operator[](size-1);
-    List<unsigned short> copy((peek < 10)? size: size+1);
-    unsigned short carry = 0;
-    for(unsigned short x: this->digits)
-    {
-        copy.add((x % 10)*10 + carry);
-        carry = x/10;
-    }
-
-    if(carry != 0)
-        copy.add(carry);
-
-    this->digits = copy;
 }
 
 List<unsigned short> Natural::getList()
