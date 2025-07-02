@@ -12,6 +12,9 @@ void Natural::cleanDigits(Natural& num, int index)
     while (index >= 0 && num[index] == 0)
         index--;
     if(index < 0) index = 0;
+    if(index == num.digits.size())
+        return;
+
     List<unsigned short> copy(index);
     for(int i = 0; i <= index; i++)
         copy.add(num[i]);
@@ -153,23 +156,19 @@ Natural operator*(const Natural& num1, const Natural& num2)
 
 Natural operator/(const Natural& num1, const Natural& num2)
 {
-    if(num1 == 0 && num2 == 0) return num1;
+    if(num1 == num2) return 1;
     if(num2 == 0) 
         throw std::invalid_argument("Math error: division by zero");
 
-    if(num1.digits.size() < num2.digits.size())
-        return 0;
-    if(num1 == num2)
-        return 1;
-    
-
     if(num2 == 2) return Natural::divideBy2(num1);
     if(num2 == 1) return num1;
+
 
     unsigned short scaleFactor = 100/(num2.digits[num2.digits.size()-1] + 1);
     Natural dividend = num1*scaleFactor;
     Natural divisor = num2*scaleFactor;
     int m = dividend.digits.size() - divisor.digits.size()-1;
+    if(m < 0) return 0;
     Natural U(0, divisor.digits.size()+1);
     Natural quant(0, m+1);
     for(int i = m; i < dividend.digits.size(); i++)
@@ -192,6 +191,7 @@ Natural operator/(const Natural& num1, const Natural& num2)
         if(j > 0)
             U.digits.add(dividend[j-1], 0);
     }
+    Natural::cleanDigits(quant);
     return quant;
 }
 
@@ -275,12 +275,12 @@ Natural Natural::divideBy2(const Natural& num)
 
 Natural Natural::gcd(const Natural& num1, const Natural& num2)
 {
-    if(num1 == 0 && num2 == 0)
+    /*if(num1 == 0 && num2 == 0)
         return Natural(1);
     if(num1 == 0)
         return num2;
     if(num2 == 0)
-        return num1;
+        return num1;*/
     
     Natural number1 = num1, number2 = num2;
 

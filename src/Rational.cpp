@@ -114,6 +114,7 @@ Rational Rational::operator+(const Rational& other) const
             result.numerator = numerator * (other.denominator/gcd) + other.numerator * (denominator/gcd);
             result.denominator = other.denominator * (denominator/gcd); 
         }
+        
         gcd = Natural::gcd(result.numerator, result.denominator);
 
         if(gcd != 1)

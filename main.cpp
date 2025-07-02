@@ -29,8 +29,8 @@ int main() {
 
     //std::cout << m1 << "\n"<< std::endl;
     Matrix x (Matrix::inverse(m1));
-    std::cout << x << std::endl;
-    printWithoutBracketsAndFractionForm(x*m1);
-    printWithoutBracketsAndFractionForm(x);
+    //std::cout << x << std::endl;
+    //printWithoutBracketsAndFractionForm(x*m1);
+    //printWithoutBracketsAndFractionForm(x);
     //std::cout << x*m1;
 }

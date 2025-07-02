@@ -82,8 +82,8 @@ Matrix operator*(const Matrix& m1, const Matrix& m2)
                 std::cout << std::endl;*/
                 result[i][j] = result[i][j] + (m1[i][k] * m2[k][j]);
             }       
-            std::cout << "Suma final: "; showFraction(result[i][j]) ; 
-            std::cout << std::endl;
+            //std::cout << "Suma final: "; showFraction(result[i][j]) ; 
+            //std::cout << std::endl;
         }
     }
     return result;
