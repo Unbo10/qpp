@@ -3,7 +3,6 @@
 #include <iostream>
 #include <initializer_list>
 
-#include "Iterator.h"
 #include "Iterable.h"
 
 /**
@@ -436,4 +435,7 @@ class List : public Iterable<U>
 
         Iterator<U> begin() const { return Iterator<U>(array); }
         Iterator<U> end() const { return Iterator<U>(array + length); }
+
+        //***GETTERS***
+        int getSize() const { return length; }
 };

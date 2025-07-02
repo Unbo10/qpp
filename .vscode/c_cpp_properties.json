@@ -3,10 +3,13 @@
         {
             "name": "Linux",
             "includePath": [
-                "/home/inbo10/Documents/AlgebraAandC/qpp/**"
+                "${workspaceFolder}/**",
+                "${workspaceFolder}",
+                "${workspaceFolder}/Polynomials",
+                "${workspaceFolder}/utils"
             ],
             "defines": [],
-            "compilerPath": "/usr/bin/gcc",
+            // "compilerPath": "C:/msys64/ucrt64/bin/g++.exe",
             "cStandard": "c17",
             "cppStandard": "gnu++17",
             "intelliSenseMode": "linux-gcc-x64"
