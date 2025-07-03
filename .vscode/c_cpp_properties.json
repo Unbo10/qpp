@@ -9,7 +9,7 @@
                 "${workspaceFolder}/utils"
             ],
             "defines": [],
-            "compilerPath": "C:/msys64/ucrt64/bin/g++.exe",
+            // "compilerPath": "C:/msys64/ucrt64/bin/g++.exe",
             "cStandard": "c17",
             "cppStandard": "gnu++17",
             "intelliSenseMode": "linux-gcc-x64"

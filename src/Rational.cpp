@@ -117,10 +117,18 @@ bool Rational::operator==(const Rational& other) const
 }
 
 Rational Rational::operator=(const Rational& other)
-{
-    this->sign = other.sign;
-    numerator = other.numerator;
-    denominator = other.denominator;
+{  
+    /*if(other == 0) 
+    {
+        numerator = other.numerator;
+        denominator = 1;
+    }
+    else
+    {*/
+        this->sign = other.sign;
+        numerator = other.numerator;
+        denominator = other.denominator;
+    //}
     return *this;
 }
 
@@ -128,7 +136,7 @@ Rational Rational::operator=(const Rational& other)
 
 Rational Rational::operator+(const Rational& other) const
 {
-    Natural gcd = Natural::gcd(this->denominator, other.denominator);
+     Natural gcd = Natural::gcd(this->denominator, other.denominator);
     Rational result;
     if(this->sign == other.sign)
     {
@@ -234,6 +242,12 @@ Rational Rational::operator*(const Rational& other) const
     result.denominator = ((gcd1 == 1)? this->denominator: this->denominator/gcd1)*
                          ((gcd2 == 1)? other.denominator: other.denominator/gcd2);
 
+    gcd1 = Natural::gcd(result.numerator, result.denominator);
+    if(gcd1 != 1)
+    {
+        result.numerator = result.numerator/gcd1;
+        result.denominator = result.denominator/gcd1;
+    }
     return result;
 }
 
@@ -299,11 +313,11 @@ std::ostream& operator<<(std::ostream& os, const Rational& number)
 
 void showFraction(const Rational& num)
 {
-    if(num.numerator == 0)
+    /*if(num.numerator == 0)
     {
         std::cout << "0";  
         return;
-    }
+    }*/
         
     if(!num.sign) std::cout << "-";
     if(num.denominator == 1)

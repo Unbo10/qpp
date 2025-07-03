@@ -198,7 +198,7 @@ std::vector<int> Calculator::add(std::vector<int> n, std::vector<int> m, int b) 
     // print_vector(n);
     // print_vector(m);
 
-    std::vector<int> res(n.size() + 1);
+    std::vector<int> subtract(n.size() + 1);
     int k = 0; //*Carry
     // cout << "Size " << int(n.size()) + 1 << "\n";
     // cout << int(n.size()) - 1 + int(res.size()) - int(n.size()) << "\n";

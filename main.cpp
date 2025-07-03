@@ -1,10 +1,17 @@
 #include <iostream>
 #include <sstream>
+#include "include/Integer.h"
+#include "include/Number.h"
+#include "include/Rational.h"
+#include "utils/OrderedList.h"
+#include "include/Natural.h"
+#include "include/LinearAlgebra/Vector.h"
 #include "include/LinearAlgebra/Matrix.h"
 
 int main() {
-
-    /*Matrix x = Matrix::identy(17);
+    /*showFraction(Rational(-1155, 35522)*Rational(11,1) + Rational(2061, 17761)*Rational(1, 2) + Rational(-1774, 17761)*Rational(-3, 1));
+    std::cout << w;
+     Matrix x = Matrix::identy(17);
     std::cout << x << std::endl;*/
     Matrix m1(4, 4);
 
@@ -27,13 +34,9 @@ int main() {
     m1[3][3] = Rational(-1);        
 
     //std::cout << m1 << "\n"<< std::endl;
-    Matrix copy = Matrix::scalonadeForm(m1);
-    printWithoutBracketsAndFractionForm(copy);
-    std::cout << std::endl;
-    std::cout << std::endl;
-    printWithoutBracketsAndFractionForm(m1);
-    std::cout << std::endl;
-    std::cout << std::endl;
-    printWithoutBracketsAndFractionForm(m1*copy);
-    //std::cout << Matrix::scalonadeForm(m1);
+    Matrix x (Matrix::inverse(m1));
+    std::cout << x << std::endl;
+    printWithoutBracketsAndFractionForm(x*m1);
+    printWithoutBracketsAndFractionForm(x);
+    //std::cout << x*m1;
 }
