@@ -1,6 +1,6 @@
 #pragma once
 
-#include <variant>
+#include <cmath>
 
 #include "Number.h"
 #include "Integer.h"
@@ -11,9 +11,9 @@ class Rational: public Number<Rational>
         Natural numerator, denominator;
 
         // aqui se calcula a^{1/p}, con p entero
-        Rational root(const Integer& po) const;
+        Rational root(const Natural& po) const;
         // aqui se calcula a^p, con p entero
-        Rational integerPow(Integer po);
+        Rational integerPow(const Natural& po) const;
     public:
         static unsigned int decimalPoints;
 
@@ -35,17 +35,12 @@ class Rational: public Number<Rational>
         Rational operator-() const;
         Rational operator*(const Rational& other) const;
         Rational operator/(const Rational& other) const;
+        friend Rational operator/(const Integer& other, const Rational& number)
+        {
+            return Rational(other)/number;
+        }
         Rational operator^(const Rational& other) const;
-        
-        void seeSpaceFraccion() const 
-        {
-            std::cout << numerator.size() << "/" << denominator.size();
-        }
-
-        void seeListRepresentation() const 
-        {
-            std::cout << numerator.getList() << "/" << denominator.getList();
-        }
+        double toDouble() const;
 
         static Rational abs(const Rational& p)
         {

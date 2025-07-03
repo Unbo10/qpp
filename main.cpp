@@ -31,17 +31,11 @@ int main() {
     //std::cout << "\n"<< std::endl;
     Matrix x (Matrix::inverse(m1));
     printWithoutBracketsAndFractionForm(x);
-    //printWithoutBracketsAndFractionForm(Matrix::scalonadeForm(m1));
-    std::cout << m1*x;
-    /*for(const Vector& row: y)
-    {
-        for(const Rational& number: row)
-        {
-            number.seeSpaceFraccion();
-            std::cout << ", ";
-            number.seeListRepresentation();
-            std::cout << "; ";
-        }
-        std::cout << "\n";
-    }*/
+    std::cout << m1 << std::endl;
+    std::cout << x << std::endl;
+    showFraction(Matrix::det(m1)); 
+    std::cout << std::endl;
+    showFraction(Matrix::det(x)); 
+    std::cout << std::endl;
+    std::cout << Matrix::det(Matrix::identity(100));
 }

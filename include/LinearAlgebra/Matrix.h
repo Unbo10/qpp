@@ -48,6 +48,7 @@ class Matrix: public Iterable<Vector>
         static Matrix identity(int n);
         static Matrix transpose(const Matrix& matrix);
         static Matrix inverse(const Matrix& matrix);
+        static Rational det(const Matrix& matrix);
 
         Iterator<Vector> begin() const {return array.begin();}
         Iterator<Vector> end() const {return array.end();}

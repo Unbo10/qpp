@@ -4,14 +4,30 @@ unsigned int Rational::decimalPoints = 5;
 
 /*  Metodos privados  */
 
-Rational Rational::root(const Integer& po) const
+Rational Rational::root(const Natural& po) const
 {
-    return 1;
+    double aprox = this->toDouble();
+
+    return Rational(std::pow(aprox, 1.0/po.toDouble()));
 }
 
-Rational Rational::integerPow(Integer po)
+Rational Rational::integerPow(const Natural& po) const
 {
-    return 1;
+    if(*this == 0) return Rational(0, 1);
+    Rational result(1);
+    Rational base(*this);
+    Natural exp(po);
+
+    while(exp > 0)
+    {
+        if(!(exp[0]%2 == 0))
+            result = result*base;
+
+        base = base*base;
+        exp = Natural::divideBy2(exp);
+    }
+
+    return result;
 }
 /* constructores    */
 
@@ -33,32 +49,14 @@ Rational::Rational(const Integer& num, const Integer& den)
 
 Rational::Rational(double x)
 {
-    if(x < 0) 
-    {
-        this->sign = 0;
-        x = -x;
-    }
+    this->sign = x >= 0;
+    if(x < 0) x= -x; 
 
-    int y = x;
-    int baseCounted = 0;
-    while(y != x)
-    {
-        x *= 10;
-        baseCounted++;
-        y = x;
-    }
+    int denom = 1000000;
+    int num = static_cast<int>(x * denom + 0.5); 
 
-    denominator = (baseCounted%2 == 0)? 1: 10;
-    for(int i = 0; i < baseCounted/2; i++)
-        denominator.multiplyBy100();
-
-    numerator = x;
-    Natural gcd = Natural::gcd(numerator, denominator);
-    if(gcd != 1)
-    {
-        numerator = numerator/gcd;
-        denominator = denominator/gcd;
-    }
+    numerator = Natural(num);
+    denominator = Natural(denom);
 }
 
 // implementacion de comparaciones y asignacion
@@ -244,7 +242,43 @@ Rational Rational::operator/(const Rational& other) const
 
 Rational Rational::operator^(const Rational& other) const
 {
-    return 1;
+    if(!this->sign && other.denominator[0]%2 == 0)
+        throw std::invalid_argument("Cannot calculate the root of a negative number with even index");
+    
+    if(other == 0)
+    {
+        if(*this == 0)
+            throw std::invalid_argument("0^0 is not defined");
+
+        return 1;
+    }
+
+    if(*this == 0)
+        return 0;
+
+    if(other == 1 || *this == 1) return *this;
+    if(other.denominator == 1)
+    {
+        Rational result = this->integerPow(other.numerator);
+        if(!other.sign)
+            return 1/result;
+
+        return result;
+    }
+
+    Rational result = this->root(other.denominator);
+    result = result.integerPow(other.numerator);
+    if(!other.sign)
+            return 1/result;
+
+    return result;
+}
+
+double Rational::toDouble() const 
+{
+    double r = numerator.toDouble() / denominator.toDouble();
+
+    return (this->sign)? r: -r;
 }
 
 // entradas y salidas

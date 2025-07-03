@@ -331,3 +331,16 @@ List<unsigned short> Natural::getList() const
 {
     return List<unsigned short>(digits);
 }
+
+double Natural::toDouble() const
+{
+    double result = 0.0;
+    double factor = 1.0;
+
+    for (size_t i = 0; i < digits.size(); ++i) {
+        result += static_cast<double>(digits[i]) * factor;
+        factor *= 100.0;
+    }
+
+    return result;
+}

@@ -66,6 +66,7 @@ class Natural: public Comparable<Natural>
         static Natural gcd(const Natural& num1, const Natural& num2);
 
         List<unsigned short> getList() const;
+        double toDouble() const;
         explicit operator bool() const 
         {
             return this->operator[](0)%2;

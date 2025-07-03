@@ -198,6 +198,54 @@ Matrix Matrix::inverse(const Matrix& matrix)
     return inden;
 }
 
+Rational Matrix::det(const Matrix& matrix)
+{
+    int rows = matrix.rows();
+    int columns = matrix.columns();
+
+    if(rows != columns)
+        throw std::invalid_argument("This matrix don't be square");
+
+    Matrix result(matrix);
+    Rational det = 1;
+    
+    bool sign = true;
+    int currentRow = 0;
+
+    for(int i = 0; i < columns; i++)
+    {
+        int toFindNoCero = currentRow;
+        while(toFindNoCero < rows && result[toFindNoCero][i] == 0)
+            toFindNoCero++;
+
+        if(toFindNoCero == rows) 
+            return 0;
+
+        if(toFindNoCero != currentRow)
+        {
+            Vector temp = result[toFindNoCero];
+            result[toFindNoCero] = result[currentRow];
+            result[currentRow] = temp;
+            sign = !sign;
+        }
+        
+        for(int j = currentRow + 1; j < rows; j++)
+        {
+            Rational factor = result[j][i]/ result[currentRow][i];
+            if(factor != 0) 
+                result[j] = result[j] - factor * result[currentRow];
+        }
+        det = det * result[i][i];
+
+        currentRow++;
+    }
+
+    if(!sign)
+        det.setSign(!det.getSign());
+
+    return det;
+}
+
 
 std::ostream& operator<<(std::ostream& os, const Matrix& m1)
 {
