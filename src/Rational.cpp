@@ -101,7 +101,7 @@ Rational Rational::operator=(const Rational& other)
 // implementación de los métodos de operaciones
 Rational Rational::operator+(const Rational& other) const
 {
-     Natural gcd = Natural::gcd(this->denominator, other.denominator);
+    Natural gcd = Natural::gcd(this->denominator, other.denominator);
     Rational result;
     if(this->sign == other.sign)
     {
@@ -156,6 +156,7 @@ Rational Rational::operator-() const
 
 Rational Rational::operator-(const Rational& other) const
 {
+
     Natural gcd = Natural::gcd(this->denominator, other.denominator);
     Rational result;
     if(this->sign != other.sign)
@@ -170,6 +171,15 @@ Rational Rational::operator-(const Rational& other) const
             result.numerator = numerator * (other.denominator/gcd) + other.numerator * (denominator/gcd);
             result.denominator = other.denominator * (denominator/gcd); 
         }
+
+        gcd = Natural::gcd(result.numerator, result.denominator);
+
+        if(gcd != 1)
+        {
+            result.numerator = result.numerator/gcd;
+            result.denominator = result.denominator/gcd;
+        }
+
         return result;
     }
 
@@ -179,13 +189,13 @@ Rational Rational::operator-(const Rational& other) const
     if(this->sign)
         result.setSign(bool(res[1]));
     else result.setSign(!bool(res[1]));
-
-    gcd = Natural::gcd(numerator, denominator);
+    gcd = Natural::gcd(result.numerator, result.denominator);
     if(gcd != 1)
     {
         result.numerator = result.numerator/gcd;
         result.denominator = result.denominator/gcd;
     }
+
     return result;
 }
 
@@ -270,13 +280,7 @@ std::ostream& operator<<(std::ostream& os, const Rational& number)
 }
 
 void showFraction(const Rational& num)
-{
-    /*if(num.numerator == 0)
-    {
-        std::cout << "0";  
-        return;
-    }*/
-        
+{ 
     if(!num.sign) std::cout << "-";
     if(num.denominator == 1)
         std::cout << num.numerator;

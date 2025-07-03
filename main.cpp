@@ -27,10 +27,21 @@ int main() {
     m1[3][2] = Rational(8, 3);      
     m1[3][3] = Rational(-1);        
 
-    //std::cout << m1 << "\n"<< std::endl;
+    printWithoutBracketsAndFractionForm(m1);
+    //std::cout << "\n"<< std::endl;
     Matrix x (Matrix::inverse(m1));
-    //std::cout << x << std::endl;
-    //printWithoutBracketsAndFractionForm(x*m1);
-    //printWithoutBracketsAndFractionForm(x);
-    //std::cout << x*m1;
+    printWithoutBracketsAndFractionForm(x);
+    //printWithoutBracketsAndFractionForm(Matrix::scalonadeForm(m1));
+    Matrix y = x*m1;
+    /*for(const Vector& row: y)
+    {
+        for(const Rational& number: row)
+        {
+            number.seeSpaceFraccion();
+            std::cout << ", ";
+            number.seeListRepresentation();
+            std::cout << "; ";
+        }
+        std::cout << "\n";
+    }*/
 }

@@ -61,29 +61,23 @@ Matrix operator*(const Matrix& m1, const Matrix& m2)
     int inner = m1.columns();
 
     Matrix result(rows, cols);
-
+    std::cout << result << std::endl;
     for (int i = 0; i < rows; ++i)
     {
         for (int j = 0; j < cols; ++j)
         {
-            std::cout << "("<< i << ","<< j << ")"<< std::endl;
+            std::cout << "("<< i << "," << j << ")" << std::endl;
             for (int k = 0; k < inner; ++k)
             {
-                /*std::cout << "Suma actual:  ";
-                showFraction(result[i][j]);
-                std::cout << std::endl;
-                std::cout << "Numeros a multiplicar: ";
+                std::cout << "Suma actual: " << result[i][j] << std::endl;
+                std::cout << "Multiplicacion:  ";
                 showFraction(m1[i][k]);
-                std::cout << "  ";
+                std::cout << "*";
                 showFraction(m2[k][j]);
                 std::cout << std::endl;
-                std::cout << "Multiplicacion actual:  ";
-                showFraction(m1[i][k] * m2[k][j]);
-                std::cout << std::endl;*/
                 result[i][j] = result[i][j] + (m1[i][k] * m2[k][j]);
-            }       
-            //std::cout << "Suma final: "; showFraction(result[i][j]) ; 
-            //std::cout << std::endl;
+            }
+            std::cout << "Suma final: " << result[i][j] << std::endl;  
         }
     }
     return result;
@@ -184,6 +178,7 @@ Matrix Matrix::inverse(const Matrix& matrix)
             if(factor != 0) 
             {
                 result[j] = result[j] - factor * result[currentRow];
+
                 inden[j] = inden[j] - factor * inden[currentRow];
             }
                 
@@ -192,13 +187,12 @@ Matrix Matrix::inverse(const Matrix& matrix)
         currentRow++;
     }
             
-
     for(int i = columns - 1; i >= 0; i--)
     {
         Rational pivot = result[i][i];
         if (pivot == 0)
             throw std::invalid_argument("This matrix don't have a inverse, the determinant is cero");
-
+        
         result[i] = result[i] / pivot;
         inden[i] = inden[i] / pivot;
 

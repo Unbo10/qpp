@@ -37,19 +37,14 @@ class Rational: public Number<Rational>
         Rational operator/(const Rational& other) const;
         Rational operator^(const Rational& other) const;
         
-        std::variant<Integer, Rational> checkForInteger() const 
+        void seeSpaceFraccion() const 
         {
-            if(denominator != 1)
-                return std::variant<Integer, Rational>(
-                    std::in_place_type<Rational>,
-                    Rational(Integer(numerator, this->sign), denominator)
-                );
+            std::cout << numerator.size() << "/" << denominator.size();
+        }
 
-                
-            return std::variant<Integer, Rational>(
-                std::in_place_type<Integer>,
-                Integer(numerator, this->sign)
-            );
+        void seeListRepresentation() const 
+        {
+            std::cout << numerator.getList() << "/" << denominator.getList();
         }
 
         static Rational abs(const Rational& p)

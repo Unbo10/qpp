@@ -92,6 +92,9 @@ unsigned short Natural::operator[](int index) const
 {
     if(index < 0 || digits.size() <= index)
         return 0;
+    
+    if(index == 0 && this->digits.size() == 0)
+        return 0;
 
     return digits[index];
 }
@@ -167,7 +170,7 @@ Natural operator/(const Natural& num1, const Natural& num2)
     unsigned short scaleFactor = 100/(num2.digits[num2.digits.size()-1] + 1);
     Natural dividend = num1*scaleFactor;
     Natural divisor = num2*scaleFactor;
-    int m = dividend.digits.size() - divisor.digits.size()-1;
+    int m = dividend.digits.size() - divisor.digits.size();
     if(m < 0) return 0;
     Natural U(0, divisor.digits.size()+1);
     Natural quant(0, m+1);
@@ -275,12 +278,12 @@ Natural Natural::divideBy2(const Natural& num)
 
 Natural Natural::gcd(const Natural& num1, const Natural& num2)
 {
-    /*if(num1 == 0 && num2 == 0)
+    if(num1 == 0 && num2 == 0)
         return Natural(1);
     if(num1 == 0)
         return num2;
     if(num2 == 0)
-        return num1;*/
+        return num1;
     
     Natural number1 = num1, number2 = num2;
 
@@ -324,7 +327,7 @@ void Natural::multiplyBy10()
     this->digits = copy;
 }
 
-List<unsigned short> Natural::getList()
+List<unsigned short> Natural::getList() const
 {
     return List<unsigned short>(digits);
 }
