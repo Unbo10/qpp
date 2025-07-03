@@ -122,6 +122,7 @@ Rational Rational::operator+(const Rational& other) const
             result.numerator = result.numerator/gcd;
             result.denominator = result.denominator/gcd;
         }
+        result.setSign(this->sign);
         return result;
     }
 

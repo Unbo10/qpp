@@ -32,7 +32,7 @@ int main() {
     Matrix x (Matrix::inverse(m1));
     printWithoutBracketsAndFractionForm(x);
     //printWithoutBracketsAndFractionForm(Matrix::scalonadeForm(m1));
-    Matrix y = x*m1;
+    std::cout << m1*x;
     /*for(const Vector& row: y)
     {
         for(const Rational& number: row)
