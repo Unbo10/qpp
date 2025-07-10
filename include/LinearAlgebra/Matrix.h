@@ -44,11 +44,30 @@ class Matrix: public Iterable<Vector>
         friend Matrix operator-(const Matrix& m1, const Matrix& m2);
         friend Matrix operator*(const Rational& number, const Matrix& matrix);
         friend Matrix operator*(const Matrix& m1, const Matrix& m2);
+        friend Matrix operator^(const Matrix& m1, const Natural& number);
         static Matrix scalonadeForm(const Matrix& m1);
         static Matrix identity(int n);
         static Matrix transpose(const Matrix& matrix);
         static Matrix inverse(const Matrix& matrix);
         static Rational det(const Matrix& matrix);
+
+        /*
+            Este es un ejemplo de uso de la clase 
+            matrix
+        */
+        static Rational fibonnacci(const Natural& num)
+        {
+            if(num == 0 || num == 1)
+                return num;
+
+            Matrix fibonnaciMatrix(2, 2);
+
+            fibonnaciMatrix[0][0] = 1;
+            fibonnaciMatrix[0][1] = 1;
+            fibonnaciMatrix[1][0] = 1;
+
+            return ((fibonnaciMatrix^num)[1][0]);
+        }
 
         Iterator<Vector> begin() const {return array.begin();}
         Iterator<Vector> end() const {return array.end();}

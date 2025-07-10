@@ -5,7 +5,8 @@
 
 int main()
 {
-    Rational x(3.19862312);
-    Rational::decimalPoints = 100;
-    std::cout << x;
+    Rational x(2, 1);
+    //Rational::decimalPoints = 100;
+    showFraction(x^Rational(1, 2));
+    std::cout << "  "<< (x^Rational(1, 2));
 }

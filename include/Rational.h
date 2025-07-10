@@ -10,19 +10,16 @@ class Rational: public Number<Rational>
     private:
         Natural numerator, denominator;
 
-        // aqui se calcula a^{1/p}, con p entero
-        Rational root(const Natural& po) const;
-        // aqui se calcula a^p, con p entero
-        Rational integerPow(const Natural& po) const;
+        
     public:
         static unsigned int decimalPoints;
 
         //Rational(long long x): Rational(Integer(x), 1) {}
         Rational(): numerator(0), denominator(1) {this->setSign(true);}
-        Rational(const Integer& numeratr): numerator(numeratr.getAbsolutePart()), denominator(1)  {this->setSign(numeratr.getSign());}
         Rational(const Integer& num, const Integer& den);
+        Rational(const Integer& numeratr): numerator(numeratr.getAbsolutePart()), denominator(1)  {this->setSign(numeratr.getSign());}
         Rational(const Natural& num): numerator(num), denominator(1) {this->setSign(true);}
-        Rational(double x);
+        Rational(double value);
 
         // implementación de los métodos de comparación y asignacion
         bool operator==(const Rational& other) const;
@@ -41,12 +38,6 @@ class Rational: public Number<Rational>
         }
         Rational operator^(const Rational& other) const;
         double toDouble() const;
-
-        static Rational abs(const Rational& p)
-        {
-            if(p < 0) return -p;
-            return p;
-        }
 
         friend std::ostream& operator<<(std::ostream& os, const Rational& num);
         friend void showFraction(const Rational& num);

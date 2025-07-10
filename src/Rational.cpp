@@ -1,41 +1,12 @@
 #include "../include/Rational.h"
 
 unsigned int Rational::decimalPoints = 5;
-
-/*  Metodos privados  */
-
-Rational Rational::root(const Natural& po) const
-{
-    double aprox = this->toDouble();
-
-    return Rational(std::pow(aprox, 1.0/po.toDouble()));
-}
-
-Rational Rational::integerPow(const Natural& po) const
-{
-    if(*this == 0) return Rational(0, 1);
-    Rational result(1);
-    Rational base(*this);
-    Natural exp(po);
-
-    while(exp > 0)
-    {
-        if(!(exp[0]%2 == 0))
-            result = result*base;
-
-        base = base*base;
-        exp = Natural::divideBy2(exp);
-    }
-
-    return result;
-}
 /* constructores    */
 
 Rational::Rational(const Integer& num, const Integer& den)
 {
     if(den == 0)
-        throw std::invalid_argument("Math error: division by zero");
-        
+        throw std::invalid_argument("Math error: division by zero"); 
     this->sign = (num.getSign() == den.getSign());
     numerator = num.getAbsolutePart();
     denominator = den.getAbsolutePart();
@@ -47,16 +18,49 @@ Rational::Rational(const Integer& num, const Integer& den)
     }
 }
 
-Rational::Rational(double x)
+Rational::Rational(double value)
 {
-    this->sign = x >= 0;
-    if(x < 0) x= -x; 
+    int max_den = 100000;
+    if (value == 0.0) {
+        numerator = Natural(0);
+        denominator = Natural(1);
+        sign = 1;
+        return;
+    }
 
-    int denom = 1000000;
-    int num = static_cast<int>(x * denom + 0.5); 
+    sign = (value < 0) ? 0 : 1;
+    if(value < 0)
+        value = -value;
 
-    numerator = Natural(num);
-    denominator = Natural(denom);
+    long long a = static_cast<long long>(std::floor(value));
+    long long num1 = 1, num2 = a;
+    long long den1 = 0, den2 = 1;
+
+    double frac = value - a;
+
+    while (true) {
+        if (frac == 0.0) break;
+
+        frac = 1.0 / frac;
+        a = static_cast<long long>(std::floor(frac));
+
+        long long num = a * num2 + num1;
+        long long den = a * den2 + den1;
+
+        if (den > max_den) break;
+
+        num1 = num2;
+        den1 = den2;
+        num2 = num;
+        den2 = den;
+
+        frac = frac - a;
+
+        //if (frac < 1e-12) break;
+    }
+
+    numerator = Natural(num2);
+    denominator = Natural(den2);
 }
 
 // implementacion de comparaciones y asignacion
@@ -137,10 +141,10 @@ Rational Rational::operator+(const Rational& other) const
         result.numerator = result.numerator/gcd;
         result.denominator = result.denominator/gcd;
     }
-    if(result.abs(result) == 0){
+    /*if(result.abs(result) == 0){
         result.sign = true;
         result.denominator = 1;
-    }
+    }*/
     return result;
 }
 
@@ -256,22 +260,10 @@ Rational Rational::operator^(const Rational& other) const
     if(*this == 0)
         return 0;
 
-    if(other == 1 || *this == 1) return *this;
-    if(other.denominator == 1)
-    {
-        Rational result = this->integerPow(other.numerator);
-        if(!other.sign)
-            return 1/result;
+    double exp = other.toDouble();
+    double base = this->toDouble();
 
-        return result;
-    }
-
-    Rational result = this->root(other.denominator);
-    result = result.integerPow(other.numerator);
-    if(!other.sign)
-            return 1/result;
-
-    return result;
+    return Rational(std::pow(base, exp));
 }
 
 double Rational::toDouble() const 

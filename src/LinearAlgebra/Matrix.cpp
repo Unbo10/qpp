@@ -74,6 +74,26 @@ Matrix operator*(const Matrix& m1, const Matrix& m2)
     return result;
 }
 
+Matrix operator^(const Matrix& m1, const Natural& number)
+{
+    if(m1.rows() != m1.columns())
+        throw std::invalid_argument("This matrix can't be used to do a power");
+        
+    Natural exp(number);
+    Matrix base(m1);
+    Matrix result = Matrix::identity(m1.rows());
+
+    while(exp > 0)
+    {
+        if(exp[0]%2 == 1)
+            result = result*base;
+
+        base = base*base;
+        exp = Natural::divideBy2(exp);
+    }
+
+    return result;
+}
 
 Matrix Matrix::scalonadeForm(const Matrix& m1)
 {
