@@ -63,6 +63,17 @@ Vector operator*(const Rational& num, const Vector& vector)
     return result;
 }
 
+Rational norm(const Vector& v1)
+{
+    Rational sum(0);
+    for(const Rational& x: v1)
+    {
+        sum = sum + x*x;
+    }
+
+    return (sum^(0.5));
+}
+
 Vector operator/(const Vector& vector, const Rational& num)
 {
     Vector result(vector);

@@ -266,7 +266,6 @@ Rational Matrix::det(const Matrix& matrix)
     return det;
 }
 
-
 std::ostream& operator<<(std::ostream& os, const Matrix& m1)
 {
     int rows = m1.rows();

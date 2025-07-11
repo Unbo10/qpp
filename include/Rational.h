@@ -9,7 +9,6 @@ class Rational: public Number<Rational>
 {
     private:
         Natural numerator, denominator;
-
         
     public:
         static unsigned int decimalPoints;
@@ -38,7 +37,23 @@ class Rational: public Number<Rational>
         }
         Rational operator^(const Rational& other) const;
         double toDouble() const;
+        Rational multiplyInverse() const
+        {
+            if(*this == 0)
+                throw std::invalid_argument("0 don't have a inverse");
+            Rational r(denominator, numerator);
+            r.sign = sign;
+            return r;
+        }
 
+        Rational abs() const
+        {
+            if(this->sign)
+                return *this;
+            Rational copy(*this);
+            copy.setSign(true);
+            return copy;
+        }
         friend std::ostream& operator<<(std::ostream& os, const Rational& num);
         friend void showFraction(const Rational& num);
 

@@ -14,7 +14,7 @@ class Matrix: public Iterable<Vector>
 {
     private:
         List<Vector> array;
-
+        
     public:
         Matrix(int rows, int columns): array(rows)
         {
@@ -33,6 +33,12 @@ class Matrix: public Iterable<Vector>
 
             for(int i = 0; i < rows; i++)
                 array.add(other.array[i]);     
+        }
+
+        Matrix(const Vector& array): Matrix(array.size(), 1)
+        {
+            for(int i = 0; i < array.size(); i++)
+                this->operator[](i)[0] = array[i];
         }
 
         Vector& operator[](int row);
