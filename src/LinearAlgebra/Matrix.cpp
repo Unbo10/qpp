@@ -66,29 +66,34 @@ Matrix operator*(const Matrix& m1, const Matrix& m2)
     {
         for (int j = 0; j < cols; ++j)
         {
-            std::cout << "("<< i << ","<< j << ")"<< std::endl;
             for (int k = 0; k < inner; ++k)
-            {
-                /*std::cout << "Suma actual:  ";
-                showFraction(result[i][j]);
-                std::cout << std::endl;
-                std::cout << "Numeros a multiplicar: ";
-                showFraction(m1[i][k]);
-                std::cout << "  ";
-                showFraction(m2[k][j]);
-                std::cout << std::endl;
-                std::cout << "Multiplicacion actual:  ";
-                showFraction(m1[i][k] * m2[k][j]);
-                std::cout << std::endl;*/
                 result[i][j] = result[i][j] + (m1[i][k] * m2[k][j]);
-            }       
-            std::cout << "Suma final: "; showFraction(result[i][j]) ; 
-            std::cout << std::endl;
+
         }
     }
     return result;
 }
 
+Matrix operator^(const Matrix& m1, const Natural& number)
+{
+    if(m1.rows() != m1.columns())
+        throw std::invalid_argument("This matrix can't be used to do a power");
+        
+    Natural exp(number);
+    Matrix base(m1);
+    Matrix result = Matrix::identity(m1.rows());
+
+    while(exp > 0)
+    {
+        if(exp[0]%2 == 1)
+            result = result*base;
+
+        base = base*base;
+        exp = Natural::divideBy2(exp);
+    }
+
+    return result;
+}
 
 Matrix Matrix::scalonadeForm(const Matrix& m1)
 {
@@ -184,6 +189,7 @@ Matrix Matrix::inverse(const Matrix& matrix)
             if(factor != 0) 
             {
                 result[j] = result[j] - factor * result[currentRow];
+
                 inden[j] = inden[j] - factor * inden[currentRow];
             }
                 
@@ -192,13 +198,12 @@ Matrix Matrix::inverse(const Matrix& matrix)
         currentRow++;
     }
             
-
     for(int i = columns - 1; i >= 0; i--)
     {
         Rational pivot = result[i][i];
         if (pivot == 0)
             throw std::invalid_argument("This matrix don't have a inverse, the determinant is cero");
-
+        
         result[i] = result[i] / pivot;
         inden[i] = inden[i] / pivot;
 
@@ -213,6 +218,53 @@ Matrix Matrix::inverse(const Matrix& matrix)
     return inden;
 }
 
+Rational Matrix::det(const Matrix& matrix)
+{
+    int rows = matrix.rows();
+    int columns = matrix.columns();
+
+    if(rows != columns)
+        throw std::invalid_argument("This matrix don't be square");
+
+    Matrix result(matrix);
+    Rational det = 1;
+    
+    bool sign = true;
+    int currentRow = 0;
+
+    for(int i = 0; i < columns; i++)
+    {
+        int toFindNoCero = currentRow;
+        while(toFindNoCero < rows && result[toFindNoCero][i] == 0)
+            toFindNoCero++;
+
+        if(toFindNoCero == rows) 
+            return 0;
+
+        if(toFindNoCero != currentRow)
+        {
+            Vector temp = result[toFindNoCero];
+            result[toFindNoCero] = result[currentRow];
+            result[currentRow] = temp;
+            sign = !sign;
+        }
+        
+        for(int j = currentRow + 1; j < rows; j++)
+        {
+            Rational factor = result[j][i]/ result[currentRow][i];
+            if(factor != 0) 
+                result[j] = result[j] - factor * result[currentRow];
+        }
+        det = det * result[i][i];
+
+        currentRow++;
+    }
+
+    if(!sign)
+        det.setSign(!det.getSign());
+
+    return det;
+}
 
 std::ostream& operator<<(std::ostream& os, const Matrix& m1)
 {

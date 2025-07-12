@@ -1,25 +1,12 @@
 #include "../include/Rational.h"
 
 unsigned int Rational::decimalPoints = 5;
-
-/*  Metodos privados  */
-
-Rational Rational::root(const Integer& po) const
-{
-    return 1;
-}
-
-Rational Rational::integerPow(Integer po)
-{
-    return 1;
-}
 /* constructores    */
 
 Rational::Rational(const Integer& num, const Integer& den)
 {
     if(den == 0)
-        throw std::invalid_argument("Math error: division by zero");
-        
+        throw std::invalid_argument("Math error: division by zero"); 
     this->sign = (num.getSign() == den.getSign());
     numerator = num.getAbsolutePart();
     denominator = den.getAbsolutePart();
@@ -31,34 +18,49 @@ Rational::Rational(const Integer& num, const Integer& den)
     }
 }
 
-Rational::Rational(double x)
+Rational::Rational(double value)
 {
-    if(x < 0) 
-    {
-        this->sign = 0;
-        x = -x;
+    int max_den = 100000;
+    if (value == 0.0) {
+        numerator = Natural(0);
+        denominator = Natural(1);
+        sign = 1;
+        return;
     }
 
-    int y = x;
-    int baseCounted = 0;
-    while(y != x)
-    {
-        x *= 10;
-        baseCounted++;
-        y = x;
+    sign = (value < 0) ? 0 : 1;
+    if(value < 0)
+        value = -value;
+
+    long long a = static_cast<long long>(std::floor(value));
+    long long num1 = 1, num2 = a;
+    long long den1 = 0, den2 = 1;
+
+    double frac = value - a;
+
+    while (true) {
+        if (frac == 0.0) break;
+
+        frac = 1.0 / frac;
+        a = static_cast<long long>(std::floor(frac));
+
+        long long num = a * num2 + num1;
+        long long den = a * den2 + den1;
+
+        if (den > max_den) break;
+
+        num1 = num2;
+        den1 = den2;
+        num2 = num;
+        den2 = den;
+
+        frac = frac - a;
+
+        //if (frac < 1e-12) break;
     }
 
-    denominator = (baseCounted%2 == 0)? 1: 10;
-    for(int i = 0; i < baseCounted/2; i++)
-        denominator.multiplyBy100();
-
-    numerator = x;
-    Natural gcd = Natural::gcd(numerator, denominator);
-    if(gcd != 1)
-    {
-        numerator = numerator/gcd;
-        denominator = denominator/gcd;
-    }
+    numerator = Natural(num2);
+    denominator = Natural(den2);
 }
 
 // implementacion de comparaciones y asignacion
@@ -101,7 +103,7 @@ Rational Rational::operator=(const Rational& other)
 // implementación de los métodos de operaciones
 Rational Rational::operator+(const Rational& other) const
 {
-     Natural gcd = Natural::gcd(this->denominator, other.denominator);
+    Natural gcd = Natural::gcd(this->denominator, other.denominator);
     Rational result;
     if(this->sign == other.sign)
     {
@@ -114,6 +116,7 @@ Rational Rational::operator+(const Rational& other) const
             result.numerator = numerator * (other.denominator/gcd) + other.numerator * (denominator/gcd);
             result.denominator = other.denominator * (denominator/gcd); 
         }
+        
         gcd = Natural::gcd(result.numerator, result.denominator);
 
         if(gcd != 1)
@@ -121,6 +124,7 @@ Rational Rational::operator+(const Rational& other) const
             result.numerator = result.numerator/gcd;
             result.denominator = result.denominator/gcd;
         }
+        result.setSign(this->sign);
         return result;
     }
 
@@ -137,10 +141,10 @@ Rational Rational::operator+(const Rational& other) const
         result.numerator = result.numerator/gcd;
         result.denominator = result.denominator/gcd;
     }
-    if(result.abs(result) == 0){
+    /*if(result.abs(result) == 0){
         result.sign = true;
         result.denominator = 1;
-    }
+    }*/
     return result;
 }
 
@@ -155,6 +159,7 @@ Rational Rational::operator-() const
 
 Rational Rational::operator-(const Rational& other) const
 {
+
     Natural gcd = Natural::gcd(this->denominator, other.denominator);
     Rational result;
     if(this->sign != other.sign)
@@ -169,6 +174,15 @@ Rational Rational::operator-(const Rational& other) const
             result.numerator = numerator * (other.denominator/gcd) + other.numerator * (denominator/gcd);
             result.denominator = other.denominator * (denominator/gcd); 
         }
+
+        gcd = Natural::gcd(result.numerator, result.denominator);
+
+        if(gcd != 1)
+        {
+            result.numerator = result.numerator/gcd;
+            result.denominator = result.denominator/gcd;
+        }
+
         return result;
     }
 
@@ -178,13 +192,13 @@ Rational Rational::operator-(const Rational& other) const
     if(this->sign)
         result.setSign(bool(res[1]));
     else result.setSign(!bool(res[1]));
-
-    gcd = Natural::gcd(numerator, denominator);
+    gcd = Natural::gcd(result.numerator, result.denominator);
     if(gcd != 1)
     {
         result.numerator = result.numerator/gcd;
         result.denominator = result.denominator/gcd;
     }
+
     return result;
 }
 
@@ -232,7 +246,31 @@ Rational Rational::operator/(const Rational& other) const
 
 Rational Rational::operator^(const Rational& other) const
 {
-    return 1;
+    if(!this->sign && other.denominator[0]%2 == 0)
+        throw std::invalid_argument("Cannot calculate the root of a negative number with even index");
+    
+    if(other == 0)
+    {
+        if(*this == 0)
+            throw std::invalid_argument("0^0 is not defined");
+
+        return 1;
+    }
+
+    if(*this == 0)
+        return 0;
+
+    double exp = other.toDouble();
+    double base = this->toDouble();
+
+    return Rational(std::pow(base, exp));
+}
+
+double Rational::toDouble() const 
+{
+    double r = numerator.toDouble() / denominator.toDouble();
+
+    return (this->sign)? r: -r;
 }
 
 // entradas y salidas
@@ -269,13 +307,7 @@ std::ostream& operator<<(std::ostream& os, const Rational& number)
 }
 
 void showFraction(const Rational& num)
-{
-    /*if(num.numerator == 0)
-    {
-        std::cout << "0";  
-        return;
-    }*/
-        
+{ 
     if(!num.sign) std::cout << "-";
     if(num.denominator == 1)
         std::cout << num.numerator;

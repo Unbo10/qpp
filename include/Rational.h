@@ -1,6 +1,6 @@
 #pragma once
 
-#include <variant>
+#include <cmath>
 
 #include "Number.h"
 #include "Integer.h"
@@ -9,20 +9,16 @@ class Rational: public Number<Rational>
 {
     private:
         Natural numerator, denominator;
-
-        // aqui se calcula a^{1/p}, con p entero
-        Rational root(const Integer& po) const;
-        // aqui se calcula a^p, con p entero
-        Rational integerPow(Integer po);
+        
     public:
         static unsigned int decimalPoints;
 
         //Rational(long long x): Rational(Integer(x), 1) {}
         Rational(): numerator(0), denominator(1) {this->setSign(true);}
-        Rational(const Integer& numeratr): numerator(numeratr.getAbsolutePart()), denominator(1)  {this->setSign(numeratr.getSign());}
         Rational(const Integer& num, const Integer& den);
+        Rational(const Integer& numeratr): numerator(numeratr.getAbsolutePart()), denominator(1)  {this->setSign(numeratr.getSign());}
         Rational(const Natural& num): numerator(num), denominator(1) {this->setSign(true);}
-        Rational(double x);
+        Rational(double value);
 
         // implementación de los métodos de comparación y asignacion
         bool operator==(const Rational& other) const;
@@ -35,29 +31,29 @@ class Rational: public Number<Rational>
         Rational operator-() const;
         Rational operator*(const Rational& other) const;
         Rational operator/(const Rational& other) const;
+        friend Rational operator/(const Integer& other, const Rational& number)
+        {
+            return Rational(other)/number;
+        }
         Rational operator^(const Rational& other) const;
-        
-        std::variant<Integer, Rational> checkForInteger() const 
+        double toDouble() const;
+        Rational multiplyInverse() const
         {
-            if(denominator != 1)
-                return std::variant<Integer, Rational>(
-                    std::in_place_type<Rational>,
-                    Rational(Integer(numerator, this->sign), denominator)
-                );
-
-                
-            return std::variant<Integer, Rational>(
-                std::in_place_type<Integer>,
-                Integer(numerator, this->sign)
-            );
+            if(*this == 0)
+                throw std::invalid_argument("0 don't have a inverse");
+            Rational r(denominator, numerator);
+            r.sign = sign;
+            return r;
         }
 
-        static Rational abs(const Rational& p)
+        Rational abs() const
         {
-            if(p < 0) return -p;
-            return p;
+            if(this->sign)
+                return *this;
+            Rational copy(*this);
+            copy.setSign(true);
+            return copy;
         }
-
         friend std::ostream& operator<<(std::ostream& os, const Rational& num);
         friend void showFraction(const Rational& num);
 

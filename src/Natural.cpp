@@ -12,6 +12,9 @@ void Natural::cleanDigits(Natural& num, int index)
     while (index >= 0 && num[index] == 0)
         index--;
     if(index < 0) index = 0;
+    if(index == num.digits.size())
+        return;
+
     List<unsigned short> copy(index);
     for(int i = 0; i <= index; i++)
         copy.add(num[i]);
@@ -89,6 +92,9 @@ unsigned short Natural::operator[](int index) const
 {
     if(index < 0 || digits.size() <= index)
         return 0;
+    
+    if(index == 0 && this->digits.size() == 0)
+        return 0;
 
     return digits[index];
 }
@@ -153,23 +159,19 @@ Natural operator*(const Natural& num1, const Natural& num2)
 
 Natural operator/(const Natural& num1, const Natural& num2)
 {
-    if(num1 == 0 && num2 == 0) return num1;
+    if(num1 == num2) return 1;
     if(num2 == 0) 
         throw std::invalid_argument("Math error: division by zero");
-
-    if(num1.digits.size() < num2.digits.size())
-        return 0;
-    if(num1 == num2)
-        return 1;
-    
 
     if(num2 == 2) return Natural::divideBy2(num1);
     if(num2 == 1) return num1;
 
+
     unsigned short scaleFactor = 100/(num2.digits[num2.digits.size()-1] + 1);
     Natural dividend = num1*scaleFactor;
     Natural divisor = num2*scaleFactor;
-    int m = dividend.digits.size() - divisor.digits.size()-1;
+    int m = dividend.digits.size() - divisor.digits.size();
+    if(m < 0) return 0;
     Natural U(0, divisor.digits.size()+1);
     Natural quant(0, m+1);
     for(int i = m; i < dividend.digits.size(); i++)
@@ -192,6 +194,7 @@ Natural operator/(const Natural& num1, const Natural& num2)
         if(j > 0)
             U.digits.add(dividend[j-1], 0);
     }
+    Natural::cleanDigits(quant);
     return quant;
 }
 
@@ -324,7 +327,20 @@ void Natural::multiplyBy10()
     this->digits = copy;
 }
 
-List<unsigned short> Natural::getList()
+List<unsigned short> Natural::getList() const
 {
     return List<unsigned short>(digits);
+}
+
+double Natural::toDouble() const
+{
+    double result = 0.0;
+    double factor = 1.0;
+
+    for (size_t i = 0; i < digits.size(); ++i) {
+        result += static_cast<double>(digits[i]) * factor;
+        factor *= 100.0;
+    }
+
+    return result;
 }
