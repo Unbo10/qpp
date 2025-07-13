@@ -10,9 +10,18 @@ class Integer : public Number<Integer>
         Natural absolutePart;
     public:
         Integer() {}
-        Integer(long long x): absolutePart((x < 0)? -x : x) {this->sign = x>=0;}
-        Integer(const Natural& natural): absolutePart(natural) {this->sign = 1;}
-        Integer(const Natural& natural, bool sign): absolutePart(natural) {setSign(sign);}
+        Integer(long long x) : absolutePart((x < 0)? -x : x) {this->sign = x>=0;}
+        Integer(const Natural& natural) : absolutePart(natural) {this->sign = 1;}
+        Integer(const Natural& natural, bool sign) : absolutePart(natural) {this->sign = sign;}
+        Integer(std::string str) {
+            int starting_pos = 0;
+            if(str[0] == '-') {
+                this->sign = false;
+                starting_pos = 1;
+            }
+
+            absolutePart = std::stoi(str.substr(starting_pos));
+        }
 
         //***COMPARISON AND ASSIGNING OPERATIONS***
 
@@ -25,7 +34,7 @@ class Integer : public Number<Integer>
         Integer operator+(const Integer& other) const;
         Integer operator-(const Integer& other) const;
         Integer operator*(const Integer& other) const;
-        Integer operator-() const {Integer r(*this); r.setSign(!this->sign); return r;}
+        Integer operator-() const {Integer r(*this); r.setSign(!this->sign); return r;} //!Check if using setSign is correct
         Integer operator/(const Integer& other) const;
         Integer operator%(const Integer& other) const;
         Integer operator^(const Integer& other) const;

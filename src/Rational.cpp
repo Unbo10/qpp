@@ -1,7 +1,14 @@
 #include "../include/Rational.h"
 
 unsigned int Rational::decimalPoints = 5;
-/* constructores    */
+
+Rational::Rational(const Rational& other) {
+    this->numerator = other.numerator;
+    this->denominator = other.denominator;
+    this->sign = other.sign;
+}
+
+//***CONSTRUCTORS***
 
 Rational::Rational(const Integer& num, const Integer& den)
 {
@@ -87,7 +94,7 @@ Rational::Rational(std::string str) {
     }
 }
 
-// implementacion de comparaciones y asignacion
+//***COMPARISON AND ASSIGNING OPERATIONS***
 
 bool Rational::operator<(const Rational& other) const 
 {
@@ -103,7 +110,10 @@ bool Rational::operator<(const Rational& other) const
 
 bool Rational::operator==(const Rational& other) const
 {
-    return this->sign == other.sign && 
+    if(this->numerator == 0 && other.numerator == 0)
+        return true;
+    else
+        return this->sign == other.sign && 
            numerator == other.numerator && 
            denominator == other.denominator;
 }
@@ -124,7 +134,8 @@ Rational Rational::operator=(const Rational& other)
     return *this;
 }
 
-// implementación de los métodos de operaciones
+//***ARITHMETIC OPERATIONS***
+
 Rational Rational::operator+(const Rational& other) const
 {
     Natural gcd = Natural::gcd(this->denominator, other.denominator);
@@ -148,7 +159,10 @@ Rational Rational::operator+(const Rational& other) const
             result.numerator = result.numerator/gcd;
             result.denominator = result.denominator/gcd;
         }
-        result.setSign(this->sign);
+        if(result.abs() == 0)
+            result.setSign(true);
+        else
+            result.setSign(this->sign);
         return result;
     }
 
@@ -165,10 +179,10 @@ Rational Rational::operator+(const Rational& other) const
         result.numerator = result.numerator/gcd;
         result.denominator = result.denominator/gcd;
     }
-    /*if(result.abs(result) == 0){
+    if(result.abs() == 0){
         result.sign = true;
         result.denominator = 1;
-    }*/
+    }
     return result;
 }
 
@@ -177,7 +191,7 @@ Rational Rational::operator-() const
     Rational result;
     result.denominator = denominator;
     result.numerator = numerator;
-    result.setSign(!this->sign);
+    result.sign = !this->sign;
     return result;
 }
 
@@ -188,7 +202,7 @@ Rational Rational::operator-(const Rational& other) const
     Rational result;
     if(this->sign != other.sign)
     {
-        result.setSign(this->sign);
+        result.sign = this->sign;
         if(gcd == 1)
         {
             result.numerator = numerator * other.denominator + other.numerator * denominator;
@@ -222,7 +236,10 @@ Rational Rational::operator-(const Rational& other) const
         result.numerator = result.numerator/gcd;
         result.denominator = result.denominator/gcd;
     }
-
+    if(result.abs() == 0){
+        result.sign = true;
+        result.denominator = 1;
+    }
     return result;
 }
 
@@ -230,9 +247,10 @@ Rational Rational::operator*(const Rational& other) const
 {
     Natural gcd1 = Natural::gcd(other.numerator, this->denominator);
     Natural gcd2 = Natural::gcd(this->numerator, other.denominator);
-
+    
     Rational result;
-    result.setSign(this->sign == other.sign);
+    result.sign = (this->sign == other.sign);
+    // std::cout << "other: " << other.sign << " and " << this->sign << " is " << result.sign << " vs " << (this->sign == other.sign) << "\n";
 
     result.numerator = ((gcd1 == 1)? other.numerator: other.numerator/gcd1)*
                        ((gcd2 == 1)? this->numerator: this->numerator/gcd2);
@@ -258,7 +276,7 @@ Rational Rational::operator/(const Rational& other) const
     Natural gcd2 = Natural::gcd(denominator, other.denominator);
 
     Rational result;
-    result.setSign(this->sign == other.sign);
+    result.sign = (this->sign == other.sign);
     result.numerator = ((gcd1 == 1)? numerator: numerator/gcd1) *
                        ((gcd2 == 1)? other.denominator: other.denominator/gcd2);
 
@@ -297,7 +315,8 @@ double Rational::toDouble() const
     return (this->sign)? r: -r;
 }
 
-// entradas y salidas
+//***STREAM OPERATIONS***
+
 std::ostream& operator<<(std::ostream& os, const Rational& number)
 {
     if(number.numerator == 0) 
@@ -345,4 +364,18 @@ void showFraction(const Rational& num)
     if(num.denominator == 1)
         std::cout << num.numerator;
     else std::cout << num.numerator << "/" << num.denominator;
+}
+
+//*Util method for GCD
+
+Rational Rational::invert() const {
+    if(this->numerator == 0)
+        return Rational(0, 1);
+        
+    Rational result;
+    result.numerator = this->denominator;
+    result.denominator = this->numerator;
+    result.sign = this->sign;
+
+    return result;
 }
