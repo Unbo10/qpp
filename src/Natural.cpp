@@ -327,6 +327,39 @@ void Natural::multiplyBy10()
     this->digits = copy;
 }
 
+int Natural::smallestGeqPowerOfBase(const int num, const int base)
+{
+    if(base == 0)
+    {
+        if(num != 0)
+        {
+            throw std::invalid_argument("Base is 0 and number is not 0 (there's no power of 0 greater than 'this')");
+        }
+        std::cout << "Warning: given base is 0. Returning 1.\n";
+        return 1;
+    }
+    else if (base == 1)
+    {
+        if(num > 1)
+        {
+            throw std::invalid_argument("Base is 1 and number is not 0 or 1 (there's no power of 1 greater than 'this')");
+        }
+        std::cout << "Warning: given base is 0. Returning 1.\n";
+        return 1;
+    }
+
+    if((num == 1) || (num == 0))
+        return 0;
+
+    int exp = 1;
+    int pow = base;
+    while(pow < num) {
+        pow = pow * base;
+        exp++;
+    }
+    return pow;
+}
+
 List<unsigned short> Natural::getList() const
 {
     return List<unsigned short>(digits);
@@ -337,7 +370,7 @@ double Natural::toDouble() const
     double result = 0.0;
     double factor = 1.0;
 
-    for (size_t i = 0; i < digits.size(); ++i) {
+    for (int i = 0; i < digits.size(); ++i) {
         result += static_cast<double>(digits[i]) * factor;
         factor *= 100.0;
     }

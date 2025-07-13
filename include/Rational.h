@@ -19,6 +19,7 @@ class Rational: public Number<Rational>
         Rational(const Integer& numeratr): numerator(numeratr.getAbsolutePart()), denominator(1)  {this->setSign(numeratr.getSign());}
         Rational(const Natural& num): numerator(num), denominator(1) {this->setSign(true);}
         Rational(double value);
+        Rational(std::string str);
 
         // implementación de los métodos de comparación y asignacion
         bool operator==(const Rational& other) const;
@@ -55,6 +56,7 @@ class Rational: public Number<Rational>
             return copy;
         }
         friend std::ostream& operator<<(std::ostream& os, const Rational& num);
+        friend std::istream& operator>>(std::istream& is, Rational& num);
         friend void showFraction(const Rational& num);
 
         explicit operator Natural() {return this->numerator/this->denominator;}

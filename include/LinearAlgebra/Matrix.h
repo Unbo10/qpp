@@ -1,6 +1,4 @@
 #pragma once
-#ifndef MATRIX_H
-#define MATRIX_H
 
 #include "Vector.h"
 
@@ -16,6 +14,8 @@ class Matrix: public Iterable<Vector>
         List<Vector> array;
         
     public:
+        //***CONSTRUCTORS***
+
         Matrix(int rows, int columns): array(rows)
         {
             if(rows <= 0 || columns <= 0)
@@ -29,9 +29,11 @@ class Matrix: public Iterable<Vector>
 
         Matrix(const Matrix& other): array(other.rows())
         {
-            int rows = other.rows();
+            //!No need for it since rows depends on the array size and by
+            //!adding all the elements, row will increase
+            // int rows = other.rows();
 
-            for(int i = 0; i < rows; i++)
+            for(int i = 0; i < other.rows(); i++)
                 array.add(other.array[i]);     
         }
 
@@ -40,16 +42,24 @@ class Matrix: public Iterable<Vector>
             for(int i = 0; i < array.size(); i++)
                 this->operator[](i)[0] = array[i];
         }
+        
+        //***UTIL METHODS AND ATTRIBUTES***
 
         Vector& operator[](int row);
         const Vector& operator[](int row) const;
-        int columns() const {return array[0].size();}
+        int columns() const {return array.size() > 0 ? array[0].size() : 0;}
         int rows() const {return array.size();}
+        Matrix reshape(int rows, int cols) const;
 
+        //***MATRIX OPERATIONS***
+        
         friend Matrix operator+(const Matrix& m1, const Matrix& m2);
         friend Matrix operator-(const Matrix& m1, const Matrix& m2);
         friend Matrix operator*(const Rational& number, const Matrix& matrix);
         friend Matrix operator*(const Matrix& m1, const Matrix& m2);
+        List<Matrix> splitIn4();
+        static List<Matrix> strassenSubmatrices(const List<Matrix>& m1SubM, const List<Matrix>& m2SubM);
+        static Matrix strassenMm(const Matrix& m1, const Matrix& m2);
         friend Matrix operator^(const Matrix& m1, const Natural& number);
         static Matrix scalonadeForm(const Matrix& m1);
         static Matrix identity(int n);
@@ -57,6 +67,7 @@ class Matrix: public Iterable<Vector>
         static Matrix inverse(const Matrix& matrix);
         static Rational det(const Matrix& matrix);
 
+        //***USE CASES***
         /*
             Este es un ejemplo de uso de la clase 
             matrix
@@ -75,13 +86,13 @@ class Matrix: public Iterable<Vector>
             return ((fibonnaciMatrix^num)[1][0]);
         }
 
+        //***RANGE-BASED ITERATION COMPATIBILITY***
         Iterator<Vector> begin() const {return array.begin();}
         Iterator<Vector> end() const {return array.end();}
 
+        //***STREAM OPERATIONS***
         friend std::ostream& operator<<(std::ostream& os, const Matrix& m1);
+        friend std::istream& operator>>(std::istream& is, Matrix& m);
         friend void printWithoutBrackets(const Matrix& m1);
         friend void printWithoutBracketsAndFractionForm(const Matrix& m1);
 };
-
-
-#endif

@@ -63,6 +63,30 @@ Rational::Rational(double value)
     denominator = Natural(den2);
 }
 
+Rational::Rational(std::string str) {
+    int starting_pos = 0;
+    if(str[0] == '-') {
+        this->sign = false;
+        starting_pos = 1;
+    }
+    
+    size_t slash_pos = str.find('/');
+
+    int num;
+    if(slash_pos != std::string::npos) {
+        num = std::stoi(str.substr(starting_pos, slash_pos));
+        if(slash_pos == str.size())
+            throw std::invalid_argument("No denominator given");
+        int den = std::stoi(str.substr(slash_pos + 1));
+        this->numerator = num;
+        this->denominator = den;
+    }
+    else {
+        this->numerator = Natural(std::stoi(str.substr(starting_pos)));
+        this->denominator = 1;
+    }
+}
+
 // implementacion de comparaciones y asignacion
 
 bool Rational::operator<(const Rational& other) const 
@@ -294,7 +318,7 @@ std::ostream& operator<<(std::ostream& os, const Rational& number)
         os << num/den;
         return os;
     }
-    for(int i = 0; i < Rational::decimalPoints; i++)
+    for(unsigned int i = 0; i < Rational::decimalPoints; i++)
     {
         if(num == 0) return os;
         Natural q = num/den;
@@ -305,6 +329,15 @@ std::ostream& operator<<(std::ostream& os, const Rational& number)
     }
     return os;
 }
+
+std::istream& operator>>(std::istream& is, Rational& num)
+{
+    std::string str;
+    is >> str;
+    num = Rational(str);
+    return is;
+}
+
 
 void showFraction(const Rational& num)
 { 
