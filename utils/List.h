@@ -50,7 +50,11 @@ class List : public Iterable<U>
          */
         void resize()
         {
-            int NEW_CAPACITY = capacity*DEFAULT_RESIZE;
+            int NEW_CAPACITY;
+            if(capacity == 1)
+                NEW_CAPACITY = 2;
+            else
+                NEW_CAPACITY = capacity*DEFAULT_RESIZE;
             U* help = array;
             array = new U[NEW_CAPACITY];
 

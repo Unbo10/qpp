@@ -39,6 +39,15 @@ Vector Vector::operator-(const Vector& other) const
     return result;
 }
 
+Vector Vector::operator-() const
+{
+    Vector negated(*this);
+    for(Rational& r : negated.components)
+        r = -r;
+
+    return negated;
+}
+
 Rational Vector::operator*(const Vector& other) const
 {
     if(this->dimension() != other.dimension())

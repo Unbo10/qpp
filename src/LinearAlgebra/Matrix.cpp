@@ -1,5 +1,7 @@
 #include "../../include/LinearAlgebra/Matrix.h"
 
+//***UTIL METHODS***
+
 Vector& Matrix::operator[](int row)
 {
     return this->array[row];
@@ -33,7 +35,7 @@ Matrix Matrix::reshape(int rows, int cols) const
         }
     }
     //*Append cols - original.columns() zeros to each row (vector)
-    else if(reshaped.columns() < cols)
+    else if(this->columns() < cols)
     {
         int zerosToAdd = cols - this->columns();
         for(Vector& vector : reshaped.array)
@@ -58,9 +60,11 @@ Matrix Matrix::reshape(int rows, int cols) const
         }
     }
     //*Append rows - original.rows() rows to the array of reshaped
-    else if(reshaped.rows() < rows){
+    else if(this->rows() < rows){
         int newRows = rows - this->rows();
+        std::cout << "New rows: " << newRows << "\n";
         for(int i = 0; i < newRows; i++){
+            std::cout << i << "\n";
             Vector v(reshaped.columns()); // Create a new vector for each iteration
             reshaped.array.add(v);
         }
@@ -68,6 +72,8 @@ Matrix Matrix::reshape(int rows, int cols) const
 
     return reshaped;
 }
+
+//***MATRIX OPERATIONS***
 
 Matrix operator+(const Matrix& m1, const Matrix& m2)
 {
@@ -97,6 +103,15 @@ Matrix operator-(const Matrix& m1, const Matrix& m2)
         result[i] = m1[i]-m2[i];
 
     return result;
+}
+
+Matrix Matrix::operator-() const
+{
+    Matrix negated(*this);
+    for(Vector& v : negated.array)
+        v = -v;
+
+    return negated;
 }
 
 Matrix operator*(const Rational& number, const Matrix& matrix)
@@ -136,12 +151,15 @@ Matrix operator*(const Matrix& m1, const Matrix& m2)
 //*Top-left -> Top-right -> Bottom-left -> Bottom-right
 List<Matrix> Matrix::splitIn4()
 {
-    if((this->columns() % 4 != 0) || (this->rows() % 4 != 0) || (this->columns() != this->rows()))
-        throw std::invalid_argument("Matrix isn't square and/or it has a number of rows and/or columns that are not divisible by 4");
+    if((this->columns() % 2 != 0) || (this->rows() % 2 != 0) || (this->columns() != this->rows()))
+    {
+        std::cout << this->columns() << ", " << this->rows() << "\n";
+        throw std::invalid_argument("Matrix isn't square and/or it has a number of rows and/or columns that are not divisible by 2");
+    }
 
     List<Matrix> subMatrices(4);
     int halfSize = this->columns() / 2;
-    for(int i = 0; i < this->columns(); i++)
+    for(int i = 0; i < 4; i++)
     {
         subMatrices.add(Matrix(halfSize, halfSize), i);
     }
@@ -162,10 +180,48 @@ List<Matrix> Matrix::splitIn4()
     return subMatrices;
 }
 
+List<Matrix> Matrix::splitIn9()
+{
+    if((this->columns() % 3 != 0) || (this->rows() % 3 != 0) || (this->columns() != this->rows()))
+    {
+        std::cout << this->columns() << ", " << this->rows() << "\n";
+        throw std::invalid_argument("Matrix isn't square and/or it has a number of rows and/or columns that are not divisible by 2");
+    }
+
+    List<Matrix> subMatrices(9);
+    int thirdSize = this->columns() / 3;
+    for(int i = 0; i < 9; i++)
+    {
+        subMatrices.add(Matrix(thirdSize, thirdSize), i);
+    }
+
+    //*Travel rows
+    for(int i = 0; i < thirdSize; i++)
+    {
+        //*Travel columns
+        for(int j = 0; j < thirdSize; j++)
+        {
+            subMatrices[0].array[i][j] = this->array[i][j];
+            subMatrices[1].array[i][j] = this->array[i][j + thirdSize];
+            subMatrices[2].array[i][j] = this->array[i][j + 2*thirdSize];
+            
+            subMatrices[3].array[i][j] = this->array[i + thirdSize][j];
+            subMatrices[4].array[i][j] = this->array[i + thirdSize][j + thirdSize];
+            subMatrices[5].array[i][j] = this->array[i + thirdSize][j + 2*thirdSize];
+            
+            subMatrices[6].array[i][j] = this->array[i + 2*thirdSize][j];
+            subMatrices[7].array[i][j] = this->array[i + 2*thirdSize][j + thirdSize];
+            subMatrices[8].array[i][j] = this->array[i + 2*thirdSize][j + 2*thirdSize];
+        }
+    }
+
+    return subMatrices;
+}
+
 List<Matrix> Matrix::strassenSubmatrices(const List<Matrix>& m1SubM, const List<Matrix>& m2SubM)
 {
     //* [[A0, A1],    [[B0, B1],
-    //* [A2, A3]]     [B2, B3]]
+    //*  [A2, A3]]     [B2, B3]]
 
     List<Matrix> subMatrices(7);
     int size = m1SubM[0].columns();
@@ -192,21 +248,106 @@ List<Matrix> Matrix::strassenSubmatrices(const List<Matrix>& m1SubM, const List<
     return subMatrices;
 }
 
+List<Matrix> Matrix::ladermanSubmatrices(const List<Matrix>& m1SubM, const List<Matrix>& m2SubM)
+{
+    //* [[A0, A1, A2],    [[B0, B1, B2],
+    //*  [A3, A4, A5],     [B3, B4, B5]
+    //*  [A6, A7, A8]],    [B6, B7, B8]]
+
+    List<Matrix> subMatrices(23);
+    int size = m1SubM[0].columns();
+    for(int i = 0; i < 23; i++)
+    {
+        subMatrices.add(Matrix(size, size));
+    }
+
+    //*M1  = (A0 + A1 + A2 - A3 - A4 - A7 - A8) * B4
+    subMatrices[0] = ladermanMm((m1SubM[0] + m1SubM[1] + m1SubM[2] - m1SubM[3] - m1SubM[4] - m1SubM[7] - m1SubM[8]), m2SubM[4]);
+    
+    //*M2  = (A0 - A3) * (-B1 + B4)
+    subMatrices[1] = ladermanMm((m1SubM[0] - m1SubM[3]), (-m2SubM[1] + m2SubM[4]));
+    
+    //*M3  = A4 * (-B0 + B1 + B3 - B4 - B5 + B8)
+    subMatrices[2] = ladermanMm(m1SubM[4], (-m2SubM[0] + m2SubM[1] + m2SubM[3] - m2SubM[4] - m2SubM[5] + m2SubM[8]));
+    
+    //*M4  = (-A0 + A3 + A4) * (B0 - B1 + B4)
+    subMatrices[3] = ladermanMm((-m1SubM[0] + m1SubM[3] + m1SubM[4]), (m2SubM[0] - m2SubM[1] + m2SubM[4]));
+    
+    //*M5  = (A3 + A4) * (-B0 + B1)
+    subMatrices[4] = ladermanMm((m1SubM[3] + m1SubM[4]), (-m2SubM[0] + m2SubM[1]));
+    
+    //*M6  = A0 * B0
+    subMatrices[5] = ladermanMm(m1SubM[0], m2SubM[0]);
+    
+    //*M7  = (-A0 + A6 + A7) * (B0 - B2 + B5)
+    subMatrices[6] = ladermanMm((-m1SubM[0] + m1SubM[6] + m1SubM[7]), (m2SubM[0] - m2SubM[2] + m2SubM[5]));
+    
+    //*M8  = (-A0 + A6) * (B0 - B5)
+    subMatrices[7] = ladermanMm((-m1SubM[0] + m1SubM[6]), (m2SubM[0] - m2SubM[5]));
+    
+    //*M9  = (A6 + A7) * (-B0 + B2)
+    subMatrices[8] = ladermanMm((m1SubM[6] + m1SubM[7]), (-m2SubM[0] + m2SubM[2]));
+    
+    //*M10 = (A0 + A1 + A2 - A4 - A5 - A6 - A7) * B6
+    subMatrices[9] = ladermanMm((m1SubM[0] + m1SubM[1] + m1SubM[2] - m1SubM[4] - m1SubM[5] - m1SubM[6] - m1SubM[7]), m2SubM[6]);
+    
+    //*M11 = A7 * (-B0 + B2 + B3 - B4 - B5 - B6 + B7)
+    subMatrices[10] = ladermanMm(m1SubM[7], (-m2SubM[0] + m2SubM[2] + m2SubM[3] - m2SubM[4] - m2SubM[5] - m2SubM[6] + m2SubM[7]));
+    
+    //*M12 = (-A2 + A7 + A8) * (B4 + B6 - B7)
+    subMatrices[11] = ladermanMm((-m1SubM[2] + m1SubM[7] + m1SubM[8]), (m2SubM[4] + m2SubM[6] - m2SubM[7]));
+    
+    //*M13 = (A2 - A8) * (B4 - B7)
+    subMatrices[12] = ladermanMm((m1SubM[2] - m1SubM[8]), (m2SubM[4] - m2SubM[7]));
+    
+    //*M14 = A2 * B6
+    subMatrices[13] = ladermanMm(m1SubM[2], m2SubM[6]);
+    
+    //*M15 = (A7 + A8) * (-B6 + B7)
+    subMatrices[14] = ladermanMm((m1SubM[7] + m1SubM[8]), (-m2SubM[6] + m2SubM[7]));
+    
+    //*M16 = (-A2 + A4 + A5) * (B5 + B6 - B8)
+    subMatrices[15] = ladermanMm((-m1SubM[2] + m1SubM[4] + m1SubM[5]), (m2SubM[5] + m2SubM[6] - m2SubM[8]));
+    
+    //*M17 = (A2 - A5) * (B5 - B8)
+    subMatrices[16] = ladermanMm((m1SubM[2] - m1SubM[5]), (m2SubM[5] - m2SubM[8]));
+    
+    //*M18 = (A4 + A5) * (-B6 + B8)
+    subMatrices[17] = ladermanMm((m1SubM[4] + m1SubM[5]), (-m2SubM[6] + m2SubM[8]));
+    
+    //*M19 = A1 * B3
+    subMatrices[18] = ladermanMm(m1SubM[1], m2SubM[3]);
+    
+    //*M20 = A5 * B7
+    subMatrices[19] = ladermanMm(m1SubM[5], m2SubM[7]);
+    
+    //*M21 = A3 * B2
+    subMatrices[20] = ladermanMm(m1SubM[3], m2SubM[2]);
+    
+    //*M22 = A6 * B1
+    subMatrices[21] = ladermanMm(m1SubM[6], m2SubM[1]);
+    
+    //*M23 = A8 * B8
+    subMatrices[22] = ladermanMm(m1SubM[8], m2SubM[8]);
+
+    return subMatrices;
+}
+
 Matrix Matrix::strassenMm(const Matrix& matrix1, const Matrix& matrix2)
 {
     //! Reshape could have a boolean to indicate it is already a power of 2 (which happens right after the first iteration)
     //!Must check still if the input is compatible
-    // //*Temporary (a fill-with-zeros method could be implemented to work with this case)
-    // if((m1.columns() != m1.rows()) || (m2.columns() != m2.rows()) || (m1.columns() != m2.columns()))
-    //     throw std::invalid_argument("Matrices must be square");
 
     if(matrix1.columns() != matrix2.rows())
         throw std::invalid_argument("Multiplication undefined for matrices with incompatible dimensions (the number of columns of the first one must be equal to the number of rows of the second one)");
-        
-    if(matrix1.columns() == 2)
-    {
+    else if((matrix1.columns() < 1) || (matrix1.rows() < 1) || (matrix2.columns() < 0) || (matrix2.rows() < 1))
+        throw std::invalid_argument("At least one of the matrix has no rows and/or columns");
+    //*In case both are 2 x 2 matrices
+    if((matrix1.rows() == 2) && (matrix1.columns() == 2) && (matrix2.rows() == 2) && (matrix2.columns() == 2))
         return matrix1 * matrix2;
-    }
+    //*In case at least one of the two is a scalar
+    else if(((matrix1.rows() == 1) && (matrix1.columns() == 1)) || ((matrix2.rows() == 1) || (matrix2.columns())))
+        return matrix1 * matrix2;
     
     //*Reshaping to be square and have a size that is a power of 2
     int greatestCols = std::max(matrix1.columns(), matrix2.columns());
@@ -219,16 +360,16 @@ Matrix Matrix::strassenMm(const Matrix& matrix1, const Matrix& matrix2)
     // std::cout << "Reshaping...\n";
     Matrix m1(matrix1);
     m1 = m1.reshape(newSize, newSize);
-    Matrix m2(matrix2);
-    m2 = m2.reshape(newSize, newSize);
     // std::cout << "Matrix 1:\n";
     // std::cout << m1 << "\n";
+    Matrix m2(matrix2);
+    m2 = m2.reshape(newSize, newSize);
     // std::cout << "Matrix 2:\n";
     // std::cout << m2 << "\n";
 
     //*Split in 4
-    List <Matrix> m1SubMatrices = m1.splitIn4();
-    List <Matrix> m2SubMatrices = m2.splitIn4();
+    List<Matrix> m1SubMatrices = m1.splitIn4();
+    List<Matrix> m2SubMatrices = m2.splitIn4();
 
     //*Get Strassen submatrices
     List<Matrix> subMatrices = strassenSubmatrices(m1SubMatrices, m2SubMatrices);
@@ -250,6 +391,91 @@ Matrix Matrix::strassenMm(const Matrix& matrix1, const Matrix& matrix2)
             mm[i][j + newSize/2] = C1[i][j];
             mm[i + newSize/2][j] = C2[i][j];
             mm[i + newSize/2][j + newSize/2] = C3[i][j];
+        }
+    }
+
+    mm = mm.reshape(matrix1.rows(), matrix2.columns());
+
+    return mm;
+}
+
+Matrix Matrix::ladermanMm(const Matrix& matrix1, const Matrix& matrix2)
+{
+    if(matrix1.columns() != matrix2.rows())
+        throw std::invalid_argument("Multiplication undefined for matrices with incompatible dimensions (the number of columns of the first one must be equal to the number of rows of the second one)");
+
+    if(matrix1.columns() != matrix2.rows())
+        throw std::invalid_argument("Multiplication undefined for matrices with incompatible dimensions (the number of columns of the first one must be equal to the number of rows of the second one)");
+    else if((matrix1.columns() < 1) || (matrix1.rows() < 1) || (matrix2.columns() < 0) || (matrix2.rows() < 1))
+        throw std::invalid_argument("At least one of the matrix has no rows and/or columns");
+    //*In case at least one of the two is a scalar
+    else if(((matrix1.rows() == 1) && (matrix1.columns() == 1)) || ((matrix2.rows() == 1) || (matrix2.columns())))
+        return matrix1 * matrix2;
+
+    //*Reshaping to be square and have a size that is a power of 3
+    int greatestCols = std::max(matrix1.columns(), matrix2.columns());
+    int newSize = Natural::smallestGeqPowerOfBase(greatestCols, 3);
+    // std::cout << "new size: " << newSize << "\n";
+    // std::cout << "Matrix 1:\n";
+    // std::cout << matrix1 << "\n";
+    // std::cout << "Matrix 2:\n";
+    // std::cout << matrix2 << "\n";
+    // std::cout << "Reshaping...\n";
+    Matrix m1(matrix1);
+    m1 = m1.reshape(newSize, newSize);
+    // std::cout << "Matrix 1:\n";
+    // std::cout << m1 << "\n";
+    Matrix m2(matrix2);
+    m2 = m2.reshape(newSize, newSize);
+    // std::cout << "Matrix 2:\n";
+    // std::cout << m2 << "\n";
+
+    //*Split in 9
+    List<Matrix> m1SubMatrices = m1.splitIn9();
+    List<Matrix> m2SubMatrices = m2.splitIn9();
+
+    //*Get the aiding submatrices according to Larsen's algorithm
+    List<Matrix> subMatrices = Matrix::ladermanSubmatrices(m1SubMatrices, m2SubMatrices);
+
+    //*Calculate the resulting matrix
+    //*C1 = M6 + M14 + M19
+    Matrix C1 = subMatrices[5] + subMatrices[13] + subMatrices[18];
+    //*C2 = M1 + M4 + M5 + M6 + M12 + M14 + M15
+    Matrix C2 = subMatrices[0] + subMatrices[3] + subMatrices[4] + subMatrices[5] + subMatrices[11] + subMatrices[13] + subMatrices[14];
+    //*C3 = M6 + M7 + M9 + M10 + M14 + M16 + M18
+    Matrix C3 = subMatrices[5] + subMatrices[6] + subMatrices[8] + subMatrices[9] + subMatrices[13] + subMatrices[15] + subMatrices[17];
+    //*C4 = M2 + M3 + M4 + M6 + M14 + M16 + M17
+    Matrix C4 = subMatrices[1] + subMatrices[2] + subMatrices[3] + subMatrices[5] + subMatrices[13] + subMatrices[15] + subMatrices[16];
+    //*C5 = M2 + M4 + M5 + M6 + M20
+    Matrix C5 = subMatrices[1] + subMatrices[3] + subMatrices[4] + subMatrices[5] + subMatrices[19];
+    //*C6 = M14 + M16 + M17 + M18 + M21
+    Matrix C6 = subMatrices[13] + subMatrices[15] + subMatrices[16] + subMatrices[17] + subMatrices[20];
+    //*C7 = M6 + M7 + M8 + M11 + M12 + M13 + M14
+    Matrix C7 = subMatrices[5] + subMatrices[6] + subMatrices[7] + subMatrices[10] + subMatrices[11] + subMatrices[12] + subMatrices[13];
+    //*C8 = M12 + M13 + M14 + M15 + M22
+    Matrix C8 = subMatrices[11] + subMatrices[12] + subMatrices[13] + subMatrices[14] + subMatrices[21];
+    //*C9 = M6 + M7 + M8 + M9 + M23
+    Matrix C9 = subMatrices[5] + subMatrices[6] + subMatrices[7] + subMatrices[8] + subMatrices[22];
+
+    //*Fit the matrices in the result of the multiplication
+    Matrix mm(newSize, newSize);
+    int thirdSize = newSize / 2;
+    for(int i = 0; i < thirdSize; i++)
+    {
+        //*Travel columns
+        for(int j = 0; j < thirdSize; j++)
+        {
+            mm.array[i][j] = C1.array[i][j];
+            mm.array[i][j + thirdSize] = C2.array[i][j];
+            mm.array[i][j + 2*thirdSize] = C3.array[i][j];
+            
+            mm.array[i + thirdSize][j] = C4.array[i][j];
+            mm.array[i + thirdSize][j + thirdSize] = C5.array[i][j];
+            mm.array[i + thirdSize][j + 2*thirdSize] = C6.array[i][j];
+            
+            mm.array[i + 2*thirdSize][j] = C7.array[i][j];
+            mm.array[i + 2*thirdSize][j + thirdSize] = C8.array[i][j];
+            mm.array[i + 2*thirdSize][j + 2*thirdSize] = C9.array[i][j];
         }
     }
 
@@ -448,6 +674,38 @@ Rational Matrix::det(const Matrix& matrix)
         det.setSign(!det.getSign());
 
     return det;
+}
+
+//***COMPARISON OPERATIONS***
+
+bool operator==(const Matrix& m1, const Matrix& m2)
+{
+    if((m1.columns() != m2.columns()) || (m1.rows() != m2.rows()))
+        return false;
+    
+    for(int i = 0; i < m1.rows(); i++)
+    {
+        if(m1.array[i] != m2.array[i])
+            return false;
+    }
+
+    return true;
+}
+
+//***USE CASES***
+
+Rational Matrix::fibonnacci(const Natural& num)
+{
+    if(num == 0 || num == 1)
+        return num;
+
+    Matrix fibonnaciMatrix(2, 2);
+
+    fibonnaciMatrix[0][0] = 1;
+    fibonnaciMatrix[0][1] = 1;
+    fibonnaciMatrix[1][0] = 1;
+
+    return ((fibonnaciMatrix^num)[1][0]);
 }
 
 std::ostream& operator<<(std::ostream& os, const Matrix& m)

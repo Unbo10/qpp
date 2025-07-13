@@ -55,11 +55,16 @@ class Matrix: public Iterable<Vector>
         
         friend Matrix operator+(const Matrix& m1, const Matrix& m2);
         friend Matrix operator-(const Matrix& m1, const Matrix& m2);
+        Matrix operator-() const;
         friend Matrix operator*(const Rational& number, const Matrix& matrix);
         friend Matrix operator*(const Matrix& m1, const Matrix& m2);
         List<Matrix> splitIn4();
+        List<Matrix> splitIn9();
         static List<Matrix> strassenSubmatrices(const List<Matrix>& m1SubM, const List<Matrix>& m2SubM);
-        static Matrix strassenMm(const Matrix& m1, const Matrix& m2);
+        //*Larsen-Winograd. Follows [2](References.md): https://www.ams.org/journals/bull/1976-82-01/S0002-9904-1976-13988-2/S0002-9904-1976-13988-2.pdf
+        static List<Matrix> ladermanSubmatrices(const List<Matrix>& m1SubM, const List<Matrix>& m2SubM);
+        static Matrix strassenMm(const Matrix& matrix1, const Matrix& matrix2);
+        static Matrix ladermanMm(const Matrix& matrix1, const Matrix& matrix2);
         friend Matrix operator^(const Matrix& m1, const Natural& number);
         static Matrix scalonadeForm(const Matrix& m1);
         static Matrix identity(int n);
@@ -67,30 +72,23 @@ class Matrix: public Iterable<Vector>
         static Matrix inverse(const Matrix& matrix);
         static Rational det(const Matrix& matrix);
 
+        //***COMPARISON OPERATIONS***
+        friend bool operator==(const Matrix& m1, const Matrix& m2);
+
         //***USE CASES***
         /*
             Este es un ejemplo de uso de la clase 
             matrix
         */
-        static Rational fibonnacci(const Natural& num)
-        {
-            if(num == 0 || num == 1)
-                return num;
-
-            Matrix fibonnaciMatrix(2, 2);
-
-            fibonnaciMatrix[0][0] = 1;
-            fibonnaciMatrix[0][1] = 1;
-            fibonnaciMatrix[1][0] = 1;
-
-            return ((fibonnaciMatrix^num)[1][0]);
-        }
+        static Rational fibonnacci(const Natural& num);
 
         //***RANGE-BASED ITERATION COMPATIBILITY***
+
         Iterator<Vector> begin() const {return array.begin();}
         Iterator<Vector> end() const {return array.end();}
 
         //***STREAM OPERATIONS***
+
         friend std::ostream& operator<<(std::ostream& os, const Matrix& m1);
         friend std::istream& operator>>(std::istream& is, Matrix& m);
         friend void printWithoutBrackets(const Matrix& m1);

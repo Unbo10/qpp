@@ -26,10 +26,12 @@ class Vector: public Iterable<Rational>
 
         Vector operator+(const Vector& other) const;
         Vector operator-(const Vector& other) const;
+        Vector operator-() const;
         friend Vector operator*(const Rational& num, const Vector& vector);
         friend Vector operator/(const Vector& vector, const Rational& num);
         Rational operator*(const Vector& other) const;
         friend bool operator==(const Vector& v1, const Vector& v2) {return v1.components == v2.components;}
+        friend bool operator!=(const Vector& v1, const Vector& v2) {return !(v1 == v2);}
         friend Rational norm(const Vector& v1);
 
         Vector projectionIn(const Vector& other) const;
