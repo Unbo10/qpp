@@ -79,6 +79,8 @@ bool Rational::operator<(const Rational& other) const
 
 bool Rational::operator==(const Rational& other) const
 {
+    //if(this->numerator == 0 && other.numerator == 0)
+      //  return true;
     return this->sign == other.sign && 
            numerator == other.numerator && 
            denominator == other.denominator;
@@ -130,6 +132,12 @@ Rational Rational::operator+(const Rational& other) const
 
     List<Natural> res = numerator * (other.denominator/gcd) - other.numerator * (denominator/gcd);
     result.numerator = res[0];
+    if(result.numerator == 0)
+    {
+        result.sign = 1;
+        result.denominator = 1;
+        return result;
+    }
     result.denominator = other.denominator * (denominator/gcd); 
     if(this->sign)
         result.sign = bool(res[1]);
@@ -188,6 +196,12 @@ Rational Rational::operator-(const Rational& other) const
 
     List<Natural> res = numerator * (other.denominator/gcd) - other.numerator * (denominator/gcd);
     result.numerator = res[0];
+    if(result.numerator == 0)
+    {
+        result.sign = 1;
+        result.denominator = 1;
+        return result;
+    }
     result.denominator = other.denominator * (denominator/gcd); 
     if(this->sign)
         result.setSign(bool(res[1]));
@@ -215,12 +229,11 @@ Rational Rational::operator*(const Rational& other) const
 
     result.denominator = ((gcd1 == 1)? this->denominator: this->denominator/gcd1)*
                          ((gcd2 == 1)? other.denominator: other.denominator/gcd2);
-
-    gcd1 = Natural::gcd(result.numerator, result.denominator);
-    if(gcd1 != 1)
+    if(result.numerator == 0)
     {
-        result.numerator = result.numerator/gcd1;
-        result.denominator = result.denominator/gcd1;
+        result.sign = 1;
+        result.denominator = 1;
+        return result;
     }
     return result;
 }
@@ -241,6 +254,12 @@ Rational Rational::operator/(const Rational& other) const
     result.denominator = ((gcd1 == 1)? other.numerator: other.numerator/gcd1) *
                          ((gcd2 == 1)? denominator: denominator/gcd2);
 
+    if(result.numerator == 0)
+    {
+        result.sign = 1;
+        result.denominator = 1;
+        return result;
+    }
     return result;
 }
 
@@ -308,6 +327,11 @@ std::ostream& operator<<(std::ostream& os, const Rational& number)
 
 void showFraction(const Rational& num)
 { 
+    if(num.numerator == 0)
+    {
+        std::cout << '0';
+        return;
+    }
     if(!num.sign) std::cout << "-";
     if(num.denominator == 1)
         std::cout << num.numerator;

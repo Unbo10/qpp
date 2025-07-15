@@ -59,4 +59,14 @@ class Rational: public Number<Rational>
 
         explicit operator Natural() {return this->numerator/this->denominator;}
         explicit operator Integer() {return Integer(this->numerator/this->denominator, this->sign);}
+
+        Natural getNumerator() const
+        {
+            return this->numerator;
+        }
+
+        Natural getDenominator() const
+        {
+            return this->denominator;
+        }
 };

@@ -32,8 +32,9 @@ class Natural: public Comparable<Natural>
         Para ahorrar memoria, se limpian los espacios no fundamentales,
         es decir, lugares que no se usan a la derecha, o ceros a la derecha
     */
-        static void cleanDigits(Natural& num);
+        
         static void cleanDigits(Natural& num, int index);
+        static void cleanDigits(Natural& num);
 
         Natural(int x, int size): digits(size) 
         {
