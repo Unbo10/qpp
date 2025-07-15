@@ -5,7 +5,8 @@
 
 Polynomial::Polynomial() {}
 
-Polynomial::Polynomial(const PolyTerm& term) {
+Polynomial::Polynomial(const PolyTerm& term)
+{
     dense = std::vector<Rational>(term.exp + 1, Rational(0));
     degree = term.exp;
     sparse.push_back(term);
@@ -17,7 +18,8 @@ Polynomial::Polynomial(const PolyTerm& term) {
 
 Polynomial::Polynomial(const std::string& str) { *this = str; }
 
-Polynomial::Polynomial(const Polynomial& other) {
+Polynomial::Polynomial(const Polynomial& other)
+{
     this->dense = other.dense; 
     this->sparse = other.sparse;
     this->degree = other.degree;
@@ -29,71 +31,85 @@ Polynomial::Polynomial(const Polynomial& other) {
 }
 
 // Print the polynomial in standard mathematical form
-void Polynomial::printPolynomial() {
-        // print only the nonzero coefficients in the dense representation
-        // int degree = getDegree();
-        // for (const auto& coeff : dense) {
-        //     if (coeff != 0) {
-        //         std::cout << coeff << " " << "x^" << degree--;
-        //         if (degree >= 0) {
-        //             std::cout << " + ";
-        //         }
-        //     }
-        //     else {
-        //         degree--;
-        //     }
-            
-        // }
+void Polynomial::printPolynomial()
+{
+    // print only the nonzero coefficients in the dense representation
+    // int degree = getDegree();
+    // for (const auto& coeff : dense)
+    // {
+    //     if (coeff != 0)
+    // {
+    //         std::cout << coeff << " " << "x^" << degree--;
+    //         if (degree >= 0)
+    // {
+    //             std::cout << " + ";
+    //         }
+    //     }
+    //     else
+    // {
+    //         degree--;
+    //     }
+        
+    // }
+
     std::cout << std::endl;
     int n = sparse.size();
     
-    for(int i = 0; i < n; i++) {
+    for(int i = 0; i < n; i++)
+    {
         std::cout << sparse[i].coeff << "x^" << sparse[i].exp;
         if(i < n - 1) std::cout<< " + ";
     }
-    std::cout << std::endl;
+    std::cout << "\n";
 
 
 
-        // if (!is_sparse_valid) generateSparse();
+    // if (!is_sparse_valid) generateSparse();
+    
+    // if (sparse.empty())
+    // {
+    //     std::cout << "0" << std::endl;
+    //     return;
+    // }
+    
+    // std::cout << "Polynomial: ";
+    // bool first = true;
+    
+    // for (const auto& term : sparse)
+    // {
+    //     double coeff = term.first;
+    //     int power = term.second;
         
-        // if (sparse.empty()) {
-        //     std::cout << "0" << std::endl;
-        //     return;
-        // }
+    //     // Handle sign
+    //     if (!first)
+    // {
+    //         std::cout << (coeff >= 0 ? " + " : " - ");
+    //         coeff = std::fabs(coeff);
+    //     } else if (coeff < 0)
+    // {
+    //         std::cout << "-";
+    //         coeff = std::fabs(coeff);
+    //     }
         
-        // std::cout << "Polynomial: ";
-        // bool first = true;
+    //     // Handle coefficient
+    //     if (power == 0 || coeff != 1)
+    // {
+    //         std::cout << coeff;
+    //     }
         
-        // for (const auto& term : sparse) {
-        //     double coeff = term.first;
-        //     int power = term.second;
-            
-        //     // Handle sign
-        //     if (!first) {
-        //         std::cout << (coeff >= 0 ? " + " : " - ");
-        //         coeff = std::fabs(coeff);
-        //     } else if (coeff < 0) {
-        //         std::cout << "-";
-        //         coeff = std::fabs(coeff);
-        //     }
-            
-        //     // Handle coefficient
-        //     if (power == 0 || coeff != 1) {
-        //         std::cout << coeff;
-        //     }
-            
-        //     // Handle variable and power
-        //     if (power > 0) {
-        //         std::cout << "x";
-        //         if (power > 1) {
-        //             std::cout << "^" << power;
-        //         }
-        //     }
-            
-        //     first = false;
-        // }
-        // std::cout << std::endl;
+    //     // Handle variable and power
+    //     if (power > 0)
+    // {
+    //         std::cout << "x";
+    //         if (power > 1)
+    // {
+    //             std::cout << "^" << power;
+    //         }
+    //     }
+        
+    //     first = false;
+    // }
+    // std::cout << std::endl;
 }
     
 //***UTILS***
@@ -101,7 +117,8 @@ void Polynomial::printPolynomial() {
 // Get maximum degree of the polynomial
 int Polynomial::getDegree() { return degree; }
 
-void Polynomial::clear() {
+void Polynomial::clear()
+{
     dense.clear();
     sparse.clear();
     is_dense_valid = false;
@@ -109,15 +126,20 @@ void Polynomial::clear() {
     degree = 0;
 }
 
-bool Polynomial::isZero() const {
+bool Polynomial::isZero() const
+{
     if(sparse.empty() && dense.empty()) return true;
-    // if(is_dense_valid) {
-    //     for(const auto& coeff : dense) {
+    // if(is_dense_valid)
+    // {
+    //     for(const auto& coeff : dense)
+    // {
     //         if(coeff != Rational(0)) return false;
     //     }
     // }
-    // else {
-    for(const PolyTerm& term : sparse) {
+    // else
+    // {
+    for(const PolyTerm& term : sparse)
+    {
         if(term.coeff != 0){
             return false;
         } 
@@ -127,11 +149,13 @@ bool Polynomial::isZero() const {
 }
 
 //*Sorts them in descending order (greatest to smallest exponent)
-void Polynomial::order_poly() {
+void Polynomial::order_poly()
+{
     if(is_ordered) return;
 
     std::sort(sparse.begin(), sparse.end(), 
-        [](const PolyTerm& a, const PolyTerm& b) {
+        [](const PolyTerm& a, const PolyTerm& b)
+        {
             return a.exp > b.exp;
         });
 
@@ -142,11 +166,13 @@ void Polynomial::order_poly() {
         this->degree = 0;
 }
 
-Rational Polynomial::get_leading_coefficient() const { return this->sparse[0].coeff; }
+Rational Polynomial::get_leading_coefficient() const
+{ return this->sparse[0].coeff; }
 
 //***OSTREAM AND ISTREAM***
 
-Polynomial Polynomial::operator=(const Polynomial& other) {
+Polynomial Polynomial::operator=(const Polynomial& other)
+{
     this->degree = other.degree;
     this->dense = other.dense;
     this->sparse = other.sparse;
@@ -158,7 +184,8 @@ Polynomial Polynomial::operator=(const Polynomial& other) {
     return *this;
 }
 
-Polynomial Polynomial::operator=(std::string str) {
+Polynomial Polynomial::operator=(std::string str)
+{
     this->clear();
     if(str.find('/') != std::string::npos) is_rational = true;
 
@@ -166,7 +193,8 @@ Polynomial Polynomial::operator=(std::string str) {
     std::stringstream ss(str);
     std::string token;
     
-    while (std::getline(ss, token, ' ')) {
+    while (std::getline(ss, token, ' '))
+    {
         tokens.push_back(token);
     }
 
@@ -174,22 +202,27 @@ Polynomial Polynomial::operator=(std::string str) {
     std::string::size_type num_index;
     int num, den;
     int n = tokens.size();
-    // for (const std::string& token : tokens) {
+    // for (const std::string& token : tokens)
+    // {
     //     std::cout << "Token: " << token << "\n";
     // }
     if(n % 2 == 1) throw std::invalid_argument("There must be one coefficient per each exponent");
 
-    for(int i = 0; i < n; i += 2) {
+    for(int i = 0; i < n; i += 2)
+    {
         num_index = tokens[i].find('/');
         
         //*This part could be handled by the operator= of a PolyTerm
-        if(is_rational) {
+        if(is_rational)
+        {
             //*Rational number
-            if(num_index != std::string::npos) {
+            if(num_index != std::string::npos)
+            {
                 num = std::stoi(tokens[i].substr(0, num_index));
                 den = std::stoi(tokens[i].substr(num_index + 1));
             }
-            else {
+            else
+            {
                 num = std::stoi(tokens[i].substr(0));
                 den = 1;
             }
@@ -279,7 +312,8 @@ std::ostream& operator<<(std::ostream& os, const Polynomial& poly) {
 
 //***ARITHMETIC OPERATIONS***
 
-Polynomial Polynomial::multiply_by_single_term_poly(const PolyTerm& singleTerm) {
+Polynomial Polynomial::multiply_by_single_term_poly(const PolyTerm& singleTerm) 
+{
     this->order_poly();
     if((singleTerm.coeff == 0)) {
         Polynomial prod;
@@ -302,13 +336,15 @@ Polynomial Polynomial::multiply_by_single_term_poly(const PolyTerm& singleTerm) 
     return prod;
 }
 
-Polynomial Polynomial::multiply_by_single_term_poly(const Polynomial& singleTerm) {
+Polynomial Polynomial::multiply_by_single_term_poly(const Polynomial& singleTerm) 
+{
     if(singleTerm.sparse.size() != 1) throw std::invalid_argument("Polynomial is not a single-term polynomial; has " + std::to_string(singleTerm.sparse.size()) + " non-zero terms");
 
     return this->multiply_by_single_term_poly(singleTerm.sparse[0]);
 }
 
-Polynomial Polynomial::operator+(const Polynomial& other) const {
+Polynomial Polynomial::operator+(const Polynomial& other) const 
+{
     int j = 0, i = 0, this_size = sparse.size(), other_size = other.sparse.size();
     Polynomial result;
     
@@ -362,12 +398,14 @@ Polynomial Polynomial::operator+(const Polynomial& other) const {
     return result;
 }
 
-Polynomial operator+(const Polynomial& poly, PolyTerm& term) {
+Polynomial operator+(const Polynomial& poly, PolyTerm& term) 
+{
     Polynomial newPoly(term);
     return poly + newPoly;
 }
 
-Polynomial Polynomial::operator-() const {
+Polynomial Polynomial::operator-() const 
+{
     if(this->isZero())
         return *this;
 
@@ -379,11 +417,13 @@ Polynomial Polynomial::operator-() const {
     return result;
 }
 
-Polynomial Polynomial::operator-(const Polynomial& other) const {
+Polynomial Polynomial::operator-(const Polynomial& other) const 
+{
     return *this + (-other);
 }
 
-Polynomial Polynomial::operator*(const Polynomial& other) {
+Polynomial Polynomial::operator*(const Polynomial& other) 
+{
     Polynomial result;
     Polynomial oneProd;
     for(int i = 0; i < (int)other.sparse.size(); i++) {
@@ -397,11 +437,13 @@ Polynomial Polynomial::operator*(const Polynomial& other) {
     return result;
 }
 
-Polynomial operator*(const Polynomial& lhs, const Polynomial& rhs) {
+Polynomial operator*(const Polynomial& lhs, const Polynomial& rhs) 
+{
     return Polynomial(lhs).operator*(rhs);
 }
 
-Polynomial operator*(const Polynomial& poly, const Integer& num) {
+Polynomial operator*(const Polynomial& poly, const Integer& num) 
+{
     if(num == 0)
         return Polynomial(PolyTerm(0, 0));
     if(num == 1)
@@ -418,7 +460,8 @@ Polynomial operator*(const Polynomial& poly, const Integer& num) {
     return result;
 }
 
-Polynomial Polynomial::operator/(const Polynomial& divisor) const {
+Polynomial Polynomial::operator/(const Polynomial& divisor) const 
+{
     if(divisor.isZero()) throw std::invalid_argument("Cannot divide by zero polynomial");
     if(divisor.degree > this->degree) return Polynomial("0 0"); //*Return zero polynomial if divisor degree is greater than dividend degree
     
@@ -440,7 +483,8 @@ Polynomial Polynomial::operator/(const Polynomial& divisor) const {
     return q;
 }
 
-Polynomial operator^(const Polynomial& poly, int num) {
+Polynomial operator^(const Polynomial& poly, int num) 
+{
     if(num == 1)
         return poly;
     Polynomial result;
@@ -489,7 +533,8 @@ Polynomial operator^(const Polynomial& poly, int num) {
 
 //***INTEGER POLYNOMIALS***
 
-Integer Polynomial::find_gcd_of_poly_terms() {
+Integer Polynomial::find_gcd_of_poly_terms() 
+{
     if (sparse.size() < 2) return sparse[0].coeff.getNumerator();
     
     Integer gcd;
@@ -503,7 +548,8 @@ Integer Polynomial::find_gcd_of_poly_terms() {
     return gcd;
 }
 
-Integer Polynomial::find_lcm_of_poly_terms() {
+Integer Polynomial::find_lcm_of_poly_terms() 
+{
     if (sparse.size() < 2) return sparse[0].coeff.getDenominator();
     
     Integer lcm = sparse[0].coeff.getDenominator();
@@ -518,7 +564,8 @@ Integer Polynomial::find_lcm_of_poly_terms() {
 
 //***RATIONAL POLYNOMIALS***
 
-Polynomial Polynomial::remainder(const Polynomial& dividend, const Polynomial& divisor) {
+Polynomial Polynomial::remainder(const Polynomial& dividend, const Polynomial& divisor) 
+{
     if(dividend.degree < divisor.degree)
         return dividend;
 
@@ -544,13 +591,15 @@ Polynomial Polynomial::remainder(const Polynomial& dividend, const Polynomial& d
     return r;
 }
 
-Integer Polynomial::content(){
+Integer Polynomial::content()
+{
     Integer gcd = find_gcd_of_poly_terms();
     if(gcd == 0) return 1; // If all coefficients are zero, content is 1
     return gcd;
 }
 
-Polynomial Polynomial::primitive_part() {
+Polynomial Polynomial::primitive_part() 
+{
     Integer content = this->content();
     PolyTerm term;
     if (this->dense[0] < Rational(0)) {
@@ -568,7 +617,8 @@ Polynomial Polynomial::primitive_part() {
     return ret;
 }
 
-Polynomial Polynomial::pseudoquotient(Polynomial u, Polynomial v) {
+Polynomial Polynomial::pseudoquotient(Polynomial u, Polynomial v)
+{
     Integer beta = u.find_lcm_of_poly_terms();
     Integer gamma = v.find_lcm_of_poly_terms();
     PolyTerm term1, term2;
@@ -599,7 +649,8 @@ Polynomial Polynomial::pseudoquotient(Polynomial u, Polynomial v) {
     return q;
 }
 
-Polynomial Polynomial::pseudoremainder(Polynomial u, Polynomial v) {
+Polynomial Polynomial::pseudoremainder(Polynomial u, Polynomial v)
+{
     Integer beta = u.find_lcm_of_poly_terms();
     Integer gamma = v.find_lcm_of_poly_terms();
     PolyTerm term1, term2;
@@ -627,7 +678,8 @@ Polynomial Polynomial::pseudoremainder(Polynomial u, Polynomial v) {
     return r;
 }
 
-Polynomial Polynomial::primitivePolyGCD(Polynomial u, Polynomial v) {
+Polynomial Polynomial::primitivePolyGCD(Polynomial u, Polynomial v)
+{
     Integer u_content = u.content();
     Integer v_content = v.content();
     Polynomial u_primitive = u.primitive_part();
@@ -637,7 +689,8 @@ Polynomial Polynomial::primitivePolyGCD(Polynomial u, Polynomial v) {
     Integer c = Integer::gcd(u_content, v_content);
     std::cout << "U primitive: " << u_primitive << ", V pr: " << v_primitive << "\n";
     Polynomial r = Polynomial::pseudoremainder(u_primitive ,v_primitive);
-    while ((v_primitive.getDegree() > 0)) {
+    while ((v_primitive.getDegree() > 0))
+    {
         Polynomial r_primitive = r.primitive_part();
         u_primitive = v_primitive;
         v_primitive = r_primitive;
@@ -654,13 +707,15 @@ Polynomial Polynomial::primitivePolyGCD(Polynomial u, Polynomial v) {
         std::cout << "Remainder: " << r << "\n";
         r = Polynomial::pseudoremainder(u_primitive, v_primitive);
     }
-    if (v_primitive.isZero()) {
+    if (v_primitive.isZero())
+    {
         PolyTerm term4;
         term4.coeff = Rational(c, 1);
         term4.exp = 0;
         return v_primitive.multiply_by_single_term_poly(term4);
     }
-    else {
+    else
+    {
         Polynomial c_pol;
         c_pol.dense.push_back(c);
         c_pol.update_sparse();
@@ -668,7 +723,8 @@ Polynomial Polynomial::primitivePolyGCD(Polynomial u, Polynomial v) {
     }
 }
 
-Polynomial Polynomial::monicPolyGCD(Polynomial p, Polynomial q) {
+Polynomial Polynomial::monicPolyGCD(Polynomial p, Polynomial q)
+{
     if(p.degree < q.degree)
         return Polynomial::monicPolyGCD(q, p);
     
@@ -689,7 +745,8 @@ Polynomial Polynomial::monicPolyGCD(Polynomial p, Polynomial q) {
     // std::cout << "Monic v: " << v << "\n";
     // std::cout << v.degree << "\n";
 
-    while(v.getDegree() > 0) {
+    while(v.getDegree() > 0)
+    {
         Polynomial r = Polynomial::remainder(u, v);
         // std::cout << "r: " << r << "\n";
         Rational r_leading_coeff = r.get_leading_coefficient();

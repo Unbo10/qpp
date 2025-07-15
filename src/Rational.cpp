@@ -346,6 +346,9 @@ std::ostream& operator<<(std::ostream& os, const Rational& number)
         num = (num - q*den)[0];
         num.multiplyBy10();
     }
+    // os << number.numerator;
+    // os << "/";
+    // os << number.denominator;
     return os;
 }
 

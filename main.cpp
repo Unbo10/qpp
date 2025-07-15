@@ -104,6 +104,50 @@ int main() {
     std::cout << "Are Laderman and actual results equal? " << (Matrix::ladermanMm(m5, m6) == (m5 * m6)) << std::endl;
     std::cout << "Are Strassen and actual results equal? " << (Matrix::strassenMm(m5, m6) == (m5 * m6)) << std::endl;
 
+    std::cout << "Computing the inverse of the hardcoded matrix for Toom Cook 4's implementation\n";
+    //*Evaluating at r = 1, -1, 2, -2, 3, -3, and infty returns us the following coefficients if the polynomial in question is V(r) = C_0 + C_1 r + C_2 r^2 + C_3 r^3 + C_4 r^4 + C_5 r ^5 + C_6 r^6
+    //*When r = 0:  C_0
+    //*When r = -1: C_0 - C_1   + C_2   - C_3    + C_4    - C_5     + C_6
+    //*When r = 1:  C_0 + C_1   + C_2   + C_3    + C_4    + C_5     + C_6
+    //*When r = 2:  C_0 + 2*C_1 + 4*C_2 + 8*C_3  + 16*C_4 + 32*C_5  + 64*C_6
+    //*When r = -2: C_0 - 2*C_1 + 4*C_2 - 8*C_3  + 16*C_4 - 32*C_5  + 64*C_6
+    //*When r = 3:  C_0 + 3*C_1 + 9*C_2 + 27*C_3 + 81*C_4 + 243*C_5 + 729*C_6
+    //*When r = -3: C_0 - 3*C_1 + 9*C_2 - 27*C_3 + 81*C_4 - 243*C_5 + 729*C_6
+    //*When r = infty:                                                C_6 (coefficient of highest degree term)
+    //*This system of equations can be represented using an Ax product, where A is the matrix of coefficients and x is the vector of C_i. That way, A should be the following:
+    std::string coeff = "7\n1 0 0 0 0 0 0\n1 -1 1 -1 1 -1 1\n1 1 1 1 1 1 1\n1 2 4 8 16 32 64\n1 -2 4 -8 16 -32 64\n1 3 9 27 81 243 729\n1 -3 9 -27 81 -243 729\n0 0 0 0 0 0 1";
+    std::istringstream issA(coeff);
+    Matrix A;
+    issA >> A;
+    std::cout << "Original matrix:\n";
+    std::cout << A << "\n\n";
+    std::cout << "Inverse:\n";
+    std::cout << A.inverse(A) << "\n"; //!Inverse should be static
+    //*Resulting matrix
+    //TODO: Confirm with another CAS
+    // [[1, 0, 0, 0, 0, 0, 0],
+    // [0, -3/4, 3/4, -3/20, 3/20, 1/60, -1/60],
+    // [-49/36, 3/4, 3/4, -3/40, -3/40, 1/180, 1/180],
+    // [0, 13/48, -13/48, 1/6, -1/6, -1/48, 1/48],
+    // [7/18, -13/48, -13/48, 1/12, 1/12, -1/144, -1/144],
+    // [0, -1/48, 1/48, -1/60, 1/60, 1/240, -1/240],
+    // [-1/36, 1/48, 1/48, -1/120, -1/120, 1/720, 1/720]]
+    //* or:
+    std::string expectedInverse = "7\n1 0 0 0 0 0 0\n0 -3/4 3/4 -3/20 3/20 1/60 -1/60\n-49/36 3/4 3/4 -3/40 -3/40 1/180 1/180\n0 13/48 -13/48 1/6 -1/6 -1/48 1/48\n7/18 -13/48 -13/48 1/12 1/12 -1/144 -1/144\n0 -1/48 1/48 -1/60 1/60 1/240 -1/240\n-1/36 1/48 1/48 -1/120 -1/120 1/720 1/720";
+    std::istringstream issAInverse(expectedInverse);
+    std::cout << "Hardcoded Inverse\n";
+    Matrix IA;
+    issAInverse >> IA;
+    std::cout << IA << "\n\n";
+    std::cout << "Are they equal? " << (A.inverse(A) == IA) << "\n";
+
+    Rational num1(0), num2(0);
+    std::cout << (num1 == num2) << "\n";
+
+    std::cout << "Toom-Cook 4\n";
+    Natural nat(12340);
+    std::cout << Natural::splitIn4(nat) << "\n"; 
+
 }
 
 //*You can run main copying and running the following command in the terminal:

@@ -63,6 +63,7 @@ public:
     //***ARITHMETIC OPERATIONS***
 
     Polynomial multiply_by_single_term_poly(const PolyTerm& singleTerm);
+
     Polynomial multiply_by_single_term_poly(const Polynomial& singleTerm);
 
     Polynomial operator+(const Polynomial& other) const;
@@ -86,6 +87,7 @@ public:
     Polynomial to_integer_poly();
 
     //***INTEGER POLYNOMIALS***
+
     Integer find_gcd_of_poly_terms();
 
     Integer find_lcm_of_poly_terms();
