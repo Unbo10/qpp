@@ -801,6 +801,11 @@ int main(){
             //     std::cout << "Fibonacci number (recursive) took " << duration << " microseconds." << std::endl;
             // 
             }
+
+            case 18: {
+                Natural n(100);
+                std::cout << "Factorial of " << n << " is: " << Natural::factorial(n) << std::endl;
+            }
         }
     }
         else {

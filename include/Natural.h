@@ -60,6 +60,7 @@ class Natural: public Comparable<Natural>
         friend std::istream& operator>>(std::istream& is, Natural& num);
 
         static Natural divideBy2(const Natural& num);
+        static Natural factorial(const Natural& num);
         void multiplyBy100() {digits.add(0, 0);}
         void multiplyBy10();
         int size() const {return this->digits.size();}

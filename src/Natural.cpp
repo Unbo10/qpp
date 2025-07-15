@@ -344,3 +344,12 @@ double Natural::toDouble() const
 
     return result;
 }
+
+Natural Natural::factorial(const Natural& num)
+{
+    if(num == 0 || num == 1) return 1;
+    Natural result(1);
+    for(Natural i = 2; i <= num; i = i + 1)
+        result = result * i;
+    return result;
+}
