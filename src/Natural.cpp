@@ -11,7 +11,11 @@ void Natural::cleanDigits(Natural& num, int index)
 {
     while (index >= 0 && num[index] == 0)
         index--;
-    if(index < 0) index = 0;
+    if(index < 0)
+    {
+        num.digits = List<unsigned short>(0);
+        return;
+    }
     if(index == num.digits.size())
         return;
 
