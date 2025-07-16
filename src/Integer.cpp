@@ -99,7 +99,7 @@ Integer Integer::toomCook4(const Integer& num1, const Integer& num2)
     X.add(-2);
     X.add(3);
 
-    std::cout << "X initialization and splits made\n";
+    // std::cout << "X initialization and splits made\n";
     
     //*Calculate values at x = 0, 1, -1, 2, -2, 3, infty
     //*A(x) = A_0 + A_1 x + A_2 x^2 + A_3 x^3
@@ -107,22 +107,11 @@ Integer Integer::toomCook4(const Integer& num1, const Integer& num2)
     vA.add(A[0]);
     for(Integer& x : X)
     {
-        std::cout << "Step-by-step calculation:" << "\n";
-        std::cout << "  A[0] = " << A[0] << "\n";
-        std::cout << "  A[1] * x = " << A[1] << " * " << x << " = " << (A[1] * x) << "\n";
-        std::cout << "  A[2] * x^2 = " << A[2] << " * " << x << "^2 = " << A[2] << " * " << (x^2) << " = " << (A[2] * (x^2)) << "\n";
-        std::cout << "  A[3] * x^3 = " << A[3] << " * " << x << "^3 = " << A[3] << " * " << (x^3) << " = " << (A[3] * (x^3)) << "\n";
-        std::cout << "\n";
-
-        Integer result = A[0] + (A[1] * x) + (A[2] * (x*x)) + (A[3] * (x*x*x));
-        std::cout << "Final calculation:" << "\n";
-        std::cout << "  " << A[0] << " + " << (A[1] * x) << " + " << (A[2] * (x*x)) << " + " << (A[3] * (x*x*x)) << " = " << result << "\n";
-        std::cout << "Adding result " << result << " to vA" << "\n";
         vA.add(A[0] + (A[1] * x) + (A[2] * (x^2)) + (A[3] * (x^3)));
     }
     vA.add(A[3]);
 
-    std::cout << "vA: " << vA << "\n";
+    // std::cout << "vA: " << vA << "\n";
 
     //*Calculate values at x = 0, 1, -1, 2, -2, 3, infty
     //*B(x) = B_0 + B_1 x + B_2 x^2 + B_3 x^3
@@ -134,7 +123,7 @@ Integer Integer::toomCook4(const Integer& num1, const Integer& num2)
     }
     vB.add(B[3]);
 
-    std::cout << "vB: " << vB << "\n";
+    // std::cout << "vB: " << vB << "\n";
 
     //*Multiply component-wise vA and vB to obtain V(r) = A(r) * B(r), where r = 0, 1, -1, 2, -2, 3, infty
     List<Integer> v(7);
@@ -143,72 +132,45 @@ Integer Integer::toomCook4(const Integer& num1, const Integer& num2)
         v.add(vA[i] * vB[i]);
     }
 
-    std::cout << "v: " << v << "\n";
+    // std::cout << "v: " << v << "\n";
 
     //*Figure out the constants C_i in the product polynomial P(x) = C_0 + C_1 x + ... + C_6 x^6 solving the system (M^(-1))v, where each row in M represents the polynomial P(x) evaluated at x_i \in {0, 1, -1, 2, -2, 3, infty} and v is the column vector where v[0] is the top and first entry. M^(-1) was computed using the Matrix class and it gave the following result:
-    // Original matrix M^(-1):
     // [[1, 0, 0, 0, 0, 0, 0],
-    // [0, -3/4, 3/4, -3/20, 3/20, 1/60, -1/60],
-    // [-49/36, 3/4, 3/4, -3/40, -3/40, 1/180, 1/180],
-    // [0, 13/48, -13/48, 1/6, -1/6, -1/48, 1/48],
-    // [7/18, -13/48, -13/48, 1/12, 1/12, -1/144, -1/144],
-    // [0, -1/48, 1/48, -1/60, 1/60, 1/240, -1/240],
-    // [-1/36, 1/48, 1/48, -1/120, -1/120, 1/720, 1/720]]
-    
-    // Matrix multiplied by LCM(720):
-    // [[720, 0, 0, 0, 0, 0, 0],
-    // [0, -540, 540, -108, 108, 12, -12],
-    // [-980, 540, 540, -54, -54, 4, 4],
-    // [0, 195, -195, 120, -120, -15, 15],
-    // [280, -195, -195, 60, 60, -5, -5],
-    // [0, -15, 15, -12, 12, 3, -3],
-    // [-20, 15, 15, -6, -6, 1, 1]]
+    // [-1/3, 1, -1/2, -1/4, 1/20, 1/30, -12],
+    // [-5/4, 2/3, 2/3, -1/24, -1/24, 0, 4],
+    // [5/12, -7/12, -1/24, 7/24, -1/24, -1/24, 15],
+    // [1/4, -1/6, -1/6, 1/24, 1/24, 0, -5],
+    // [-1/12, 1/12, 1/24, -1/24, -1/120, 1/120, -3],
+    // [0, 0, 0, 0, 0, 0, 1]]
+    //*Original matrix M^(-1) multiplied by 120:
+    // [[120, 0, 0, 0, 0, 0, 0],
+    // [-40, 120, -60, -30, 6, 4, -1440],
+    // [-150, 80, 80, -5, -5, 0, 480],
+    // [50, -70, -5, 35, -5, -5, 1800],
+    // [30, -20, -20, 5, 5, 0, -600],
+    // [-10, 10, 5, -5, -1, 1, -360],
+    // [0, 0, 0, 0, 0, 0, 120]]
 
     List<Integer> C(7);
-    //!May have to be implemented in Rational due to the fractions
-    //*Using the matrix multiplied by LCM(720) = 720, then divide by 720 at the end
-    C.add(v[0]); // 720*v[0]/720 = v[0]
-    std::cout << "C0: " << C << "\n";
-    C.add(((-(540*v[1])) + 540*v[2] + (-(108*v[3])) + 108*v[4] + 12*v[5] + (-(12*v[6]))));
-    std::cout << "C1: " << C << "\n";
-    C.add((-(980*v[0]) + 540*v[1] + 540*v[2] + (- (54*v[3])) + (- (54*v[4])) + 4*v[5] + 4*v[6]));
-    // Integer term1 = -(980 * v[0]);
-    // Integer term2 = 540 * v[1];
-    // Integer term3 = 540 * v[2];
-    // Integer term4 = -(54 * v[3]);
-    // Integer term5 = -(54 * v[4]);
-    // Integer term6 = 4 * v[5];
-    // Integer term7 = 4 * v[6];
-
-    // std::cout << "\nIndividual terms:" << "\n";
-    // std::cout << "  -(980 * v[0]) = -(980 * " << v[0] << ") = " << term1 << "\n";
-    // std::cout << "  540 * v[1] = 540 * " << v[1] << " = " << term2 << "\n";
-    // std::cout << "  540 * v[2] = 540 * " << v[2] << " = " << term3 << "\n";
-    // std::cout << "  -54 * v[3] = -54 * " << v[3] << " = " << term4 << "\n";
-    // std::cout << "  -54 * v[4] = -54 * " << v[4] << " = " << term5 << "\n";
-    // std::cout << "  4 * v[5] = 4 * " << v[5] << " = " << term6 << "\n";
-    // std::cout << "  4 * v[6] = 4 * " << v[6] << " = " << term7 << "\n";
-
-    // Show the addition step by step
-    // Integer result1 = term1 + term2 + term3 + term4 + term5 + term6 + term7;
-    // std::cout << "\nStep-by-step addition:" << "\n";
-    // std::cout << "  " << term1 << " + " << term2 << " + " << term3 << " + " 
-            // << term4 << " + " << term5 << " + " << term6 << " + " << term7 << "\n";
-    // std::cout << "  = " << result1 << "\n";
-    std::cout << "C2: " << C << "\n";
-    C.add((195*v[1] +(-(195*v[2])) + 120*v[3] +(-(120*v[4])) +(-(15*v[5])) + 15*v[6]));
-    std::cout << "C3: " << C << "\n";
-    C.add((280*v[0] +(-(195*v[1])) +(-(195*v[2])) + 60*v[3] + 60*v[4] +(-(5*v[5])) +(-(5*v[6]))));
-    std::cout << "C4: " << C << "\n";
-    C.add((-(15*v[1]) + 15*v[2] +(-(12*v[3])) + 12*v[4] + 3*v[5] +(-(3*v[6]))));
-    std::cout << "C5: " << C << "\n";
-    C.add((-(20*v[0]) + 15*v[1] + 15*v[2] +(-(6*v[3])) +(-(6*v[4])) + v[5] + v[6]));
-    std::cout << "C6: " << C << "\n";
+    C.add(120*v[0]);
+    // std::cout << "C0: " << C << "\n";
+    C.add((-(40*v[0])) + (120*v[1]) + (-(60*v[2])) + (-(30*v[3])) + (6*v[4]) + (4*v[5]) + (-(1440*v[6])));
+    // std::cout << "C1: " << C << "\n";
+    C.add((-(150*v[0])) + (80*v[1]) + (80*v[2]) + (-(5*v[3])) + (-(5*v[4])) + (0*v[5]) + (480*v[6]));
+    // std::cout << "C2: " << C << "\n";
+    C.add((50*v[0]) + (-(70*v[1])) + (-(5*v[2])) + (35*v[3]) + (-(5*v[4])) + (-(5*v[5])) + (1800*v[6]));
+    // std::cout << "C3: " << C << "\n";
+    C.add((30*v[0]) + (-(20*v[1])) + (-(20*v[2])) + (5*v[3]) + (5*v[4]) + (0*v[5]) + (-(600*v[6])));
+    // std::cout << "C4: " << C << "\n";
+    C.add((-(10*v[0])) + (10*v[1]) + (5*v[2]) + (-(5*v[3])) + (-(1*v[4])) + (1*v[5]) + (-(360*v[6])));
+    // std::cout << "C5: " << C << "\n";
+    C.add(120*v[6]);
+    // std::cout << "C6: " << C << "\n";
 
     //*Now, compute P(10^n), where n is the size of the splits
     Natural splitSize(A[3].getNumOfDigits());
     Integer powerOfSplit = Integer(100) ^ splitSize;
-    std::cout << "powerOfSplit: " << powerOfSplit << "\n";
+    // std::cout << "powerOfSplit: " << powerOfSplit << "\n";
     Integer result = C[0];
     Integer currentPower(1);
 
@@ -220,20 +182,9 @@ Integer Integer::toomCook4(const Integer& num1, const Integer& num2)
         result = result + (C[i] * currentPower);
     }
 
-    result = result / 720;
+    result = result / 120;
 
     return result;
-
-    //TODO: Implement a splitting-in-4 method (fill with zeros the most-significant part) to make it divisible by a power of 4
-    //TODO: Create polynomials A(x) and B(x) with those splits
-    //TODO: Implement a method to evaluate a polynomial
-    //TODO: Evaluate A and B in 6 points and get the 7th by using the coefficient beside the most-significant power
-    //TODO: Compute V(r) using the previosly evaluated A, and B
-    //TODO: Figure out Ci by making the product (IA)v, where v is the vector with V(r)
-    //TODO: Assemble and sum
-
-    //TODO: Test the split method
-    //TODO: Test the algorithm itself
 }
 
 Integer Integer::operator/(const Integer& other) const 

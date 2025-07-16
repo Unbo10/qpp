@@ -115,7 +115,7 @@ int main() {
     //*When r = -3: C_0 - 3*C_1 + 9*C_2 - 27*C_3 + 81*C_4 - 243*C_5 + 729*C_6
     //*When r = infty:                                                C_6 (coefficient of highest degree term)
     //*This system of equations can be represented using an Ax product, where A is the matrix of coefficients and x is the vector of C_i. That way, A should be the following:
-    std::string coeff = "7\n1 0 0 0 0 0 0\n1 -1 1 -1 1 -1 1\n1 1 1 1 1 1 1\n1 2 4 8 16 32 64\n1 -2 4 -8 16 -32 64\n1 3 9 27 81 243 729\n1 -3 9 -27 81 -243 729\n0 0 0 0 0 0 1";
+    std::string coeff = "7\n1 0 0 0 0 0 0\n1 1 1 1 1 1 1\n1 -1 1 -1 1 -1 1\n1 2 4 8 16 32 64\n1 -2 4 -8 16 -32 64\n1 3 9 27 81 243 729\n0 0 0 0 0 0 1";
     std::istringstream issA(coeff);
     Matrix A;
     issA >> A;
@@ -126,20 +126,12 @@ int main() {
     //*Resulting matrix
     //TODO: Confirm with another CAS
     // [[1, 0, 0, 0, 0, 0, 0],
-    // [0, -3/4, 3/4, -3/20, 3/20, 1/60, -1/60],
-    // [-49/36, 3/4, 3/4, -3/40, -3/40, 1/180, 1/180],
-    // [0, 13/48, -13/48, 1/6, -1/6, -1/48, 1/48],
-    // [7/18, -13/48, -13/48, 1/12, 1/12, -1/144, -1/144],
-    // [0, -1/48, 1/48, -1/60, 1/60, 1/240, -1/240],
-    // [-1/36, 1/48, 1/48, -1/120, -1/120, 1/720, 1/720]]
-    //* or:
-    std::string expectedInverse = "7\n1 0 0 0 0 0 0\n0 -3/4 3/4 -3/20 3/20 1/60 -1/60\n-49/36 3/4 3/4 -3/40 -3/40 1/180 1/180\n0 13/48 -13/48 1/6 -1/6 -1/48 1/48\n7/18 -13/48 -13/48 1/12 1/12 -1/144 -1/144\n0 -1/48 1/48 -1/60 1/60 1/240 -1/240\n-1/36 1/48 1/48 -1/120 -1/120 1/720 1/720";
-    std::istringstream issAInverse(expectedInverse);
-    std::cout << "Hardcoded Inverse\n";
-    Matrix IA;
-    issAInverse >> IA;
-    std::cout << IA << "\n\n";
-    std::cout << "Are they equal? " << (A.inverse(A) == IA) << "\n";
+    // [-1/3, 1, -1/2, -1/4, 1/20, 1/30, -12],
+    // [-5/4, 2/3, 2/3, -1/24, -1/24, 0, 4],
+    // [5/12, -7/12, -1/24, 7/24, -1/24, -1/24, 15],
+    // [1/4, -1/6, -1/6, 1/24, 1/24, 0, -5],
+    // [-1/12, 1/12, 1/24, -1/24, -1/120, 1/120, -3],
+    // [0, 0, 0, 0, 0, 0, 1]]
 
     Rational num1(0), num2(0);
     std::cout << (num1 == num2) << "\n";
@@ -147,7 +139,7 @@ int main() {
     std::cout << "Toom-Cook 4\n";
     Integer nat1(12345678);
     std::cout << nat1.splitIn4() << "\n"; 
-    Integer nat2(10000000);
+    Integer nat2(23165135);
     std::cout << nat2.splitIn4() << "\n";
     std::cout << Integer::toomCook4(nat1, nat2) << "\n";
 
