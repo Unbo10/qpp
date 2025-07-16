@@ -80,7 +80,7 @@ Bug fix:
 
 ```sh
 git commit -m "fix(integer): make unary minus operator const" -m "The operator-() method was missing the const qualifier, causing errors when used with const Integer objects.
-This prevented operations like negating integers in the binaryEcludian method.
+This prevented operations like negating integers in the binaryEuclidean method.
 
 Fixed by adding const qualifiers to both base class declaration and implementation."
 ```

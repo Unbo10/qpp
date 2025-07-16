@@ -25,7 +25,6 @@ void Natural::cleanDigits(Natural& num, int index)
     num.digits = copy;
 }
 
-
 List<Natural> res(const Natural& num1, const Natural& num2, bool re)
 {
     if(re && num1 < num2)
@@ -83,6 +82,11 @@ bool Natural::operator<(const Natural& num) const
             return false;
     }
     return false;
+}
+
+bool operator<(const long long num1, const Natural& num2)
+{
+    return Natural(num1) < num2;
 }
 
 bool Natural::operator==(const Natural& num) const
@@ -211,9 +215,6 @@ unsigned short stimateQuant(const Natural& num1, const Natural& num2)
     return (num1[size]*100 + num1[size -1])/num2[num2.digits.size()-1];
 }
 
-/* fin de estimacion */
-
-
 void Natural::operator=(const Natural& num2)
 {
     digits = num2.digits;
@@ -311,7 +312,6 @@ Natural Natural::gcd(const Natural& num1, const Natural& num2)
     return gcd*number2;
 }
 
-
 void Natural::multiplyBy10()
 {
     int size = this->digits.size();
@@ -355,18 +355,62 @@ int Natural::smallestGeqPowerOfBase(const int num, const int base)
     if((num == 1) || (num == 0))
         return 0;
 
-    int exp = 1;
+    // int exp = 1;
     int pow = base;
     while(pow < num) {
         pow = pow * base;
-        exp++;
+        // exp++;
     }
+    return pow;
+}
+
+Natural Natural::smallestGeqPowerOfBase(const Natural& num, const Natural& base)
+{
+    if(base == 0)
+    {
+        if(num != 0)
+        {
+            throw std::invalid_argument("Base is 0 and number is not 0 (there's no power of 0 greater than 'this')");
+        }
+        std::cout << "Warning: given base is 0. Returning 1.\n";
+        return 1;
+    }
+    else if (base == 1)
+    {
+        if(num > 1)
+        {
+            throw std::invalid_argument("Base is 1 and number is not 0 or 1 (there's no power of 1 greater than 'this')");
+        }
+        std::cout << "Warning: given base is 0. Returning 1.\n";
+        return 1;
+    }
+
+    if((num == 1) || (num == 0))
+        return 0;
+
+    // Natural exp = 1;
+    Natural pow = base;
+    while(pow < num) {
+        pow = pow * base;
+        // exp = exp + 1;
+    }
+
     return pow;
 }
 
 List<unsigned short> Natural::getList() const
 {
     return List<unsigned short>(digits);
+}
+
+int Natural::getNumOfDigits() const
+{
+    return this->digits.getSize();
+}
+
+void Natural::addDigit(unsigned short digit)
+{
+    digits.add(digit);
 }
 
 double Natural::toDouble() const

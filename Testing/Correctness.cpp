@@ -14,9 +14,9 @@ Integer integer_from_bitstream(std::vector<int> bits) {
         result = result * 2 + bits[i];
     }
     if (bits.size() > 0 && bits[0] == 1) {
-        result.setSign(false); // Set sign to negative if the first bit is 1
+        result.sign = false; // Set sign to negative if the first bit is 1
     } else {
-        result.setSign(true); // Set sign to positive if the first bit is 0
+        result.sign = true; // Set sign to positive if the first bit is 0
     }
     return result;
 }
