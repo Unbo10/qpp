@@ -8,25 +8,12 @@ Rational::Rational(const Rational& other) {
     this->sign = other.sign;
 }
 
-//***PRIVATE METHODS***
-
-Rational Rational::root(const Integer& po) const
-{
-    return 1;
-}
-
-Rational Rational::integerPow(Integer po)
-{
-    return 1;
-}
-
 //***CONSTRUCTORS***
 
 Rational::Rational(const Integer& num, const Integer& den)
 {
     if(den == 0)
-        throw std::invalid_argument("Math error: division by zero");
-        
+        throw std::invalid_argument("Math error: division by zero"); 
     this->sign = (num.getSign() == den.getSign());
     numerator = num.getAbsolutePart();
     denominator = den.getAbsolutePart();
@@ -38,34 +25,49 @@ Rational::Rational(const Integer& num, const Integer& den)
     }
 }
 
-Rational::Rational(double x)
+Rational::Rational(double value)
 {
-    if(x < 0) 
-    {
-        this->sign = 0;
-        x = -x;
+    int max_den = 100000;
+    if (value == 0.0) {
+        numerator = Natural(0);
+        denominator = Natural(1);
+        sign = 1;
+        return;
     }
 
-    int y = x;
-    int baseCounted = 0;
-    while(y != x)
-    {
-        x *= 10;
-        baseCounted++;
-        y = x;
+    sign = (value < 0) ? 0 : 1;
+    if(value < 0)
+        value = -value;
+
+    long long a = static_cast<long long>(std::floor(value));
+    long long num1 = 1, num2 = a;
+    long long den1 = 0, den2 = 1;
+
+    double frac = value - a;
+
+    while (true) {
+        if (frac == 0.0) break;
+
+        frac = 1.0 / frac;
+        a = static_cast<long long>(std::floor(frac));
+
+        long long num = a * num2 + num1;
+        long long den = a * den2 + den1;
+
+        if (den > max_den) break;
+
+        num1 = num2;
+        den1 = den2;
+        num2 = num;
+        den2 = den;
+
+        frac = frac - a;
+
+        //if (frac < 1e-12) break;
     }
 
-    denominator = (baseCounted%2 == 0)? 1: 10;
-    for(int i = 0; i < baseCounted/2; i++)
-        denominator.multiplyBy100();
-
-    numerator = x;
-    Natural gcd = Natural::gcd(numerator, denominator);
-    if(gcd != 1)
-    {
-        numerator = numerator/gcd;
-        denominator = denominator/gcd;
-    }
+    numerator = Natural(num2);
+    denominator = Natural(den2);
 }
 
 Rational::Rational(std::string str) {
@@ -108,10 +110,9 @@ bool Rational::operator<(const Rational& other) const
 
 bool Rational::operator==(const Rational& other) const
 {
-    if(this->numerator == 0 && other.numerator == 0)
-        return true;
-    else
-        return this->sign == other.sign && 
+    //if(this->numerator == 0 && other.numerator == 0)
+      //  return true;
+    return this->sign == other.sign && 
            numerator == other.numerator && 
            denominator == other.denominator;
 }
@@ -136,7 +137,7 @@ Rational Rational::operator=(const Rational& other)
 
 Rational Rational::operator+(const Rational& other) const
 {
-     Natural gcd = Natural::gcd(this->denominator, other.denominator);
+    Natural gcd = Natural::gcd(this->denominator, other.denominator);
     Rational result;
     if(this->sign == other.sign)
     {
@@ -149,6 +150,7 @@ Rational Rational::operator+(const Rational& other) const
             result.numerator = numerator * (other.denominator/gcd) + other.numerator * (denominator/gcd);
             result.denominator = other.denominator * (denominator/gcd); 
         }
+        
         gcd = Natural::gcd(result.numerator, result.denominator);
 
         if(gcd != 1)
@@ -156,11 +158,21 @@ Rational Rational::operator+(const Rational& other) const
             result.numerator = result.numerator/gcd;
             result.denominator = result.denominator/gcd;
         }
+        if(result.abs() == 0)
+            result.setSign(true);
+        else
+            result.setSign(this->sign);
         return result;
     }
 
     List<Natural> res = numerator * (other.denominator/gcd) - other.numerator * (denominator/gcd);
     result.numerator = res[0];
+    if(result.numerator == 0)
+    {
+        result.sign = 1;
+        result.denominator = 1;
+        return result;
+    }
     result.denominator = other.denominator * (denominator/gcd); 
     if(this->sign)
         result.sign = bool(res[1]);
@@ -172,7 +184,7 @@ Rational Rational::operator+(const Rational& other) const
         result.numerator = result.numerator/gcd;
         result.denominator = result.denominator/gcd;
     }
-    if(result.abs(result) == 0){
+    if(result.abs() == 0){
         result.sign = true;
         result.denominator = 1;
     }
@@ -190,6 +202,7 @@ Rational Rational::operator-() const
 
 Rational Rational::operator-(const Rational& other) const
 {
+
     Natural gcd = Natural::gcd(this->denominator, other.denominator);
     Rational result;
     if(this->sign != other.sign)
@@ -204,23 +217,37 @@ Rational Rational::operator-(const Rational& other) const
             result.numerator = numerator * (other.denominator/gcd) + other.numerator * (denominator/gcd);
             result.denominator = other.denominator * (denominator/gcd); 
         }
+
+        gcd = Natural::gcd(result.numerator, result.denominator);
+
+        if(gcd != 1)
+        {
+            result.numerator = result.numerator/gcd;
+            result.denominator = result.denominator/gcd;
+        }
+
         return result;
     }
 
     List<Natural> res = numerator * (other.denominator/gcd) - other.numerator * (denominator/gcd);
     result.numerator = res[0];
+    if(result.numerator == 0)
+    {
+        result.sign = 1;
+        result.denominator = 1;
+        return result;
+    }
     result.denominator = other.denominator * (denominator/gcd); 
     if(this->sign)
-        result.sign = bool(res[1]);
-    else result.sign = !bool(res[1]);
-
-    gcd = Natural::gcd(numerator, denominator);
+        result.setSign(bool(res[1]));
+    else result.setSign(!bool(res[1]));
+    gcd = Natural::gcd(result.numerator, result.denominator);
     if(gcd != 1)
     {
         result.numerator = result.numerator/gcd;
         result.denominator = result.denominator/gcd;
     }
-    if(result.abs(result) == 0){
+    if(result.abs() == 0){
         result.sign = true;
         result.denominator = 1;
     }
@@ -241,12 +268,11 @@ Rational Rational::operator*(const Rational& other) const
 
     result.denominator = ((gcd1 == 1)? this->denominator: this->denominator/gcd1)*
                          ((gcd2 == 1)? other.denominator: other.denominator/gcd2);
-
-    gcd1 = Natural::gcd(result.numerator, result.denominator);
-    if(gcd1 != 1)
+    if(result.numerator == 0)
     {
-        result.numerator = result.numerator/gcd1;
-        result.denominator = result.denominator/gcd1;
+        result.sign = 1;
+        result.denominator = 1;
+        return result;
     }
     return result;
 }
@@ -267,12 +293,42 @@ Rational Rational::operator/(const Rational& other) const
     result.denominator = ((gcd1 == 1)? other.numerator: other.numerator/gcd1) *
                          ((gcd2 == 1)? denominator: denominator/gcd2);
 
+    if(result.numerator == 0)
+    {
+        result.sign = 1;
+        result.denominator = 1;
+        return result;
+    }
     return result;
 }
 
 Rational Rational::operator^(const Rational& other) const
 {
-    return 1;
+    if(!this->sign && other.denominator[0]%2 == 0)
+        throw std::invalid_argument("Cannot calculate the root of a negative number with even index");
+    
+    if(other == 0)
+    {
+        if(*this == 0)
+            throw std::invalid_argument("0^0 is not defined");
+
+        return 1;
+    }
+
+    if(*this == 0)
+        return 0;
+
+    double exp = other.toDouble();
+    double base = this->toDouble();
+
+    return Rational(std::pow(base, exp));
+}
+
+double Rational::toDouble() const 
+{
+    double r = numerator.toDouble() / denominator.toDouble();
+
+    return (this->sign)? r: -r;
 }
 
 //***STREAM OPERATIONS***
@@ -291,36 +347,59 @@ std::ostream& operator<<(std::ostream& os, const Rational& number)
         return os;   
     }
 
-    os << number.numerator << "/" << number.denominator;
-
-    // Natural num = number.numerator, den = number.denominator;
-    // if(Rational::decimalPoints == 0)
-    // {
-    //     os << num/den;
-    //     return os;
-    // }
-    // for(unsigned int i = 0; i < Rational::decimalPoints; i++)
-    // {
-    //     if(num == 0) return os;
-    //     Natural q = num/den;
-    //     os << q;
-    //     if(i == 0) os << ".";
-    //     num = (num - q*den)[0];
-    //     num.multiplyBy10();
-    // }
+    Natural num = number.numerator, den = number.denominator;
+    if(Rational::decimalPoints == 0)
+    {
+        os << num/den;
+        return os;
+    }
+    for(unsigned int i = 0; i < Rational::decimalPoints; i++)
+    {
+        if(num == 0) return os;
+        Natural q = num/den;
+        os << q;
+        if(i == 0) os << ".";
+        num = (num - q*den)[0];
+        num.multiplyBy10();
+    }
+    // os << number.numerator;
+    // os << "/";
+    // os << number.denominator;
     return os;
 }
 
-void showFraction(const Rational& num)
+std::istream& operator>>(std::istream& is, Rational& num)
 {
-    /*if(num.numerator == 0)
+    std::string str;
+    is >> str;
+    num = Rational(str);
+    return is;
+}
+
+
+void showFraction(const Rational& num)
+{ 
+    if(num.numerator == 0)
     {
-        std::cout << "0";  
+        std::cout << '0';
         return;
-    }*/
-        
+    }
     if(!num.sign) std::cout << "-";
     if(num.denominator == 1)
         std::cout << num.numerator;
     else std::cout << num.numerator << "/" << num.denominator;
+}
+
+//*Util method for GCD
+
+Rational Rational::invert() const {
+    if(this->numerator == 0)
+        return Rational(0, 1);
+        
+    Rational result;
+    result.numerator = this->denominator;
+    result.denominator = this->numerator;
+    result.sign = this->sign;
+
+    return result;
 }

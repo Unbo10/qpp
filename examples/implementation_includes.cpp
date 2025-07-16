@@ -1,8 +1,8 @@
 #include <bits/stdc++.h>
 
 #include "../include/Rational.h"
-#include "Polynomial.h"
-#include "PolyTerm.h"
+#include "../include/Polynomials/Polynomial.h"
+#include "../include/Polynomials/PolyTerm.h"
 
 int main() {
     //***RATIONALS***

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <initializer_list>
 
+#include "Iterator.h"
 #include "Iterable.h"
 
 /**
@@ -29,7 +30,7 @@ class List : public Iterable<U>
 {
     protected:
         static const int DEFAULT_INITIAL_CAPACITY = 10;
-        static constexpr double DEFAULT_RElength = 1.4;
+        static constexpr double DEFAULT_RESIZE = 1.6;
 
         U* array;
         /**
@@ -41,7 +42,6 @@ class List : public Iterable<U>
          */
         int length;
 
-
         /**
          * @brief Relengths the internal array to increase its capacity.
          * 
@@ -49,7 +49,11 @@ class List : public Iterable<U>
          */
         void resize()
         {
-            int NEW_CAPACITY = capacity*DEFAULT_RElength;
+            int NEW_CAPACITY;
+            if(capacity == 1)
+                NEW_CAPACITY = 2;
+            else
+                NEW_CAPACITY = capacity*DEFAULT_RESIZE;
             U* help = array;
             array = new U[NEW_CAPACITY];
 
@@ -60,8 +64,7 @@ class List : public Iterable<U>
             capacity = NEW_CAPACITY;
         }
 
-        
-    public:
+            public:
         //***CONSTRUCTORS AND DESTRUCTOR***
 
         /**
@@ -101,10 +104,13 @@ class List : public Iterable<U>
          * the length of the source list, then copies each element
          * individually.
          */
-        List(const List<U>& another) : List(another.size())
+        List(const List<U>& another)
         {
-            for(int i = 0; i < another.length; i++)
-                add(another[i]);
+            capacity = another.capacity;
+            length = another.length;
+            array = new U[capacity];
+            for(int i = 0; i < length; i++)
+                array[i] = another.array[i];
         }
 
         /**
@@ -153,14 +159,17 @@ class List : public Iterable<U>
          */
         void add(const U& item, int index)
         {
-            if(length < index || index < 0)
+            if(index < 0 || index > length)
                 return;
             
             if(length == capacity) 
+            {
+                // std::cout << "Enter aaaaa\n";
                 resize();
+            }
 
-            for(int i = length-1; index <= i; i--)
-                array[i+1] = array[i];
+            for(int i = length; i > index; i--)
+                array[i] = array[i-1];
             
             array[index] = item;
             length++;
@@ -231,7 +240,7 @@ class List : public Iterable<U>
          * @brief Remove and return the first element from the list.
          * 
          * Convinience method that calls `pop(int index)` and is equivalent to
-         * `pop(length)`.
+         * `pop(0)`.
          *
          * @return U The first element of the list that was removed.
          * @throws `std::out_of_range` If the list is empty.
@@ -256,6 +265,15 @@ class List : public Iterable<U>
          * @return int length of the list (number of elements).
          */
         int size() const
+        {
+            return length;
+        }
+
+        /**
+         * @return int size of the list (current number of elements or occupied
+         * spaces in the list).
+         */
+        int getSize() const
         {
             return length;
         }
@@ -306,6 +324,17 @@ class List : public Iterable<U>
             length = 0;
             array = new U[newCapacity];
             capacity = newCapacity;
+        }
+        
+        void invert()
+        {
+            for(int i = 0; i < length/2; i++)
+            {
+                U aux;
+                aux = array[i];
+                array[i] = array[length - i - 1];
+                array[length - i - 1] = aux;
+            }
         }
         
         //***OTHER OPERATIONS***
@@ -399,6 +428,9 @@ class List : public Iterable<U>
          */
         List<U>& operator=(const List<U>& another)
         {
+            if (this == &another) // Self-assignment check
+                return *this;
+                
             delete[] array;
             capacity = another.capacity;
             length = another.length;
@@ -435,7 +467,4 @@ class List : public Iterable<U>
 
         Iterator<U> begin() const { return Iterator<U>(array); }
         Iterator<U> end() const { return Iterator<U>(array + length); }
-
-        //***GETTERS***
-        int getSize() const { return length; }
 };

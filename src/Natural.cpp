@@ -12,16 +12,21 @@ void Natural::cleanDigits(Natural& num, int index)
 {
     while (index >= 0 && num[index] == 0)
         index--;
-    if(index < 0) index = 0;
+    if(index < 0)
+    {
+        num.digits = List<unsigned short>(0);
+        return;
+    }
+    if(index == num.digits.size())
+        return;
+
     List<unsigned short> copy(index);
     for(int i = 0; i <= index; i++)
         copy.add(num[i]);
     num.digits = copy;
 }
 
-//***UTILS FOR ARITHMETIC OPERATIONS***
-
-List<Natural> subtract(const Natural& num1, const Natural& num2, bool reorder)
+List<Natural> res(const Natural& num1, const Natural& num2, bool re)
 {
     if(reorder && num1 < num2)
         return {subtract(num2, num1, 0)[0], 0};
@@ -92,6 +97,11 @@ bool Natural::operator<(const Natural& num) const
     return false;
 }
 
+bool operator<(const long long num1, const Natural& num2)
+{
+    return Natural(num1) < num2;
+}
+
 bool Natural::operator==(const Natural& num) const
 {
     return digits == num.digits;
@@ -107,6 +117,9 @@ void Natural::operator=(const Natural& num2)
 unsigned short Natural::operator[](int index) const
 {
     if(index < 0 || digits.size() <= index)
+        return 0;
+    
+    if(index == 0 && this->digits.size() == 0)
         return 0;
 
     return digits[index];
@@ -136,6 +149,12 @@ Natural operator+(const Natural& num1, const Natural& num2)
     Natural::cleanDigits(result);
     return result;
 }
+
+Natural operator+(const Natural& num1, unsigned short num2)
+{
+    return num1 + Natural(num2);
+}
+
 
 List<Natural> operator-(const Natural& num1, const Natural& num2)
 {
@@ -169,25 +188,26 @@ Natural operator*(const Natural& num1, const Natural& num2)
     return product;
 }
 
+Natural operator*(const Natural& num1, unsigned short num2)
+{
+    return num1 * Natural(num2);
+}
+
 Natural operator/(const Natural& num1, const Natural& num2)
 {
-    if(num1 == 0 && num2 == 0) return num1;
+    if(num1 == num2) return 1;
     if(num2 == 0) 
         throw std::invalid_argument("Math error: division by zero");
-
-    if(num1.digits.size() < num2.digits.size())
-        return 0;
-    if(num1 == num2)
-        return 1;
-    
 
     if(num2 == 2) return Natural::divideBy2(num1);
     if(num2 == 1) return num1;
 
+
     unsigned short scaleFactor = 100/(num2.digits[num2.digits.size()-1] + 1);
     Natural dividend = num1*scaleFactor;
     Natural divisor = num2*scaleFactor;
-    int m = dividend.digits.size() - divisor.digits.size()-1;
+    int m = dividend.digits.size() - divisor.digits.size();
+    if(m < 0) return 0;
     Natural U(0, divisor.digits.size()+1);
     Natural quant(0, m+1);
     for(int i = m; i < dividend.digits.size(); i++)
@@ -210,10 +230,24 @@ Natural operator/(const Natural& num1, const Natural& num2)
         if(j > 0)
             U.digits.add(dividend[j-1], 0);
     }
+    Natural::cleanDigits(quant);
     return quant;
 }
 
-//***STREAM OPERATIONS***
+/* Estimacion de cociente */
+unsigned short stimateQuant(const Natural& num1, const Natural& num2)
+{
+    int size = num1.digits.size()-1;
+    if(size == 0)
+        return num1[size]/num2[num2.digits.size()-1];
+    return (num1[size]*100 + num1[size -1])/num2[num2.digits.size()-1];
+}
+
+void Natural::operator=(const Natural& num2)
+{
+    digits = num2.digits;
+}
+/* Implementacion de lectura y de salida*/
 
 std::ostream& operator<<(std::ostream& os, const Natural& num)
 {
@@ -312,7 +346,7 @@ Natural Natural::gcd(const Natural& num1, const Natural& num2)
     {
         number1 = Natural::divideBy2(number1);
         number2 = Natural::divideBy2(number2);
-        gcd = 2*gcd;
+        gcd = gcd * 2;
     }
 
     while(number1 > 0 && number2 != 1)
@@ -327,7 +361,125 @@ Natural Natural::gcd(const Natural& num1, const Natural& num2)
     return gcd*number2;
 }
 
-List<unsigned short> Natural::getList()
+void Natural::multiplyBy10()
+{
+    int size = this->digits.size();
+    if(size == 0) return;
+    unsigned short peek = this->operator[](size-1);
+    List<unsigned short> copy((peek < 10)? size: size+1);
+    unsigned short carry = 0;
+    for(unsigned short x: this->digits)
+    {
+        copy.add((x % 10)*10 + carry);
+        carry = x/10;
+    }
+
+    if(carry != 0)
+        copy.add(carry);
+
+    this->digits = copy;
+}
+
+int Natural::smallestGeqPowerOfBase(const int num, const int base)
+{
+    if(base == 0)
+    {
+        if(num != 0)
+        {
+            throw std::invalid_argument("Base is 0 and number is not 0 (there's no power of 0 greater than 'this')");
+        }
+        std::cout << "Warning: given base is 0. Returning 1.\n";
+        return 1;
+    }
+    else if (base == 1)
+    {
+        if(num > 1)
+        {
+            throw std::invalid_argument("Base is 1 and number is not 0 or 1 (there's no power of 1 greater than 'this')");
+        }
+        std::cout << "Warning: given base is 0. Returning 1.\n";
+        return 1;
+    }
+
+    if((num == 1) || (num == 0))
+        return 0;
+
+    // int exp = 1;
+    int pow = base;
+    while(pow < num) {
+        pow = pow * base;
+        // exp++;
+    }
+    return pow;
+}
+
+Natural Natural::smallestGeqPowerOfBase(const Natural& num, const Natural& base)
+{
+    if(base == 0)
+    {
+        if(num != 0)
+        {
+            throw std::invalid_argument("Base is 0 and number is not 0 (there's no power of 0 greater than 'this')");
+        }
+        std::cout << "Warning: given base is 0. Returning 1.\n";
+        return 1;
+    }
+    else if (base == 1)
+    {
+        if(num > 1)
+        {
+            throw std::invalid_argument("Base is 1 and number is not 0 or 1 (there's no power of 1 greater than 'this')");
+        }
+        std::cout << "Warning: given base is 0. Returning 1.\n";
+        return 1;
+    }
+
+    if((num == 1) || (num == 0))
+        return 0;
+
+    // Natural exp = 1;
+    Natural pow = base;
+    while(pow < num) {
+        pow = pow * base;
+        // exp = exp + 1;
+    }
+
+    return pow;
+}
+
+List<unsigned short> Natural::getList() const
 {
     return List<unsigned short>(digits);
+}
+
+int Natural::getNumOfDigits() const
+{
+    return this->digits.getSize();
+}
+
+void Natural::addDigit(unsigned short digit)
+{
+    digits.add(digit);
+}
+
+double Natural::toDouble() const
+{
+    double result = 0.0;
+    double factor = 1.0;
+
+    for (int i = 0; i < digits.size(); ++i) {
+        result += static_cast<double>(digits[i]) * factor;
+        factor *= 100.0;
+    }
+
+    return result;
+}
+
+Natural Natural::factorial(const Natural& num)
+{
+    if(num == 0 || num == 1) return 1;
+    Natural result(1);
+    for(unsigned short i = 2; i <= num; i = i + 1)
+        result = result * i;
+    return result;
 }

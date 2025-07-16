@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 #include "../include/Integer.h"
 #include "../include/Rational.h"
-#include "SndPoly.h"
+#include "../include/Polynomials/Polynomial.h"
 
 int main() {
     Rational r("-5/2"), r2(0), r3(78, 5);
@@ -70,18 +70,4 @@ int main() {
     // std::cout << "|" << gcd << "\n";
     // std::cout << "GCD of " << poly9 << " and " << poly10 << " is: " << Polynomial::monicPolyGCD(poly9, poly10) << "\n";
     // std::cout << "GCD of " << poly11 << " and " << poly12 << " is: " << Polynomial::monicPolyGCD(poly11, poly12) << "\n";
-
-    //*SndPoly GCD tests
-    SndPoly poly3, poly4;
-    poly3 = "125 0 2 -75 1 2 135 2 1 -225 1 1 30 3 0 -50 2 0";
-    poly4 = "30 3 1 -60 2 2 15 2 0 -45 1 1 30 0 2";
-    std::cout << "Poly3: " << poly3 << "\n";
-    std::cout << "Unit: " << poly3.getUnit() << "\n";
-    std::cout << "Cont: " << poly3.getCont() << "\n";
-    std::cout << "PP: " << poly3.getPrimitivePart() << "\n";
-    std::cout << "Poly4: " << poly4 <<"\n";
-    std::cout << "Unit: " << poly4.getUnit() << "\n";
-    std::cout << "Cont: " << poly4.getCont() << "\n";
-    std::cout << "PP: " << poly4.getPrimitivePart() << "\n";
-    std::cout << "GCD of " << poly3 << " and " << poly4 << " is: " << SndPoly::gcd(poly3, poly4) << "\n";
 }

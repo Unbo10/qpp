@@ -1,4 +1,4 @@
-#include "PolyTerm.h"
+#include "../../include/Polynomials/PolyTerm.h"
 
 //***ARITHMETIC OPERATIONS***
 

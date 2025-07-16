@@ -9,12 +9,19 @@ class Integer : public Number<Integer>
     private:
         Natural absolutePart;
     public:
-        //!All of this implementations need to be done in the cpp file
         Integer() {}
-        Integer(long long x) : absolutePart((x < 0)? -x : x) {this->sign = x>=0;}
-        Integer(const Natural& natural) : absolutePart(natural) {this->sign = 1;}
-        Integer(const Natural& natural, bool sign) : absolutePart(natural) {this->sign = sign;}
-        Integer(std::string str) {
+        Integer(long long x): absolutePart((x < 0)? -x : x) {this->sign = x>=0;}
+        Integer(const Natural& natural): absolutePart(natural) {this->sign = 1;}
+        Integer(const Natural& natural, bool sign): absolutePart(natural) 
+        {
+            if(absolutePart == 0)
+            {
+                setSign(1);
+            }
+            setSign(sign);
+        }
+        Integer(std::string str)
+        {
             int starting_pos = 0;
             if(str[0] == '-') {
                 this->sign = false;
@@ -33,9 +40,14 @@ class Integer : public Number<Integer>
         //***ARITHMETIC OPERATIONS***
 
         Integer operator+(const Integer& other) const;
+        friend Integer operator+(const Natural& num1, const Integer& num2);
+        friend Integer operator+(const Integer& num1, const Natural& num2);
+        Integer operator-() const {Integer r(*this); r.setSign(!this->sign); return r;}
         Integer operator-(const Integer& other) const;
         Integer operator*(const Integer& other) const;
-        Integer operator-() const {Integer r(*this); r.sign = !this->sign; return r;}
+        friend Integer operator*(const Natural& num1, const Integer* num2);
+        friend Integer operator*(const Integer& num1, const Natural& num2);
+        static Integer toomCook4(const Integer& num1, const Integer& num2);
         Integer operator/(const Integer& other) const;
         Integer operator%(const Integer& other) const;
         Integer operator^(const Integer& other) const;
@@ -44,7 +56,10 @@ class Integer : public Number<Integer>
 
         unsigned short operator[](int index) const;
         Natural getAbsolutePart() const {return absolutePart;}
+        int getNumOfDigits() const {return absolutePart.getNumOfDigits();}
         static Natural gcd(const Integer& num1, const Integer& num2);
+        void addDigit(unsigned short digit);
+        List<Integer> splitIn4() const;
         
         //***STREAM OPERATIONS***
 

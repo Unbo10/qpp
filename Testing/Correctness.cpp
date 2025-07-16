@@ -8,11 +8,10 @@
 #include <vector>
 #include <iostream>
 
-
 Integer integer_from_bitstream(std::vector<int> bits) {
     Integer result;
     for (int i = 0; i < bits.size(); i++) {
-        result = result * 2 + bits[i];
+        result = 2 * result + (bits[i]);
     }
     if (bits.size() > 0 && bits[0] == 1) {
         result.sign = false; // Set sign to negative if the first bit is 1
@@ -25,7 +24,7 @@ Integer integer_from_bitstream(std::vector<int> bits) {
 Natural natural_from_bitstream(const std::vector<int>& bits) {
     Natural result;
     for (int i = 0; i < bits.size(); i++) {
-        result = result * 2 + bits[i];
+        result = Natural(2) * result + Natural(bits[i]);
     }
     return result;
 }
@@ -33,7 +32,10 @@ Natural natural_from_bitstream(const std::vector<int>& bits) {
 long long ll_from_bitstream(const std::vector<int>& bits) {
     long long result = 0;
     for (int i = 0; i < bits.size(); i++) {
-        result = result * 2 + bits[i];
+        result = 2 * result + (bits[i]);
+    }
+    if (bits.size() > 0 && bits[0] == 1) {
+        result = -result; // Set sign to negative if the first bit is 1
     }
     return result;
 }
@@ -48,6 +50,15 @@ Rational rational_from_bitstream(const std::vector<int>& bits) {
     return Rational(numerator, denominator);
 }
 
+Rational fibonacci(int n){
+    if (n < 0) {
+        throw std::invalid_argument("Fibonacci number cannot be negative.");
+    }
+    if (n == 0) return Rational(0);
+    if (n == 1) return Rational(1);
+    
+    return fibonacci(n-1) + fibonacci(n-2);
+}
 
 int main(){
     LeftShiftRegister lfsr;
@@ -72,6 +83,8 @@ int main(){
         std::cout << "12. Test matrix multiplication\n";
         std::cout << "13. Test matrix transpose\n";
         std::cout << "14. Test matrix reduced row echelon form\n";
+        std::cout << "15. Test matrix determinant\n";
+        std::cout << "16. Test matrix inverse\n";
         std::cout << "0. Exit\n";
 
         std::cout << "Enter your choice (1-14, or 0 to exit): ";
@@ -528,6 +541,7 @@ int main(){
                 std::cout << rows << "x" << columns << " " <<number_of_bits << " bit Matrix addition result: \n" << result << std::endl;
             }
             case 12: {
+                /*
                 std::cout << "Enter number of rows for first matrix:\n";
                 int rows1;
                 std::cin >> rows1;
@@ -551,12 +565,23 @@ int main(){
                     std::cout << "Please enter a positive number of bits." << std::endl;
                     continue; // Skip to the next iteration if input is invalid
                 }
+                */
+               int rows1, rows2, columns1, columns2, number_of_bits;
+                rows1 = rows2 = columns1 = columns2 = 100; // For testing purposes, we can set fixed sizes
+                number_of_bits = 1; // For testing purposes, we can set a fixed number of bits
                 Matrix m1(rows1, columns1), m2(rows2, columns2);
                 
+                //Create vector matrix to test multiplication time comparison
+
+                std::vector<std::vector<Integer>> ll_m1(rows1, std::vector<Integer>(columns1));
+                std::vector<std::vector<Integer>> ll_m2(rows2, std::vector<Integer>(columns2));
+
                 for (int i = 0; i < rows1; i++) {
                     for (int j = 0; j < columns1; j++) {
                         std::vector<int> bits = lfsr.generate(number_of_bits);
                         m1[i][j] = integer_from_bitstream(bits);
+                        ll_m1[i][j] = ll_from_bitstream(bits);
+
                     }
                 }
 
@@ -564,20 +589,64 @@ int main(){
                     for (int j = 0; j < columns2; j++) {
                         std::vector<int> bits = lfsr.generate(number_of_bits);
                         m2[i][j] = integer_from_bitstream(bits);
+                        ll_m2[i][j] = ll_from_bitstream(bits);
                     }
                 }
 
-                std::cout << "Matrix created: \n" << m1 << std::endl;
-                std::cout << "Matrix created: \n" << m2 << std::endl;
+                //std::cout << "Matrix created: \n" << m1 << std::endl;
+                //std::cout << "Matrix created: \n" << m2 << std::endl;
 
                 auto start = std::chrono::high_resolution_clock::now();
                 Matrix result = m1 * m2;
                 auto end = std::chrono::high_resolution_clock::now();
                 auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-                std::cout << rows1 << "x" << columns1 << " and " <<
-                rows2 << "x" << columns2 << " " << number_of_bits << " bit Matrix multiplication took " << duration << " microseconds." << std::endl;
-                std::cout << rows1 << "x" << columns1 << " and " <<
-                rows2 << "x" << columns2 << " " << number_of_bits << " bit Matrix multiplication result:\n " << result << std::endl;
+                std::cout << rows1 << "x" << columns1 << " and " <<rows2 << "x" << columns2 << " " << number_of_bits << " bit Matrix multiplication took " << duration << " microseconds." << std::endl;
+                //std::cout << rows1 << "x" << columns1 << " and " <<rows2 << "x" << columns2 << " " << number_of_bits << " bit Matrix multiplication result:\n " << result << std::endl;
+
+                /*                 start = std::chrono::high_resolution_clock::now();
+                std::vector<std::vector<Integer>> ll_result(rows1, std::vector<Integer>(columns2));
+                for (int i = 0; i < rows1; i++) {
+                    for (int j = 0; j < columns2; j++) {
+                        ll_result[i][j] = Integer(0);
+                        for (int k = 0; k < columns1; k++) {
+                            ll_result[i][j] += ll_m1[i][k] * ll_m2[k][j];
+                        }
+                    }
+                }
+                end = std::chrono::high_resolution_clock::now();
+                duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+                std::cout << rows1 << "x" << columns1 << " and " <<rows2 << "x" << columns2 << " " << number_of_bits << " bit Matrix multiplication took " << duration << " microseconds." << std::endl;
+                std::cout << rows1 << "x" << columns1 << " and " <<rows2 << "x" << columns2 << " " << number_of_bits << " bit (LL) Matrix multiplication result:\n ";
+                */
+                rows1 = rows2 = columns1 = columns2 = 3; // For testing purposes, we can set fixed sizes
+                number_of_bits = 5; // For testing purposes, we can set a fixed number of bits
+                
+
+                for (int i = 0; i < rows1; i++) {
+                    for (int j = 0; j < columns1; j++) {
+                        std::vector<int> bits = lfsr.generate(number_of_bits);
+                        m1[i][j] = integer_from_bitstream(bits);
+                        ll_m1[i][j] = ll_from_bitstream(bits);
+
+                    }
+                }
+
+                for (int i = 0; i < rows2; i++) {
+                    for (int j = 0; j < columns2; j++) {
+                        std::vector<int> bits = lfsr.generate(number_of_bits);
+                        m2[i][j] = integer_from_bitstream(bits);
+                        ll_m2[i][j] = ll_from_bitstream(bits);
+                    }
+                }
+
+                //std::cout << "Matrix created: \n" << m1 << std::endl;
+                //std::cout << "Matrix created: \n" << m2 << std::endl;
+
+                 start = std::chrono::high_resolution_clock::now();
+                 result = m1 * m2;
+                 end = std::chrono::high_resolution_clock::now();
+                 duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+                std::cout << rows1 << "x" << columns1 << " and " <<rows2 << "x" << columns2 << " " << number_of_bits << " bit Matrix multiplication took " << duration << " microseconds." << std::endl;
             }
 
             case 13: {
@@ -647,29 +716,100 @@ int main(){
             }
 
             case 15: {
-                Matrix m(3,4);
-                m[0][0] = Integer(-2);
-                m[0][1] = Integer(-4);
-                m[0][2] = Integer(2);
-                m[0][3] = Integer(2);
-
-                m[1][0] = Integer(3);
-                m[1][1] = Integer(6);
-                m[1][2] = Integer(-3);
-                m[1][3] = Integer(-3);
-
-                m[2][0] = Integer(1);
-                m[2][1] = Integer(2);
-                m[2][2] = Integer(0);
-                m[2][3] = Integer(1);
+                /*
+                std::cout << "Enter number of rows:\n";
+                int rows;
+                std::cin >> rows;
+                std::cout << "Enter number of columns:\n";
+                int columns;
+                std::cin >> columns;
+                std::cout << "Enter number of bits:\n";
+                int number_of_bits;
+                std::cin >> number_of_bits;
+                if (number_of_bits <= 0) {
+                    std::cout << "Please enter a positive number of bits." << std::endl;
+                    continue; // Skip to the next iteration if input is invalid
+                }
+                */
+               int rows, columns, number_of_bits;
+                rows = columns = 100; // For testing purposes, we can set fixed sizes
+                number_of_bits = 16; // For testing purposes, we can set a fixed number of bits
+                Matrix m(rows, columns);
+                
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < columns; j++) {
+                        std::vector<int> bits = lfsr.generate(number_of_bits);
+                        m[i][j] = integer_from_bitstream(bits);
+                    }
+                }
 
                 std::cout << "Matrix created: \n" << m << std::endl;
-                std::cout << "Matrix scalonade form: \n" << Matrix::scalonadeForm(m) << std::endl;
+
+                auto start = std::chrono::high_resolution_clock::now();
+                Rational result = Matrix::det(m);
+                auto end = std::chrono::high_resolution_clock::now();
+                auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+                std::cout << rows << "x" << columns << " " << number_of_bits << " bit Matrix determinant took " << duration << " microseconds." << std::endl;
+                std::cout << rows << "x" << columns << " " << number_of_bits << " bit Matrix determinant result: " << result << std::endl;
+            }
+
+            case 16: {
+                std::cout << "Enter number of rows:\n";
+                int rows;
+                std::cin >> rows;
+                std::cout << "Enter number of columns:\n";
+                int columns;
+                std::cin >> columns;
+                std::cout << "Enter number of bits:\n";
+                int number_of_bits;
+                std::cin >> number_of_bits;
+                if (number_of_bits <= 0) {
+                    std::cout << "Please enter a positive number of bits." << std::endl;
+                    continue; // Skip to the next iteration if input is invalid
+                }
+                Matrix m(rows, columns);
+                
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < columns; j++) {
+                        std::vector<int> bits = lfsr.generate(number_of_bits);
+                        m[i][j] = integer_from_bitstream(bits);
+                    }
+                }
+
+                std::cout << "Matrix created: \n" << m << std::endl;
+
+                auto start = std::chrono::high_resolution_clock::now();
+                Matrix result = Matrix::inverse(m);
+                auto end = std::chrono::high_resolution_clock::now();
+                auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+                std::cout << rows << "x" << columns << " " << number_of_bits << " bit Matrix inverse took " << duration << " microseconds." << std::endl;
+                std::cout << rows << "x" << columns << " " << number_of_bits << " bit Matrix inverse result:\n" << result << std::endl;
+            }
+
+            case 17:{
+                auto start = std::chrono::high_resolution_clock::now();
+                Rational r1 = Matrix::fibonnacci(100000);
+                auto end = std::chrono::high_resolution_clock::now();
+                auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+                std::cout << "Fibonacci number took " << duration << " microseconds." << std::endl;
+                std::cout << "Fibonacci(50): " << r1 << std::endl;
+            
+            //     start = std::chrono::high_resolution_clock::now();
+            //     Rational r2 = fibonacci(30);
+            //     end = std::chrono::high_resolution_clock::now();
+            //     duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+            //     std::cout << "Fibonacci number (recursive) took " << duration << " microseconds." << std::endl;
+            // 
+            }
+
+            case 18: {
+                Natural n(100);
+                std::cout << "Factorial of " << n << " is: " << Natural::factorial(n) << std::endl;
             }
         }
     }
         else {
             lfsr.warmup(1);
-        }
+        } 
     }
 }

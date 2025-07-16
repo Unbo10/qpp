@@ -8,8 +8,7 @@ template <typename T>
 class Number: public Comparable<T>
 {
     protected:
-        static const int DEFAULT_BASE = 100000;
-        // bool base_initialized;
+        static const int DEFAULT_BASE = 100;
         int BASE;
     public:
         //*True is for positive and zero and false is for negative
@@ -28,7 +27,6 @@ class Number: public Comparable<T>
         virtual T operator-(const T& other) const = 0;
         virtual T operator*(const T& other) const = 0;
         virtual T operator/(const T& other) const = 0;
-        //virtual T operator%(const T& other) const = 0;
         virtual T operator^(const T& other) const = 0;
         
         friend T& operator+=(T& lhs, const T& rhs)
@@ -59,13 +57,6 @@ class Number: public Comparable<T>
             return lhs;
         }
 
-        /*friend T& operator%=(T& lhs, const T& rhs)
-        {
-            T result = lhs % rhs;
-            lhs = result;
-            return lhs;
-        }*/
-
         friend T& operator^=(T& lhs, const T& rhs)
         {
             T result = lhs ^ rhs;
@@ -75,5 +66,5 @@ class Number: public Comparable<T>
 
         bool getSign() const {return sign;}
 
-        // void setSign(bool sign) {this->sign = sign;}
+        void setSign(bool sign) {this->sign = sign;}
 };
