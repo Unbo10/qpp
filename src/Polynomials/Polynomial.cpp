@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 
-#include "Polynomial.h"
-#include "../include/Rational.h"
+#include "../../include/Polynomials/Polynomial.h"
+#include "../../include/Rational.h"
 
 Polynomial::Polynomial() {}
 

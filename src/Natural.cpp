@@ -404,6 +404,11 @@ int Natural::getNumOfDigits() const
     return this->digits.getSize();
 }
 
+void Natural::addDigit(unsigned short digit)
+{
+    digits.add(digit);
+}
+
 double Natural::toDouble() const
 {
     double result = 0.0;

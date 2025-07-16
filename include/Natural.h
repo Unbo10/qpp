@@ -77,7 +77,7 @@
         
         List<unsigned short> getList() const;
         int getNumOfDigits() const;
-        void addDigit(const Natural& num);
+        void addDigit(unsigned short digit);
         double toDouble() const;
         explicit operator bool() const 
         {

@@ -1,4 +1,6 @@
-#include "PolyTerm.h"
+#pragma once
+
+#include "../../include/Polynomials/PolyTerm.h"
 
 //***ARITHMETIC OPERATIONS***
 

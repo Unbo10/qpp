@@ -330,6 +330,17 @@ class List : public Iterable<U>
             capacity = newCapacity;
         }
         
+        void invert()
+        {
+            for(int i = 0; i < length/2; i++)
+            {
+                U aux;
+                aux = array[i];
+                array[i] = array[length - i - 1];
+                array[length - i - 1] = aux;
+            }
+        }
+        
         //***OTHER OPERATIONS***
 
         /**

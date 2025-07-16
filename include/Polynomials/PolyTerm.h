@@ -1,7 +1,7 @@
 #pragma once
 
 #include <iostream>
-#include "../include/Rational.h"
+#include "../Rational.h"
 
 class PolyTerm {
     public:

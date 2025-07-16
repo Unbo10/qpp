@@ -145,8 +145,13 @@ int main() {
     std::cout << (num1 == num2) << "\n";
 
     std::cout << "Toom-Cook 4\n";
-    Natural nat(12340);
-    std::cout << Natural::splitIn4(nat) << "\n"; 
+    Integer nat1(12345678);
+    std::cout << nat1.splitIn4() << "\n"; 
+    Integer nat2(10000000);
+    std::cout << nat2.splitIn4() << "\n";
+    std::cout << Integer::toomCook4(nat1, nat2) << "\n";
+
+    std::cout << (Integer(2)^2) << "\n";
 
 }
 
