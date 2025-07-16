@@ -11,7 +11,11 @@ void Natural::cleanDigits(Natural& num, int index)
 {
     while (index >= 0 && num[index] == 0)
         index--;
-    if(index < 0) index = 0;
+    if(index < 0)
+    {
+        num.digits = List<unsigned short>(0);
+        return;
+    }
     if(index == num.digits.size())
         return;
 
@@ -375,5 +379,14 @@ double Natural::toDouble() const
         factor *= 100.0;
     }
 
+    return result;
+}
+
+Natural Natural::factorial(const Natural& num)
+{
+    if(num == 0 || num == 1) return 1;
+    Natural result(1);
+    for(Natural i = 2; i <= num; i = i + 1)
+        result = result * i;
     return result;
 }

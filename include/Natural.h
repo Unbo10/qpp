@@ -30,8 +30,9 @@ class Natural: public Comparable<Natural>
         Para ahorrar memoria, se limpian los espacios no fundamentales,
         es decir, lugares que no se usan a la derecha, o ceros a la derecha
     */
-        static void cleanDigits(Natural& num);
+        
         static void cleanDigits(Natural& num, int index);
+        static void cleanDigits(Natural& num);
 
         Natural(int x, int size): digits(size) 
         {
@@ -58,6 +59,7 @@ class Natural: public Comparable<Natural>
         friend std::istream& operator>>(std::istream& is, Natural& num);
 
         static Natural divideBy2(const Natural& num);
+        static Natural factorial(const Natural& num);
         void multiplyBy100() {digits.add(0, 0);}
         void multiplyBy10();
         //**Greater or equal */

@@ -12,7 +12,14 @@ class Integer : public Number<Integer>
         Integer() {}
         Integer(long long x): absolutePart((x < 0)? -x : x) {this->sign = x>=0;}
         Integer(const Natural& natural): absolutePart(natural) {this->sign = 1;}
-        Integer(const Natural& natural, bool sign): absolutePart(natural) {setSign(sign);}
+        Integer(const Natural& natural, bool sign): absolutePart(natural) 
+        {
+            if(absolutePart == 0)
+            {
+                setSign(1);
+            }
+            setSign(sign);
+        }
 
         //***COMPARISON AND ASSIGNING OPERATIONS***
 
