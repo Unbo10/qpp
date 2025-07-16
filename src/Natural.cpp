@@ -133,6 +133,12 @@ Natural operator+(const Natural& num1, const Natural& num2)
     return result;
 }
 
+Natural operator+(const Natural& num1, unsigned short num2)
+{
+    return num1 + Natural(num2);
+}
+
+
 List<Natural> operator-(const Natural& num1, const Natural& num2)
 {
     return res(num1, num2, 1);
@@ -163,6 +169,11 @@ Natural operator*(const Natural& num1, const Natural& num2)
 
     Natural::cleanDigits(product);
     return product;
+}
+
+Natural operator*(const Natural& num1, unsigned short num2)
+{
+    return num1 * Natural(num2);
 }
 
 Natural operator/(const Natural& num1, const Natural& num2)
@@ -297,7 +308,7 @@ Natural Natural::gcd(const Natural& num1, const Natural& num2)
     {
         number1 = Natural::divideBy2(number1);
         number2 = Natural::divideBy2(number2);
-        gcd = 2*gcd;
+        gcd = gcd * 2;
     }
 
     while(number1 > 0 && number2 != 1)
@@ -430,7 +441,7 @@ Natural Natural::factorial(const Natural& num)
 {
     if(num == 0 || num == 1) return 1;
     Natural result(1);
-    for(Natural i = 2; i <= num; i = i + 1)
+    for(unsigned short i = 2; i <= num; i = i + 1)
         result = result * i;
     return result;
 }

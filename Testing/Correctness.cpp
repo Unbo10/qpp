@@ -11,7 +11,7 @@
 Integer integer_from_bitstream(std::vector<int> bits) {
     Integer result;
     for (int i = 0; i < bits.size(); i++) {
-        result = result * 2 + bits[i];
+        result = 2 * result + (bits[i]);
     }
     if (bits.size() > 0 && bits[0] == 1) {
         result.sign = false; // Set sign to negative if the first bit is 1
@@ -24,7 +24,7 @@ Integer integer_from_bitstream(std::vector<int> bits) {
 Natural natural_from_bitstream(const std::vector<int>& bits) {
     Natural result;
     for (int i = 0; i < bits.size(); i++) {
-        result = result * 2 + bits[i];
+        result = Natural(2) * result + Natural(bits[i]);
     }
     return result;
 }
@@ -32,7 +32,7 @@ Natural natural_from_bitstream(const std::vector<int>& bits) {
 long long ll_from_bitstream(const std::vector<int>& bits) {
     long long result = 0;
     for (int i = 0; i < bits.size(); i++) {
-        result = result * 2 + bits[i];
+        result = 2 * result + (bits[i]);
     }
     if (bits.size() > 0 && bits[0] == 1) {
         result = -result; // Set sign to negative if the first bit is 1

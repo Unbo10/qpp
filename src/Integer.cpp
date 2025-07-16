@@ -251,7 +251,7 @@ List<Integer> Integer::splitIn4() const
     }
     int originalNumOfDigits = this->absolutePart.getNumOfDigits();
     newSize = Natural::smallestGeqPowerOfBase(originalNumOfDigits, Natural(4));
-    std::cout << originalNumOfDigits << " vs " << newSize << "\n";
+    // std::cout << originalNumOfDigits << " vs " << newSize << "\n";
     Natural splitSize = newSize / 4;
 
     //*Add zeros to each split until necessary, and then add the corresponding

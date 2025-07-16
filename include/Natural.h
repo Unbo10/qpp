@@ -51,16 +51,10 @@
 
         unsigned short operator[](int index) const;
         friend Natural operator+(const Natural& num1, const Natural& num2);
-        Natural toomCook4(const Natural& num1, const Natural& num2);
-        //TODO: Implement a splitting-in-4 method (fill with zeros the most-significant part) to make it divisible by a power of 4
-        //TODO: Create polynomials A(x) and B(x) with those splits
-        //TODO: Implement a method to evaluate a polynomial
-        //TODO: Evaluate A and B in 6 points and get the 7th by using the coefficient beside the most-significant power
-        //TODO: Compute V(r) using the previosly evaluated A, and B
-        //TODO: Figure out Ci by making the product (IA)v, where v is the vector with V(r)
-        //TODO: Assemble and sum
+        friend Natural operator+(const Natural& num1, unsigned short num2);
         friend List<Natural> operator-(const Natural& num1, const Natural& num2);
         friend Natural operator*(const Natural& num1, const Natural& num2);
+        friend Natural operator*(const Natural& num1, unsigned short num2);
         friend Natural operator/(const Natural& num1, const Natural& num2);
 
         friend std::ostream& operator<<(std::ostream& os, const Natural& num);

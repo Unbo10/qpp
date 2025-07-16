@@ -42,7 +42,6 @@ class List : public Iterable<U>
          */
         int length;
 
-
         /**
          * @brief Relengths the internal array to increase its capacity.
          * 
@@ -65,8 +64,7 @@ class List : public Iterable<U>
             capacity = NEW_CAPACITY;
         }
 
-        
-    public:
+            public:
         //***CONSTRUCTORS AND DESTRUCTOR***
 
         /**
@@ -190,7 +188,6 @@ class List : public Iterable<U>
             add(item, length);
         }
 
-        //?Is this method necessary?
         void add(U& item)
         {
             add(item, length);
@@ -239,7 +236,6 @@ class List : public Iterable<U>
             return item;
         }
 
-        //!Why would pop mean removing the first element???
         /**
          * @brief Remove and return the first element from the list.
          * 
